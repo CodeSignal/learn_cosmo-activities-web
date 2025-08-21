@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Swipe Activity</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%98%85%3C/text%3E%3C/svg%3E" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="description" content="Swipe left/right activity with plain JS" />
+</head>
+<body>
+  <header class="header">
+    <h1 id="activity-type" class="type"></h1>
+    <p id="practice-question" class="question"></p>
+  </header>
+
+  <main class="main">
+    <div class="labels">
+      <div id="left-label" class="label left"></div>
+      <div id="right-label" class="label right"></div>
+    </div>
+
+    <div id="deck" class="deck" aria-live="polite"></div>
+
+    <div id="sort" class="sort hidden" aria-live="polite">
+      <div class="dropzones">
+        <div class="dropzone" data-box="first">
+          <div class="dz-title" id="box1-title"></div>
+          <div class="dz-body" id="box1-body"></div>
+        </div>
+        <div class="dropzone" data-box="second">
+          <div class="dz-title" id="box2-title"></div>
+          <div class="dz-body" id="box2-body"></div>
+        </div>
+      </div>
+      <div class="pool">
+        <div class="pool-title">Items</div>
+        <div id="pool-body" class="pool-body"></div>
+      </div>
+    </div>
+
+    <div id="fib" class="fib hidden" aria-live="polite">
+      <div id="fib-content" class="fib-content"></div>
+      <div class="pool">
+        <div class="pool-title">Choices</div>
+        <div id="fib-choices" class="pool-body"></div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div id="progress" class="progress">0 / 0</div>
+      <div id="score" class="score">Score: 0</div>
+    </div>
+  </main>
+
+  <div id="summary" class="summary hidden" role="dialog" aria-modal="true" aria-labelledby="summary-title">
+    <div class="summary-content">
+      <h2 id="summary-title">Summary</h2>
+      <p id="summary-stats"></p>
+      <ul id="mistakes" class="mistakes"></ul>
+      <button id="restart">Restart</button>
+    </div>
+  </div>
+
+  <noscript>
+    JavaScript is required for this activity.
+  </noscript>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
+
+
