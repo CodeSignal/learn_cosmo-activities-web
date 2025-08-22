@@ -1,20 +1,24 @@
 export function initFib({ activity, state, updateHud }) {
-  const elDeck = document.getElementById('deck');
-  const elSort = document.getElementById('sort');
-  const elFib = document.getElementById('fib');
-  const elFibContent = document.getElementById('fib-content');
-  const elFibChoices = document.getElementById('fib-choices');
+  const elContainer = document.getElementById('activity-container');
   const elSummary = document.getElementById('summary');
   const elSummaryStats = document.getElementById('summary-stats');
   const elMistakes = document.getElementById('mistakes');
   const fib = activity.fib;
   
-  // Hide other activity containers
-  elDeck.classList.add('hidden');
-  elSort.classList.add('hidden');
-  elFib.classList.remove('hidden');
-  elFibContent.innerHTML = '';
-  elFibChoices.innerHTML = '';
+  // Create the fib container
+  elContainer.innerHTML = `
+    <div id="fib" class="fib">
+      <div id="fib-content" class="fib-content"></div>
+      <div class="pool">
+        <div class="pool-title">Choices</div>
+        <div id="fib-choices" class="pool-body"></div>
+      </div>
+    </div>
+  `;
+  
+  const elFib = document.getElementById('fib');
+  const elFibContent = document.getElementById('fib-content');
+  const elFibChoices = document.getElementById('fib-choices');
 
   // Convert simple markdown-ish to HTML with blanks widgets
   let html = fib.htmlWithPlaceholders;
@@ -153,5 +157,6 @@ export function initFib({ activity, state, updateHud }) {
       blank.removeEventListener('dragleave', onDragLeave);
       blank.removeEventListener('drop', onDrop);
     });
+    elContainer.innerHTML = ''; // Remove the dynamically created fib container
   };
 }

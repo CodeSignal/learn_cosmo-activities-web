@@ -1,17 +1,32 @@
 export function initSort({ items, labels, state, updateHud, showSummary }) {
-  const elDeck = document.getElementById('deck');
+  const elContainer = document.getElementById('activity-container');
+  
+  // Create the sort container
+  elContainer.innerHTML = `
+    <div id="sort" class="sort">
+      <div class="dropzones">
+        <div class="dropzone" data-box="first">
+          <div class="dz-title" id="box1-title"></div>
+          <div class="dz-body" id="box1-body"></div>
+        </div>
+        <div class="dropzone" data-box="second">
+          <div class="dz-title" id="box2-title"></div>
+          <div class="dz-body" id="box2-body"></div>
+        </div>
+      </div>
+      <div class="pool">
+        <div class="pool-title">Items</div>
+        <div id="pool-body" class="pool-body"></div>
+      </div>
+    </div>
+  `;
+  
   const elSort = document.getElementById('sort');
   const elBox1Title = document.getElementById('box1-title');
   const elBox2Title = document.getElementById('box2-title');
   const elBox1Body = document.getElementById('box1-body');
   const elBox2Body = document.getElementById('box2-body');
   const elPoolBody = document.getElementById('pool-body');
-  
-  // Hide other activity containers
-  const elFib = document.getElementById('fib');
-  elDeck.classList.add('hidden');
-  elFib?.classList.add('hidden');
-  elSort.classList.remove('hidden');
 
   elBox1Title.textContent = labels.first || 'First Box';
   elBox2Title.textContent = labels.second || 'Second Box';
@@ -114,5 +129,6 @@ export function initSort({ items, labels, state, updateHud, showSummary }) {
     });
     elPoolBody.removeEventListener('dragstart', onDragStart);
     elPoolBody.removeEventListener('dragend', onDragEnd);
+    elContainer.innerHTML = ''; // Remove the dynamically created sort container
   };
 }

@@ -1,5 +1,5 @@
 export function initSwipe({ items, labels, state, updateHud, showSummary }) {
-  const elDeck = document.getElementById('deck');
+  const elContainer = document.getElementById('activity-container');
   const elLeftLabel = document.getElementById('left-label');
   const elRightLabel = document.getElementById('right-label');
   
@@ -7,12 +7,9 @@ export function initSwipe({ items, labels, state, updateHud, showSummary }) {
   elLeftLabel.textContent = labels.left || 'Left';
   elRightLabel.textContent = labels.right || 'Right';
   
-  // Hide other activity containers
-  const elSort = document.getElementById('sort');
-  const elFib = document.getElementById('fib');
-  elSort?.classList.add('hidden');
-  elFib?.classList.add('hidden');
-  elDeck.classList.remove('hidden');
+  // Create the deck container
+  elContainer.innerHTML = '<div id="deck" class="deck"></div>';
+  const elDeck = document.getElementById('deck');
 
   function createCard(item) {
     const card = document.createElement('div');
@@ -52,7 +49,7 @@ export function initSwipe({ items, labels, state, updateHud, showSummary }) {
     const toX = direction === 'left' ? -window.innerWidth : window.innerWidth;
     const toRot = direction === 'left' ? -30 : 30;
     card.style.transition = 'transform 220ms ease-out, opacity 220ms ease-out';
-    card.style.transform = `translate(${toX}px, 0px) rotate(${toRot}deg)`;
+    card.style.transform = `translate(calc(-50% + ${toX}px), -50%) rotate(${toRot}deg)`;
     card.style.opacity = '0';
     setTimeout(() => {
       card.remove();
@@ -61,7 +58,7 @@ export function initSwipe({ items, labels, state, updateHud, showSummary }) {
 
   function animateBack(card) {
     card.style.transition = 'transform 180ms ease-out';
-    card.style.transform = 'translate(0px, 0px) rotate(0deg)';
+    card.style.transform = 'translate(-50%, -50%) rotate(0deg)';
     const hints = card.querySelectorAll('.hint');
     hints.forEach(h => h.style.opacity = '0');
   }
@@ -106,7 +103,7 @@ export function initSwipe({ items, labels, state, updateHud, showSummary }) {
       const dy = e.clientY - startY;
       const rot = Math.max(-20, Math.min(20, dx / 10));
       currentCard.style.transition = 'none';
-      currentCard.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+      currentCard.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(${rot}deg)`;
       const hints = currentCard.querySelectorAll('.hint');
       const leftHint = hints[0];
       const rightHint = hints[1];
@@ -177,7 +174,10 @@ export function initSwipe({ items, labels, state, updateHud, showSummary }) {
   
   // Return cleanup function and a way to get current label text
   return {
-    cleanup,
+    cleanup: () => {
+      cleanup();
+      elContainer.innerHTML = ''; // Remove the dynamically created deck
+    },
     getLabels: () => ({
       left: elLeftLabel.textContent,
       right: elRightLabel.textContent

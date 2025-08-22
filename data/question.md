@@ -1,28 +1,19 @@
 __Type__
 
-Swipe Left or Right
+Fill In The Blanks
 
-__Practice Question__
+__Markdown With Blanks__
 
-Let's test your understanding of adaptive vs. traditional management. Swipe each statement left if it represents adaptive leadership, or right if it represents traditional management.
+Complete this adaptive management scenario:
 
-__Labels__
+> Lisa notices her team member Kevin always needs time to process decisions and gets anxious with quick turnarounds. Instead of continuing her usual [[blank:fast-moving]] approach, Lisa decides to provide more [[blank:advance]] notice and processing time. This shows she's acting like a [[blank:coach]] rather than just a [[blank:scorekeeper]].
 
-- Left Label: Adaptive Leadership
-- Right Label: Traditional Mgmt
+__Suggested Answers__
 
-__Left Label Items__
-
-- Adjusting communication style based on employee personality
-- Giving more project autonomy to experienced team members
-- Using different motivation strategies for different people
-- Adapting feedback delivery to individual preferences
-
-__Right Label Items__
-
-- Using the same management approach with everyone
-- Expecting all employees to adapt to your style
-- Following rigid company policies regardless of situation
-- Treating all team members exactly the same way
+- fast-moving
+- advance
+- coach
+- scorekeeper
+- manager
 
 
