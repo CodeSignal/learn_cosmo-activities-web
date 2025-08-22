@@ -1,46 +1,59 @@
 __Type__
 
-Fill In The Blanks
+Swipe Left or Right
 
-__Markdown With Blanks__
+__Practice Question__
 
-Complete this adaptive management scenario:
+Let's test your understanding of adaptive vs. traditional management. Swipe each statement left if it represents adaptive leadership, or right if it represents traditional management.
 
+__Labels__
 
-
-> Lisa notices her team member Kevin always needs time to process decisions and gets anxious with quick turnarounds. Instead of continuing her usual [[blank:fast-moving]] approach, Lisa decides to provide more [[blank:advance]] notice and processing time. This shows she's acting like a [[blank:coach]] rather than just a [[blank:scorekeeper]].
-
-__Suggested Answers__
-
-- manager
-- coach
-- advance
-- scorekeeper
-- fast-moving
+- Left: Adaptive Leadership
+- Right: Traditional Mgmt
 
 __Summary__
 
-4/4 correct
+4/8 correct
 
 __Responses__
 
-1. **Blank 1**
-   - Selected: fast-moving
-   - Correct: fast-moving
+1. **Adapting feedback delivery to individual preferences**
+   - Selected: right
+   - Correct: left
+   - Result: ✗ Incorrect
+
+2. **Giving more project autonomy to experienced team members**
+   - Selected: right
+   - Correct: left
+   - Result: ✗ Incorrect
+
+3. **Using different motivation strategies for different people**
+   - Selected: right
+   - Correct: left
+   - Result: ✗ Incorrect
+
+4. **Expecting all employees to adapt to your style**
+   - Selected: right
+   - Correct: right
    - Result: ✓ Correct
 
-2. **Blank 2**
-   - Selected: advance
-   - Correct: advance
+5. **Treating all team members exactly the same way**
+   - Selected: right
+   - Correct: right
    - Result: ✓ Correct
 
-3. **Blank 3**
-   - Selected: coach
-   - Correct: coach
+6. **Using the same management approach with everyone**
+   - Selected: right
+   - Correct: right
    - Result: ✓ Correct
 
-4. **Blank 4**
-   - Selected: scorekeeper
-   - Correct: scorekeeper
+7. **Following rigid company policies regardless of situation**
+   - Selected: right
+   - Correct: right
    - Result: ✓ Correct
+
+8. **Adjusting communication style based on employee personality**
+   - Selected: right
+   - Correct: left
+   - Result: ✗ Incorrect
 

@@ -99,29 +99,33 @@ body {
 
 .completion.hidden { display: none; }
 .completion {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(0,0,0,0.55);
-}
-.completion-content {
+  margin-top: 16px;
+  padding: 12px 16px;
   background: var(--panel);
   border: 1px solid #232833;
-  border-radius: 12px;
-  padding: 20px 16px;
-  width: min(360px, 90%);
+  border-radius: 8px;
   text-align: center;
+}
+.completion-content h3 {
+  margin: 0 0 8px 0;
+  color: var(--accent);
+  font-size: 16px;
+}
+.completion-content p {
+  margin: 0 0 12px 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 button#restart {
-  margin-top: 8px;
+  margin: 0;
   background: var(--accent);
   color: #051b1b;
   border: none;
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 6px;
+  padding: 6px 12px;
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
 }
 button#restart:hover { filter: brightness(0.95); }
