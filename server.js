@@ -186,6 +186,80 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
+
+  // API: /api/results
+  if (pathname === '/api/results' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const answerFile = path.join(DATA_DIR, 'answer.md');
+        
+        // Format results as markdown
+        const correctCount = data.results.filter(result => result.selected === result.correct).length;
+        const totalCount = data.results.length;
+        const activity = data.activity;
+        
+        let markdown = '';
+        
+        // Include original activity details
+        if (activity) {
+          markdown += `__Type__\n\n${activity.type}\n\n`;
+          
+          if (/^fill in the blanks$/i.test(activity.type)) {
+            // For fill-in-the-blanks, include the original markdown with blanks
+            markdown += `__Markdown With Blanks__\n\n${activity.fib.raw}\n\n`;
+            markdown += `__Suggested Answers__\n\n`;
+            activity.fib.choices.forEach(choice => {
+              markdown += `- ${choice}\n`;
+            });
+            markdown += '\n';
+          } else {
+            // For swipe/sort activities, include question and labels
+            if (activity.question) {
+              markdown += `__Practice Question__\n\n${activity.question}\n\n`;
+            }
+            
+            if (activity.labels) {
+              markdown += `__Labels__\n\n`;
+              if (/^sort into boxes$/i.test(activity.type)) {
+                markdown += `- First Box Label: ${activity.labels.first || activity.labels.left || 'First Box'}\n`;
+                markdown += `- Second Box Label: ${activity.labels.second || activity.labels.right || 'Second Box'}\n\n`;
+              } else {
+                markdown += `- Left: ${activity.labels.left || 'Left'}\n`;
+                markdown += `- Right: ${activity.labels.right || 'Right'}\n\n`;
+              }
+            }
+          }
+        }
+        
+        // Add results section
+        markdown += `__Summary__\n\n${correctCount}/${totalCount} correct\n\n`;
+        markdown += '__Responses__\n\n';
+        
+        data.results.forEach((result, index) => {
+          markdown += `${index + 1}. **${result.text}**\n`;
+          markdown += `   - Selected: ${result.selected}\n`;
+          markdown += `   - Correct: ${result.correct}\n`;
+          markdown += `   - Result: ${result.selected === result.correct ? '✓ Correct' : '✗ Incorrect'}\n\n`;
+        });
+        
+        fs.writeFile(answerFile, markdown, 'utf8', (err) => {
+          if (err) {
+            respondJson(res, 500, { error: 'Failed to save results' });
+            return;
+          }
+          respondJson(res, 200, { success: true });
+        });
+      } catch (e) {
+        respondJson(res, 400, { error: 'Invalid JSON' });
+      }
+    });
+    return;
+  }
   if (pathname === '/') {
     pathname = '/index.html';
   }

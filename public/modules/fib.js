@@ -1,8 +1,5 @@
-export function initFib({ activity, state, updateHud }) {
+export function initFib({ activity, state, updateHud, postResults }) {
   const elContainer = document.getElementById('activity-container');
-  const elSummary = document.getElementById('summary');
-  const elSummaryStats = document.getElementById('summary-stats');
-  const elMistakes = document.getElementById('mistakes');
   const fib = activity.fib;
   
   // Create the fib container
@@ -110,33 +107,21 @@ export function initFib({ activity, state, updateHud }) {
     let filled = 0;
     blanks.forEach(b => { if (b.querySelector('.chip')) filled += 1; });
     if (filled !== total) { updateHud(); return; }
-    // evaluate
-    let correct = 0;
-    const mistakes = [];
+    // evaluate and record results
     blanks.forEach((bEl, i) => {
       const idx = parseInt(bEl.getAttribute('data-blank') || '-1', 10);
       const correctAnswer = fib.blanks.find(x => x.index === idx)?.answer || '';
       const chip = bEl.querySelector('.chip');
       const chosen = chip ? chip.dataset.choice || '' : '';
-      if (chosen && correctAnswer && chosen.toLowerCase() === correctAnswer.toLowerCase()) {
-        correct += 1;
-      } else {
-        mistakes.push({ text: `Blank ${i+1}: ${chosen || '(empty)'}`, correct: correctAnswer });
-      }
+      state.results.push({
+        text: `Blank ${i+1}`,
+        selected: chosen,
+        correct: correctAnswer
+      });
     });
-    state.correctCount = correct;
     state.index = total;
-    state.mistakes = mistakes.map(m => ({ text: m.text, correct: 'left' })); // reuse summary format
     updateHud();
-    // Improve summary text for FIB
-    elSummaryStats.textContent = `You filled ${correct} / ${total} correctly.`;
-    elMistakes.innerHTML = '';
-    mistakes.forEach(m => {
-      const li = document.createElement('li');
-      li.textContent = `${m.text} — Correct: ${m.correct}`;
-      elMistakes.appendChild(li);
-    });
-    elSummary.classList.remove('hidden');
+    postResults();
   }
 
   elFibChoices.addEventListener('dragstart', onDragStart);

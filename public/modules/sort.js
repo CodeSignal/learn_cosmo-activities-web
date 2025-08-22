@@ -1,4 +1,4 @@
-export function initSort({ items, labels, state, updateHud, showSummary }) {
+export function initSort({ items, labels, state, updateHud, postResults }) {
   const elContainer = document.getElementById('activity-container');
   
   // Create the sort container
@@ -96,21 +96,23 @@ export function initSort({ items, labels, state, updateHud, showSummary }) {
       updateHud();
       return;
     }
-    // evaluate
-    let correct = 0;
-    const mistakes = [];
+    // evaluate and record results
     placed.forEach(chip => {
       const index = parseInt(chip.dataset.index || '-1', 10);
       const item = items[index];
       const parent = chip.parentElement;
       const inBox = parent === elBox1Body ? 'first' : parent === elBox2Body ? 'second' : 'pool';
-      if (item && (inBox === item.correct)) correct += 1; else if (item) mistakes.push(item);
+      if (item) {
+        state.results.push({
+          text: item.text,
+          selected: inBox,
+          correct: item.correct
+        });
+      }
     });
-    state.correctCount = correct;
     state.index = total;
-    state.mistakes = mistakes;
     updateHud();
-    showSummary();
+    postResults();
   }
 
   [elBox1Body, elBox2Body, elPoolBody].forEach(zone => {

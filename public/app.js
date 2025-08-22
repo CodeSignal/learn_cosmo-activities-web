@@ -9,20 +9,17 @@ import { initFib } from './modules/fib.js';
   const elType = document.getElementById('activity-type');
   const elQuestion = document.getElementById('practice-question');
   const elProgress = document.getElementById('progress');
-  const elScore = document.getElementById('score');
-  const elSummary = document.getElementById('summary');
-  const elSummaryStats = document.getElementById('summary-stats');
-  const elMistakes = document.getElementById('mistakes');
+  const elCompletion = document.getElementById('completion');
   const elRestart = document.getElementById('restart');
 
   const state = {
     items: [],
     index: 0,
-    correctCount: 0,
-    mistakes: [],
+    results: [],
   };
 
   let currentActivity = null;
+  let currentActivityData = null;
 
   function renderHeader(activity) {
     elType.textContent = activity.type || 'Swipe Activity';
@@ -32,31 +29,41 @@ import { initFib } from './modules/fib.js';
   function updateHud() {
     const total = Array.isArray(state.items) ? state.items.length : 0;
     elProgress.textContent = `${Math.min(state.index, total)} / ${total}`;
-    elScore.textContent = `Score: ${state.correctCount}`;
   }
 
-  function showSummary() {
-    elSummaryStats.textContent = `You got ${state.correctCount} / ${state.items.length} correct.`;
-    elMistakes.innerHTML = '';
-    for (const m of state.mistakes) {
-      const li = document.createElement('li');
-      let correctText = m.correct;
-      // For swipe activities, try to get the actual label text
-      if (currentActivity && currentActivity.getLabels && (m.correct === 'left' || m.correct === 'right')) {
-        const labels = currentActivity.getLabels();
-        correctText = m.correct === 'left' ? labels.left : labels.right;
+  async function postResults() {
+    try {
+      const response = await fetch('/api/results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          results: state.results,
+          activity: currentActivityData,
+          completedAt: new Date().toISOString()
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save results');
       }
-      li.textContent = `${m.text} — Correct: ${correctText}`;
-      elMistakes.appendChild(li);
+      
+      showCompletion();
+    } catch (error) {
+      console.error('Error saving results:', error);
+      showCompletion(); // Still show completion even if save fails
     }
-    elSummary.classList.remove('hidden');
+  }
+
+  function showCompletion() {
+    elCompletion.classList.remove('hidden');
   }
 
   function reset() {
     state.index = 0;
-    state.correctCount = 0;
-    state.mistakes = [];
-    elSummary.classList.add('hidden');
+    state.results = [];
+    elCompletion.classList.add('hidden');
     if (currentActivity) {
       if (typeof currentActivity === 'function') {
         currentActivity(); // Old cleanup function style
@@ -77,14 +84,14 @@ import { initFib } from './modules/fib.js';
 
   function initActivity(activity) {
     if (/^fill in the blanks$/i.test(activity.type)) {
-      currentActivity = initFib({ activity, state, updateHud });
+      currentActivity = initFib({ activity, state, updateHud, postResults });
     } else if (/^sort into boxes$/i.test(activity.type)) {
       currentActivity = initSort({ 
         items: state.items, 
         labels: activity.labels, 
         state, 
         updateHud, 
-        showSummary 
+        postResults 
       });
     } else {
       currentActivity = initSwipe({ 
@@ -92,7 +99,7 @@ import { initFib } from './modules/fib.js';
         labels: activity.labels || { left: 'Left', right: 'Right' },
         state, 
         updateHud, 
-        showSummary 
+        postResults 
       });
     }
   }
@@ -100,6 +107,7 @@ import { initFib } from './modules/fib.js';
   async function start() {
     try {
       const activity = await loadActivityJson();
+      currentActivityData = activity; // Store activity data for results
       state.items = /^fill in the blanks$/i.test(activity.type)
         ? new Array(activity.fib.blanks.length).fill(null)
         : activity.items;
@@ -110,6 +118,7 @@ import { initFib } from './modules/fib.js';
       elRestart.addEventListener('click', async () => {
         reset();
         const activity2 = await loadActivityJson();
+        currentActivityData = activity2; // Update activity data for results
         state.items = /^fill in the blanks$/i.test(activity2.type)
           ? new Array(activity2.fib.blanks.length).fill(null)
           : activity2.items;

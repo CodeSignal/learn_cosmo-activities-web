@@ -94,26 +94,25 @@ body {
 .hint.left { left: 12px; background: rgba(34,197,94,0.15); color: var(--good); border: 1px solid rgba(34,197,94,0.3); }
 .hint.right { right: 12px; background: rgba(239,68,68,0.15); color: var(--bad); border: 1px solid rgba(239,68,68,0.3); }
 
-.hud { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
-.progress, .score { color: var(--muted); }
+.hud { display: flex; justify-content: center; align-items: center; margin-top: 8px; }
+.progress { color: var(--muted); }
 
-.summary.hidden { display: none; }
-.summary {
+.completion.hidden { display: none; }
+.completion {
   position: fixed;
   inset: 0;
   display: grid;
   place-items: center;
   background: rgba(0,0,0,0.55);
 }
-.summary-content {
+.completion-content {
   background: var(--panel);
   border: 1px solid #232833;
   border-radius: 12px;
   padding: 20px 16px;
-  width: min(560px, 92%);
+  width: min(360px, 90%);
+  text-align: center;
 }
-.mistakes { color: var(--muted); }
-.mistakes li { margin: 6px 0; }
 
 button#restart {
   margin-top: 8px;

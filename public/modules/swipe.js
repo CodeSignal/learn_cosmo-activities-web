@@ -1,4 +1,4 @@
-export function initSwipe({ items, labels, state, updateHud, showSummary }) {
+export function initSwipe({ items, labels, state, updateHud, postResults }) {
   const elContainer = document.getElementById('activity-container');
   const elLeftLabel = document.getElementById('left-label');
   const elRightLabel = document.getElementById('right-label');
@@ -64,16 +64,15 @@ export function initSwipe({ items, labels, state, updateHud, showSummary }) {
   }
 
   function handleDecision(item, direction) {
-    const isCorrect = item.correct === direction;
-    if (isCorrect) {
-      state.correctCount += 1;
-    } else {
-      state.mistakes.push(item);
-    }
+    state.results.push({
+      text: item.text,
+      selected: direction,
+      correct: item.correct
+    });
     state.index += 1;
     updateHud();
     if (state.index >= state.items.length) {
-      setTimeout(showSummary, 250);
+      setTimeout(postResults, 250);
     }
   }
 
