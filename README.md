@@ -10,6 +10,12 @@ An interactive web-based learning platform that supports multiple types of educa
 - **📝 Fill in the Blanks**: Interactive forms for completing educational content
 - **📦 Sort into Boxes**: Drag-and-drop interface for organizing items into categories
 
+### Theme System
+
+- **🌞 Light/Dark Mode**: Automatic system preference detection with server-side override capability
+- **⚡ Real-time Updates**: WebSocket-powered instant theme switching across all connected clients
+- **🎛️ Server Control**: Simple file-based theme configuration
+
 ## Getting Started
 
 ### Installation
@@ -55,6 +61,7 @@ learn_cosmo-activities-web/
 │       ├── sort.js         # Sort-into-boxes functionality
 │       └── swipe.js        # Swipe functionality
 ├── server.js               # Node.js server
+├── theme                   # Theme configuration file
 ├── package.json            # Dependencies and scripts
 └── README.md              # This file
 ```
@@ -63,10 +70,49 @@ learn_cosmo-activities-web/
 
 Activities are defined using Markdown files with a specific format. Place your activity definition in `data/question.md`.
 
+## Theme Configuration
+
+The application supports real-time theme switching through a simple file-based configuration system.
+
+### Theme Control
+
+Create or edit the `theme` file in the project root to control the appearance:
+
+```bash
+# Force light mode
+echo "light" > theme
+
+# Force dark mode  
+echo "dark" > theme
+
+# Use system preference (default)
+echo "system" > theme
+```
+
+### Supported Values
+
+- **`system`** (default): Automatically respects the user's OS dark/light mode preference
+- **`light`**: Forces light mode regardless of system settings
+- **`dark`**: Forces dark mode regardless of system settings
+- **Invalid/missing file**: Falls back to `system` mode
+
+### Real-time Updates
+
+Changes to the `theme` file are applied **instantly** to all connected browsers via WebSocket. No page refresh or server restart required!
+
+### How It Works
+
+1. **File Watching**: Server monitors the `theme` file for changes using `fs.watch()`
+2. **WebSocket Broadcasting**: Theme updates are immediately sent to all connected clients
+3. **CSS Application**: Frontend applies the new theme using CSS custom properties
+4. **Fallback Handling**: Graceful degradation when file is missing or contains invalid values
+
 ## API Endpoints
 
 - `GET /api/activity` - Retrieves the current activity from `data/question.md`
 - `POST /api/results` - Saves activity results to `data/answer.md`
+- `GET /theme` - Returns the current theme setting from the `theme` file
+- `WebSocket /` - Real-time theme updates and other live features
 
 ## Development
 
@@ -83,3 +129,27 @@ The application uses vanilla JavaScript with ES6 modules. The server automatical
 ## Dependencies
 
 - **marked**: Markdown parsing library for activity content
+- **ws**: WebSocket library for real-time communication
+
+## Examples
+
+### Testing Real-time Theme Changes
+
+1. Start the server and open http://localhost:3000 in multiple browser tabs
+2. In a terminal, try these commands to see instant theme changes:
+
+```bash
+# Switch to dark mode - all tabs update instantly!
+echo "dark" > theme
+
+# Switch to light mode
+echo "light" > theme  
+
+# Back to system preference
+echo "system" > theme
+
+# Test fallback behavior
+rm theme  # Falls back to system mode
+```
+
+3. Watch the browser developer console to see WebSocket connection logs and theme update messages

@@ -13,9 +13,9 @@
   --shadow: rgba(0, 0, 0, 0.1);
 }
 
-/* Dark mode when preferred by system */
+/* Dark mode when preferred by system (only when no explicit theme is set) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #0b0c10;
     --panel: #111318;
     --text: #e6e6e6;
@@ -28,6 +28,36 @@
     --border-subtle: #1f2937;
     --shadow: rgba(0, 0, 0, 0.35);
   }
+}
+
+/* Explicit dark theme override */
+[data-theme="dark"] {
+  --bg: #0b0c10;
+  --panel: #111318;
+  --text: #e6e6e6;
+  --muted: #9aa3af;
+  --accent: #5eead4;
+  --good: #22c55e;
+  --bad: #ef4444;
+  --card: #1a1d24;
+  --border: #232833;
+  --border-subtle: #1f2937;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+/* Explicit light theme override */
+[data-theme="light"] {
+  --bg: #ffffff;
+  --panel: #f8fafc;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #0d9488;
+  --good: #059669;
+  --bad: #dc2626;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --shadow: rgba(0, 0, 0, 0.1);
 }
 
 

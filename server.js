@@ -2,10 +2,12 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { Lexer } = require('marked');
+const WebSocket = require('ws');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = path.join(__dirname, 'data');
+const THEME_FILE = path.join(__dirname, 'theme');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -46,6 +48,18 @@ function sendFile(res, filePath, status = 200) {
 function respondJson(res, status, payload) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(JSON.stringify(payload));
+}
+
+function getTheme() {
+  try {
+    const themeContent = fs.readFileSync(THEME_FILE, 'utf8').trim().toLowerCase();
+    if (themeContent === 'light' || themeContent === 'dark' || themeContent === 'system') {
+      return themeContent;
+    }
+  } catch (err) {
+    // File doesn't exist or can't be read
+  }
+  return 'system'; // Default fallback
 }
 
 function parseSectionsFromTokens(tokens) {
@@ -187,6 +201,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // API: /theme
+  if (pathname === '/theme') {
+    const theme = getTheme();
+    respondJson(res, 200, { theme });
+    return;
+  }
+
   // API: /api/results
   if (pathname === '/api/results' && req.method === 'POST') {
     let body = '';
@@ -299,9 +320,71 @@ const server = http.createServer((req, res) => {
   });
 });
 
+const wss = new WebSocket.Server({ server });
+
+// WebSocket connection handling
+wss.on('connection', (ws) => {
+  console.log('WebSocket client connected');
+  
+  // Send current theme to newly connected client
+  const currentTheme = getTheme();
+  ws.send(JSON.stringify({ type: 'theme', theme: currentTheme }));
+  
+  ws.on('close', () => {
+    console.log('WebSocket client disconnected');
+  });
+});
+
+// Broadcast theme change to all connected clients
+function broadcastThemeChange(theme) {
+  const message = JSON.stringify({ type: 'theme', theme });
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(message);
+    }
+  });
+  console.log(`Broadcasted theme change: ${theme}`);
+}
+
+// Watch theme file for changes
+let themeWatcher;
+function startThemeWatcher() {
+  // Clean up existing watcher
+  if (themeWatcher) {
+    themeWatcher.close();
+  }
+  
+  try {
+    themeWatcher = fs.watch(THEME_FILE, (eventType) => {
+      if (eventType === 'change') {
+        const newTheme = getTheme();
+        broadcastThemeChange(newTheme);
+      }
+    });
+    console.log(`Watching theme file: ${THEME_FILE}`);
+  } catch (err) {
+    console.log('Theme file not found, watching for creation...');
+    // Watch the directory for file creation
+    const watchDir = path.dirname(THEME_FILE);
+    const watchFile = path.basename(THEME_FILE);
+    
+    const dirWatcher = fs.watch(watchDir, (eventType, filename) => {
+      if (filename === watchFile && eventType === 'rename') {
+        // File was created, start watching it
+        dirWatcher.close();
+        setTimeout(startThemeWatcher, 100); // Small delay to ensure file is ready
+        const newTheme = getTheme();
+        broadcastThemeChange(newTheme);
+      }
+    });
+  }
+}
+
 server.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`WebSocket server running on the same port`);
+  startThemeWatcher();
 });
 
 

@@ -20,6 +20,71 @@ import { initFib } from './modules/fib.js';
 
   let currentActivity = null;
   let currentActivityData = null;
+  let ws = null;
+
+  // Theme management
+  async function initTheme() {
+    try {
+      const response = await fetch('/theme', { cache: 'no-store' });
+      if (!response.ok) throw new Error('Failed to fetch theme');
+      const { theme } = await response.json();
+      
+      applyTheme(theme);
+    } catch (error) {
+      console.error('Error loading theme:', error);
+      // Fallback to system preference
+      applyTheme('system');
+    }
+  }
+  
+  function applyTheme(theme) {
+    if (theme === 'system') {
+      // Remove any data-theme attribute to use CSS media queries
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      // Set explicit theme
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    console.log(`Applied theme: ${theme}`);
+  }
+
+  // WebSocket connection for real-time theme updates
+  function initWebSocket() {
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}`;
+    
+    try {
+      ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected for real-time theme updates');
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'theme') {
+            console.log(`Received theme update: ${data.theme}`);
+            applyTheme(data.theme);
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket disconnected, attempting to reconnect...');
+        // Attempt to reconnect after 3 seconds
+        setTimeout(initWebSocket, 3000);
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    } catch (error) {
+      console.error('Failed to create WebSocket connection:', error);
+    }
+  }
 
   function renderHeader(activity) {
     elType.textContent = activity.type || 'Swipe Activity';
@@ -105,6 +170,12 @@ import { initFib } from './modules/fib.js';
   }
 
   async function start() {
+    // Initialize theme first
+    await initTheme();
+    
+    // Initialize WebSocket for real-time theme updates
+    initWebSocket();
+    
     try {
       const activity = await loadActivityJson();
       currentActivityData = activity; // Store activity data for results
