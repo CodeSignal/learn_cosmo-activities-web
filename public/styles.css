@@ -287,8 +287,9 @@ body {
 .activity-container {
   flex: 1;
   display: grid;
-  place-items: center;
-  min-height: 20rem;
+  place-items: stretch; /* Stretch instead of center to fill available space */
+  height: 100%; /* Use full available height */
+  min-height: 25rem; /* Ensure minimum usable height */
 }
 
 .deck {
@@ -472,13 +473,18 @@ button#restart:focus-visible {
 /* Sort into boxes */
 .sort { 
   display: grid; 
+  grid-template-rows: 60% 35%; /* Fixed percentages that never change */
   gap: 1.5rem; 
+  height: 100%;
+  width: 100%;
 }
 
 .dropzones { 
   display: grid; 
-  grid-template-columns: 1fr 1fr; 
+  grid-template-columns: 50% 50%; /* Fixed percentages */
   gap: 1rem; 
+  height: 100%;
+  width: 100%;
 }
 
 .dropzone { 
@@ -486,8 +492,10 @@ button#restart:focus-visible {
   border: 2px solid var(--border-secondary); 
   border-radius: 0.75rem; 
   padding: 1rem; 
-  min-height: 10rem;
+  height: 100%; /* Fill the grid cell completely */
+  width: 100%; /* Fill the grid cell completely */
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
 }
 
 /* Only apply dropzone hover effects when dragging */
@@ -517,8 +525,13 @@ body.is-dragging .dropzone:hover {
 .dz-body { 
   display: flex; 
   flex-wrap: wrap; 
+  align-content: flex-start; /* Start at top, don't stretch */
+  align-items: flex-start; /* Don't stretch items */
   gap: 0.5rem; 
-  min-height: 6rem; 
+  height: calc(100% - 2.5rem); /* Account for title height and margin */
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0; /* Never shrink */
 }
 
 .pool { 
@@ -526,6 +539,9 @@ body.is-dragging .dropzone:hover {
   border: 1px solid var(--border-primary); 
   border-radius: 0.75rem; 
   padding: 1rem; 
+  height: 100%; /* Fill the grid cell completely */
+  width: 100%; /* Fill the grid cell completely */
+  box-sizing: border-box;
 }
 
 .pool-title { 
@@ -540,7 +556,13 @@ body.is-dragging .dropzone:hover {
 .pool-body { 
   display: flex; 
   flex-wrap: wrap; 
+  align-content: flex-start; /* Start at top, don't stretch */
+  align-items: flex-start; /* Don't stretch items */
   gap: 0.5rem; 
+  height: calc(100% - 2.5rem); /* Account for title height and margin */
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0; /* Never shrink */
 }
 
 .chip { 
@@ -558,6 +580,8 @@ body.is-dragging .dropzone:hover {
   box-shadow: var(--shadow-sm);
   min-width: 0;
   word-break: break-word;
+  flex-shrink: 0; /* Don't shrink */
+  align-self: flex-start; /* Don't stretch vertically */
 }
 
 /* Only apply hover effects when not dragging */

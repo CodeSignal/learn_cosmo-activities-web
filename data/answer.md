@@ -13,7 +13,7 @@ __Labels__
 
 __Summary__
 
-2/7 correct
+3/7 correct
 
 __Responses__
 
@@ -22,33 +22,33 @@ __Responses__
    - Correct: second
    - Result: ✗ Incorrect
 
-2. **Tracking progress**
-   - Selected: first
-   - Correct: first
-   - Result: ✓ Correct
-
-3. **Recognizing wins**
+2. **Recognizing wins**
    - Selected: first
    - Correct: second
    - Result: ✗ Incorrect
 
-4. **Offering assistance**
-   - Selected: second
-   - Correct: second
+3. **Setting expectations**
+   - Selected: first
+   - Correct: first
    - Result: ✓ Correct
 
-5. **Setting expectations**
-   - Selected: second
+4. **Giving guidance**
+   - Selected: first
    - Correct: first
+   - Result: ✓ Correct
+
+5. **Tracking progress**
+   - Selected: first
+   - Correct: first
+   - Result: ✓ Correct
+
+6. **Offering assistance**
+   - Selected: first
+   - Correct: second
    - Result: ✗ Incorrect
 
-6. **Giving guidance**
-   - Selected: second
-   - Correct: first
-   - Result: ✗ Incorrect
-
-7. **Giving guidance**
+7. **Offering assistance**
    - Selected: pool
-   - Correct: first
+   - Correct: second
    - Result: ✗ Incorrect
 
