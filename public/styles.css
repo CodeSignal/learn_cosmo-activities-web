@@ -210,8 +210,10 @@ h6 {
 body {
   margin: 0;
   font-family: "Work Sans", "Work Sans Fallback", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  font-size: 16px;
-  line-height: 1.6;
+  font-weight: 400;
+  font-size: 1.06rem;
+  line-height: 1.4;
+  letter-spacing: -0.011rem;
   background: var(--bg);
   color: var(--text-primary);
   display: flex;
@@ -495,11 +497,12 @@ body.is-dragging .dropzone:hover {
 }
 
 .dz-title { 
-  font-weight: 600; 
+  font-weight: 400; 
   color: var(--text-secondary); 
   margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-  letter-spacing: 0.05em;
+  font-size: 1.06rem;
+  line-height: 1.4;
+  letter-spacing: -0.011rem;
 }
 
 /* Dark mode overrides for titles and similar elements */
@@ -528,8 +531,10 @@ body.is-dragging .dropzone:hover {
 .pool-title { 
   color: var(--text-secondary); 
   margin-bottom: 0.75rem;
-  font-weight: 500;
-  font-size: 0.875rem;
+  font-weight: 400;
+  font-size: 1.06rem;
+  line-height: 1.4;
+  letter-spacing: -0.011rem;
 }
 
 .pool-body { 
@@ -545,8 +550,10 @@ body.is-dragging .dropzone:hover {
   padding: 0.75rem 1rem; 
   cursor: grab; 
   user-select: none;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 400;
+  font-size: 1.06rem;
+  line-height: 1.4;
+  letter-spacing: -0.011rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sm);
   min-width: 0;

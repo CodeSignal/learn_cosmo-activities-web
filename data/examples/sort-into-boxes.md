@@ -14,7 +14,7 @@ __Labels__
 __First Box Items__
 
 - Setting expectations
-- Giving guidance
+- Giving guidancey
 - Tracking progress
 
 __Second Box Items__
