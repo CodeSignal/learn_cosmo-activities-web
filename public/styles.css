@@ -11,10 +11,10 @@
   --surface-subtle: #f1f5f9;
   
   /* Text colors */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #64748b;
-  --text-muted: #94a3b8;
+  --text-primary: rgb(24, 33, 57); /* Text on white backgrounds */
+  --text-secondary: rgb(73, 85, 115); /* Text on grey backgrounds */
+  --text-tertiary: rgba(73, 85, 115, 0.8); /* Muted text on grey backgrounds */
+  --text-muted: rgba(73, 85, 115, 0.6); /* Very muted text */
   
   /* Accent colors */
   --accent-primary: #0ea5e9;
@@ -209,7 +209,7 @@ h6 {
 /* Typography */
 body {
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: "Work Sans", "Work Sans Fallback", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-size: 16px;
   line-height: 1.6;
   background: var(--bg);
@@ -241,7 +241,7 @@ body {
   margin: 0 0 0.5rem 0; 
   font-size: 1.25rem; 
   font-weight: 600;
-  color: var(--accent-primary); 
+  color: var(--text-secondary); 
   letter-spacing: -0.025em;
 }
 
@@ -384,7 +384,7 @@ body {
 
 .completion-content h3 {
   margin: 0 0 0.75rem 0;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 1.25rem;
   font-weight: 600;
 }
@@ -399,8 +399,8 @@ body {
 /* Buttons */
 button#restart {
   margin: 0;
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: rgb(236, 239, 244);
+  color: rgb(24, 33, 57);
   border: none;
   border-radius: 0.5rem;
   padding: 0.75rem 1.5rem;
@@ -412,19 +412,19 @@ button#restart {
 }
 
 button#restart:hover { 
-  background: rgba(255, 255, 255, 0.2);
+  background: rgb(226, 230, 237);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
 button#restart:active {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(216, 220, 227);
   transform: translateY(0);
   box-shadow: var(--shadow-sm);
 }
 
 button#restart:focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
 
@@ -496,7 +496,7 @@ body.is-dragging .dropzone:hover {
 
 .dz-title { 
   font-weight: 600; 
-  color: var(--accent-primary); 
+  color: var(--text-secondary); 
   margin-bottom: 0.75rem;
   font-size: 0.875rem;
   letter-spacing: 0.05em;

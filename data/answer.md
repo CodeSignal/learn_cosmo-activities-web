@@ -13,41 +13,41 @@ __Labels__
 
 __Summary__
 
-1/7 correct
+2/7 correct
 
 __Responses__
 
-1. **Giving guidance**
+1. **Active listening**
+   - Selected: first
+   - Correct: second
+   - Result: ✗ Incorrect
+
+2. **Tracking progress**
    - Selected: first
    - Correct: first
    - Result: ✓ Correct
 
-2. **Offering assistance**
+3. **Recognizing wins**
    - Selected: first
    - Correct: second
    - Result: ✗ Incorrect
 
-3. **Active listening**
-   - Selected: first
+4. **Offering assistance**
+   - Selected: second
    - Correct: second
-   - Result: ✗ Incorrect
-
-4. **Recognizing wins**
-   - Selected: first
-   - Correct: second
-   - Result: ✗ Incorrect
+   - Result: ✓ Correct
 
 5. **Setting expectations**
    - Selected: second
    - Correct: first
    - Result: ✗ Incorrect
 
-6. **Tracking progress**
+6. **Giving guidance**
    - Selected: second
    - Correct: first
    - Result: ✗ Incorrect
 
-7. **Tracking progress**
+7. **Giving guidance**
    - Selected: pool
    - Correct: first
    - Result: ✗ Incorrect
