@@ -8,7 +8,7 @@ import { initFib } from './modules/fib.js';
   // Shared DOM references only
   const elType = document.getElementById('activity-type');
   const elQuestion = document.getElementById('practice-question');
-  const elProgress = document.getElementById('progress');
+
   const elCompletion = document.getElementById('completion');
   const elRestart = document.getElementById('restart');
 
@@ -26,10 +26,7 @@ import { initFib } from './modules/fib.js';
     elQuestion.textContent = activity.question || '';
   }
 
-  function updateHud() {
-    const total = Array.isArray(state.items) ? state.items.length : 0;
-    elProgress.textContent = `${Math.min(state.index, total)} / ${total}`;
-  }
+
 
   async function postResults() {
     try {
@@ -72,7 +69,7 @@ import { initFib } from './modules/fib.js';
       }
       currentActivity = null;
     }
-    updateHud();
+
   }
 
   async function loadActivityJson() {
@@ -84,13 +81,12 @@ import { initFib } from './modules/fib.js';
 
   function initActivity(activity) {
     if (/^fill in the blanks$/i.test(activity.type)) {
-      currentActivity = initFib({ activity, state, updateHud, postResults });
+      currentActivity = initFib({ activity, state, postResults });
     } else if (/^sort into boxes$/i.test(activity.type)) {
       currentActivity = initSort({ 
         items: state.items, 
         labels: activity.labels, 
         state, 
-        updateHud, 
         postResults 
       });
     } else {
@@ -98,7 +94,6 @@ import { initFib } from './modules/fib.js';
         items: state.items, 
         labels: activity.labels || { left: 'Left', right: 'Right' },
         state, 
-        updateHud, 
         postResults 
       });
     }

@@ -1,59 +1,54 @@
 __Type__
 
-Swipe Left or Right
+Sort Into Boxes
 
 __Practice Question__
 
-Let's test your understanding of adaptive vs. traditional management. Swipe each statement left if it represents adaptive leadership, or right if it represents traditional management.
+Sort these people leadership behaviors into the correct dimension categories:
 
 __Labels__
 
-- Left: Adaptive Leadership
-- Right: Traditional Mgmt
+- First Box Label: Directive Behavior
+- Second Box Label: Supportive Behavior
 
 __Summary__
 
-4/8 correct
+1/7 correct
 
 __Responses__
 
-1. **Adapting feedback delivery to individual preferences**
-   - Selected: right
-   - Correct: left
+1. **Giving guidance**
+   - Selected: first
+   - Correct: first
+   - Result: ✓ Correct
+
+2. **Offering assistance**
+   - Selected: first
+   - Correct: second
    - Result: ✗ Incorrect
 
-2. **Giving more project autonomy to experienced team members**
-   - Selected: right
-   - Correct: left
+3. **Active listening**
+   - Selected: first
+   - Correct: second
    - Result: ✗ Incorrect
 
-3. **Using different motivation strategies for different people**
-   - Selected: right
-   - Correct: left
+4. **Recognizing wins**
+   - Selected: first
+   - Correct: second
    - Result: ✗ Incorrect
 
-4. **Expecting all employees to adapt to your style**
-   - Selected: right
-   - Correct: right
-   - Result: ✓ Correct
+5. **Setting expectations**
+   - Selected: second
+   - Correct: first
+   - Result: ✗ Incorrect
 
-5. **Treating all team members exactly the same way**
-   - Selected: right
-   - Correct: right
-   - Result: ✓ Correct
+6. **Tracking progress**
+   - Selected: second
+   - Correct: first
+   - Result: ✗ Incorrect
 
-6. **Using the same management approach with everyone**
-   - Selected: right
-   - Correct: right
-   - Result: ✓ Correct
-
-7. **Following rigid company policies regardless of situation**
-   - Selected: right
-   - Correct: right
-   - Result: ✓ Correct
-
-8. **Adjusting communication style based on employee personality**
-   - Selected: right
-   - Correct: left
+7. **Tracking progress**
+   - Selected: pool
+   - Correct: first
    - Result: ✗ Incorrect
 

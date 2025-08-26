@@ -1,4 +1,4 @@
-export function initFib({ activity, state, updateHud, postResults }) {
+export function initFib({ activity, state, postResults }) {
   const elContainer = document.getElementById('activity-container');
   const fib = activity.fib;
   
@@ -106,7 +106,7 @@ export function initFib({ activity, state, updateHud, postResults }) {
     const total = blanks.length;
     let filled = 0;
     blanks.forEach(b => { if (b.querySelector('.chip')) filled += 1; });
-    if (filled !== total) { updateHud(); return; }
+    if (filled !== total) { return; }
     // evaluate and record results
     blanks.forEach((bEl, i) => {
       const idx = parseInt(bEl.getAttribute('data-blank') || '-1', 10);
@@ -120,7 +120,7 @@ export function initFib({ activity, state, updateHud, postResults }) {
       });
     });
     state.index = total;
-    updateHud();
+
     postResults();
   }
 

@@ -1,14 +1,21 @@
-export function initSwipe({ items, labels, state, updateHud, postResults }) {
+export function initSwipe({ items, labels, state, postResults }) {
   const elContainer = document.getElementById('activity-container');
+  
+  // Create the swipe container with labels and deck
+  elContainer.innerHTML = `
+    <div class="labels">
+      <div id="left-label" class="label left"></div>
+      <div id="right-label" class="label right"></div>
+    </div>
+    <div id="deck" class="deck"></div>
+  `;
+  
   const elLeftLabel = document.getElementById('left-label');
   const elRightLabel = document.getElementById('right-label');
   
   // Set the labels for this swipe activity
   elLeftLabel.textContent = labels.left || 'Left';
   elRightLabel.textContent = labels.right || 'Right';
-  
-  // Create the deck container
-  elContainer.innerHTML = '<div id="deck" class="deck"></div>';
   const elDeck = document.getElementById('deck');
 
   function createCard(item) {
@@ -70,7 +77,7 @@ export function initSwipe({ items, labels, state, updateHud, postResults }) {
       correct: item.correct
     });
     state.index += 1;
-    updateHud();
+  
     if (state.index >= state.items.length) {
       setTimeout(postResults, 250);
     }
@@ -167,7 +174,7 @@ export function initSwipe({ items, labels, state, updateHud, postResults }) {
   }
 
   mountDeck(items);
-  updateHud();
+
   
   const cleanup = attachInteractions();
   
@@ -175,7 +182,7 @@ export function initSwipe({ items, labels, state, updateHud, postResults }) {
   return {
     cleanup: () => {
       cleanup();
-      elContainer.innerHTML = ''; // Remove the dynamically created deck
+      elContainer.innerHTML = ''; // Remove the dynamically created swipe container
     },
     getLabels: () => ({
       left: elLeftLabel.textContent,
