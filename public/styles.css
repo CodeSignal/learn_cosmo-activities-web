@@ -375,24 +375,39 @@ body {
   display: none; 
 }
 
-.completion {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-primary);
-  border-radius: 1rem;
-  text-align: center;
-  box-shadow: var(--shadow-lg);
+/* Hide activity details when completion is shown */
+.completion:not(.hidden) ~ * #activity-type,
+.completion:not(.hidden) ~ * #practice-question {
+  display: none;
 }
 
-.completion-content h3 {
+/* Alternative approach using a more direct selector */
+.header:has(.completion:not(.hidden)) #activity-type,
+.header:has(.completion:not(.hidden)) #practice-question {
+  display: none;
+}
+
+/* Reduce header padding when completion is shown */
+.header:has(.completion:not(.hidden)) {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.completion {
+  margin: 0.25rem auto 0 auto;
+  padding: 0;
+  max-width: 20rem;
+  text-align: center;
+}
+
+.completion h3 {
   margin: 0 0 0.75rem 0;
   color: var(--text-primary);
   font-size: 1.25rem;
   font-weight: 600;
 }
 
-.completion-content p {
+.completion p {
   margin: 0 0 1.5rem 0;
   color: var(--text-secondary);
   font-size: 0.875rem;
@@ -528,7 +543,9 @@ body.is-dragging .dropzone:hover {
   align-content: flex-start; /* Start at top, don't stretch */
   align-items: flex-start; /* Don't stretch items */
   gap: 0.5rem; 
-  height: calc(100% - 2.5rem); /* Account for title height and margin */
+  height: calc(100% - 3rem); /* Account for title height, margin, and padding */
+  padding: 0.25rem 0; /* Add padding for hover effects */
+  box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
   flex-shrink: 0; /* Never shrink */
@@ -559,7 +576,9 @@ body.is-dragging .dropzone:hover {
   align-content: flex-start; /* Start at top, don't stretch */
   align-items: flex-start; /* Don't stretch items */
   gap: 0.5rem; 
-  height: calc(100% - 2.5rem); /* Account for title height and margin */
+  height: calc(100% - 3rem); /* Account for title height, margin, and padding */
+  padding: 0.25rem 0; /* Add padding for hover effects */
+  box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
   flex-shrink: 0; /* Never shrink */
