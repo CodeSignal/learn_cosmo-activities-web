@@ -287,15 +287,16 @@ body {
 .activity-container {
   flex: 1;
   display: grid;
-  place-items: stretch; /* Stretch instead of center to fill available space */
+  place-items: center; /* Center the deck within the container */
   height: 100%; /* Use full available height */
   min-height: 25rem; /* Ensure minimum usable height */
+  padding: 1rem; /* Add padding to ensure content doesn't touch edges */
 }
 
 .deck {
   position: relative;
-  width: min(40rem, 95%);
-  height: 18rem;
+  width: min(45rem, 90vw);
+  height: 24rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,9 +308,9 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(40rem, 95%);
-  max-width: 95vw;
-  min-height: 12rem;
+  width: min(45rem, 90vw);
+  max-width: 90vw;
+  min-height: 16rem;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 1rem;
@@ -329,43 +330,68 @@ body {
 .card p { 
   margin: 0; 
   font-size: 1.125rem; 
+  font-weight: 600;
   line-height: 1.6; 
   color: var(--text-primary);
   text-align: center;
+  letter-spacing: 0.05em;
 }
 
-/* Hint badges */
-.hint {
+/* Card labels */
+.card-label {
   position: absolute;
-  top: 0.75rem;
+  bottom: 0.75rem;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 1.125rem;
   padding: 0.5rem 0.75rem;
-  border-radius: 9999px;
+  border-radius: 0.5rem;
   backdrop-filter: blur(8px);
   letter-spacing: 0.05em;
-  opacity: 0;
-  transform: scale(0.8);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  opacity: 0.7;
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
 }
 
-.hint.visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.hint.left { 
+.card-label.left { 
   left: 0.75rem; 
-  background: var(--success-bg); 
-  color: var(--success); 
-  border: 1px solid var(--success-border); 
 }
 
-.hint.right { 
+.card-label.right { 
   right: 0.75rem; 
-  background: var(--error-bg); 
-  color: var(--error); 
-  border: 1px solid var(--error-border); 
+}
+
+.card-label.highlighted {
+  opacity: 1;
+  transform: scale(calc(1 + var(--highlight-intensity, 0) * 0.1));
+  box-shadow: 0 0 0 calc(var(--highlight-intensity, 0) * 3px) var(--accent-primary);
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+/* Arrow icons using CSS */
+.card-label.left::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-right: 6px solid currentColor;
+}
+
+.card-label.right::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid currentColor;
 }
 
 /* HUD and progress styles removed */
@@ -450,13 +476,26 @@ button#restart:focus-visible {
 
 /* Responsive design */
 @media (max-width: 30rem) {
+  .deck {
+    width: 95vw;
+    height: 20rem;
+  }
+  
   .card { 
-    min-height: 10rem; 
+    width: 95vw;
+    min-height: 14rem; 
     padding: 1rem;
   }
   
   .card p {
     font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  
+  .card-label {
+    font-size: 1rem;
+    padding: 0.375rem 0.5rem;
   }
   
   .main {
@@ -465,6 +504,10 @@ button#restart:focus-visible {
   
   .header {
     padding: 1rem;
+  }
+  
+  .activity-container {
+    padding: 0.5rem;
   }
 }
 

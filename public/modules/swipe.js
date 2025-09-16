@@ -1,21 +1,14 @@
 export function initSwipe({ items, labels, state, postResults }) {
   const elContainer = document.getElementById('activity-container');
   
-  // Create the swipe container with labels and deck
+  // Create the swipe container with deck only
   elContainer.innerHTML = `
-    <div class="labels">
-      <div id="left-label" class="label left"></div>
-      <div id="right-label" class="label right"></div>
-    </div>
     <div id="deck" class="deck"></div>
   `;
   
-  const elLeftLabel = document.getElementById('left-label');
-  const elRightLabel = document.getElementById('right-label');
-  
-  // Set the labels for this swipe activity
-  elLeftLabel.textContent = labels.left || 'Left';
-  elRightLabel.textContent = labels.right || 'Right';
+  // Store labels for card creation
+  const leftLabelText = labels.left || 'Left';
+  const rightLabelText = labels.right || 'Right';
   const elDeck = document.getElementById('deck');
 
   function createCard(item) {
@@ -24,16 +17,15 @@ export function initSwipe({ items, labels, state, postResults }) {
     const p = document.createElement('p');
     p.textContent = item.text;
     card.appendChild(p);
-    const hintLeft = document.createElement('div');
-    hintLeft.className = 'hint left';
-    hintLeft.textContent = elLeftLabel?.textContent || 'Left';
-    hintLeft.style.opacity = '0';
-    const hintRight = document.createElement('div');
-    hintRight.className = 'hint right';
-    hintRight.textContent = elRightLabel?.textContent || 'Right';
-    hintRight.style.opacity = '0';
-    card.appendChild(hintLeft);
-    card.appendChild(hintRight);
+    // Create persistent labels in the lower corners
+    const labelLeft = document.createElement('div');
+    labelLeft.className = 'card-label left';
+    labelLeft.textContent = leftLabelText;
+    const labelRight = document.createElement('div');
+    labelRight.className = 'card-label right';
+    labelRight.textContent = rightLabelText;
+    card.appendChild(labelLeft);
+    card.appendChild(labelRight);
     return card;
   }
 
@@ -66,8 +58,11 @@ export function initSwipe({ items, labels, state, postResults }) {
   function animateBack(card) {
     card.style.transition = 'transform 180ms ease-out';
     card.style.transform = 'translate(-50%, -50%) rotate(0deg)';
-    const hints = card.querySelectorAll('.hint');
-    hints.forEach(h => h.style.opacity = '0');
+    const labels = card.querySelectorAll('.card-label');
+    labels.forEach(label => {
+      label.classList.remove('highlighted');
+      label.style.removeProperty('--highlight-intensity');
+    });
   }
 
   function handleDecision(item, direction) {
@@ -110,19 +105,21 @@ export function initSwipe({ items, labels, state, postResults }) {
       const rot = Math.max(-20, Math.min(20, dx / 10));
       currentCard.style.transition = 'none';
       currentCard.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(${rot}deg)`;
-      const hints = currentCard.querySelectorAll('.hint');
-      const leftHint = hints[0];
-      const rightHint = hints[1];
+      const labels = currentCard.querySelectorAll('.card-label');
+      const leftLabel = labels[0];
+      const rightLabel = labels[1];
       const t = Math.min(1, Math.abs(dx) / 100);
       if (dx < 0) {
-        leftHint.style.opacity = String(t);
-        rightHint.style.opacity = '0';
+        leftLabel.classList.add('highlighted');
+        rightLabel.classList.remove('highlighted');
+        leftLabel.style.setProperty('--highlight-intensity', String(t));
       } else if (dx > 0) {
-        rightHint.style.opacity = String(t);
-        leftHint.style.opacity = '0';
+        rightLabel.classList.add('highlighted');
+        leftLabel.classList.remove('highlighted');
+        rightLabel.style.setProperty('--highlight-intensity', String(t));
       } else {
-        leftHint.style.opacity = '0';
-        rightHint.style.opacity = '0';
+        leftLabel.classList.remove('highlighted');
+        rightLabel.classList.remove('highlighted');
       }
     }
 
@@ -185,8 +182,8 @@ export function initSwipe({ items, labels, state, postResults }) {
       elContainer.innerHTML = ''; // Remove the dynamically created swipe container
     },
     getLabels: () => ({
-      left: elLeftLabel.textContent,
-      right: elRightLabel.textContent
+      left: leftLabelText,
+      right: rightLabelText
     })
   };
 }

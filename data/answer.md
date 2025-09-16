@@ -1,54 +1,59 @@
 __Type__
 
-Sort Into Boxes
+Swipe Left or Right
 
 __Practice Question__
 
-Sort these people leadership behaviors into the correct dimension categories:
+Let's test your understanding of adaptive vs. traditional management. Swipe each statement left if it represents adaptive leadership, or right if it represents traditional management.
 
 __Labels__
 
-- First Box Label: Directive Behavior
-- Second Box Label: Supportive Behavior
+- Left: Adaptive Leadership
+- Right: Traditional Mgmt
 
 __Summary__
 
-2/7 correct
+6/8 correct
 
 __Responses__
 
-1. **Active listening**
-   - Selected: first
-   - Correct: second
-   - Result: ✗ Incorrect
-
-2. **Tracking progress**
-   - Selected: first
-   - Correct: first
+1. **Adapting feedback delivery to individual preferences**
+   - Selected: left
+   - Correct: left
    - Result: ✓ Correct
 
-3. **Recognizing wins**
-   - Selected: first
-   - Correct: second
+2. **Giving more project autonomy to experienced team members**
+   - Selected: right
+   - Correct: left
    - Result: ✗ Incorrect
 
-4. **Offering assistance**
-   - Selected: second
-   - Correct: second
+3. **Using different motivation strategies for different people**
+   - Selected: left
+   - Correct: left
    - Result: ✓ Correct
 
-5. **Setting expectations**
-   - Selected: second
-   - Correct: first
+4. **Expecting all employees to adapt to your style**
+   - Selected: right
+   - Correct: right
+   - Result: ✓ Correct
+
+5. **Treating all team members exactly the same way**
+   - Selected: left
+   - Correct: right
    - Result: ✗ Incorrect
 
-6. **Giving guidance**
-   - Selected: second
-   - Correct: first
-   - Result: ✗ Incorrect
+6. **Using the same management approach with everyone**
+   - Selected: right
+   - Correct: right
+   - Result: ✓ Correct
 
-7. **Giving guidance**
-   - Selected: pool
-   - Correct: first
-   - Result: ✗ Incorrect
+7. **Following rigid company policies regardless of situation**
+   - Selected: right
+   - Correct: right
+   - Result: ✓ Correct
+
+8. **Adjusting communication style based on employee personality**
+   - Selected: left
+   - Correct: left
+   - Result: ✓ Correct
 
