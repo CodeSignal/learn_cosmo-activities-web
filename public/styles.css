@@ -602,6 +602,7 @@ body.is-dragging .dropzone:hover {
   height: 100%; /* Fill the grid cell completely */
   width: 100%; /* Fill the grid cell completely */
   box-sizing: border-box;
+  min-height: 0; /* Allow shrinking if needed */
 }
 
 .pool-title { 
@@ -619,8 +620,8 @@ body.is-dragging .dropzone:hover {
   align-content: flex-start; /* Start at top, don't stretch */
   align-items: flex-start; /* Don't stretch items */
   gap: 0.5rem; 
-  height: calc(100% - 3rem); /* Account for title height, margin, and padding */
-  padding: 0.25rem 0; /* Add padding for hover effects */
+  height: calc(100% - 2.5rem); /* Adjusted calculation for better fit */
+  padding: 0.5rem 0; /* Increased padding to prevent cropping */
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
@@ -632,7 +633,7 @@ body.is-dragging .dropzone:hover {
   border: 1px solid var(--border-secondary); 
   border-radius: 0.5rem; 
   padding: 0.75rem 1rem; 
-  cursor: grab; 
+  cursor: pointer; 
   user-select: none;
   font-weight: 400;
   font-size: 1.06rem;
@@ -646,11 +647,31 @@ body.is-dragging .dropzone:hover {
   align-self: flex-start; /* Don't stretch vertically */
 }
 
-/* Only apply hover effects when not dragging */
-body:not(.is-dragging) .chip:hover {
+.chip.used {
+  opacity: 0.4;
+  background: var(--surface-subtle);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.chip.filled {
+  cursor: pointer;
+  margin: 0;
+  background: transparent;
+  color: var(--accent-primary);
+  border-color: transparent;
+  font-weight: 500;
+}
+
+.chip.filled:hover {
+  color: var(--accent-hover);
+}
+
+/* Only apply hover effects to unused chips */
+.chip:not(.used):hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
-  border-color: #ffffff;
+  border-color: var(--accent-primary);
   background: var(--surface);
 }
 
@@ -660,7 +681,7 @@ body:not(.is-dragging) .chip:hover {
 }
 
 .dropzone.over { 
-  border-color: #ffffff;
+  border-color: var(--accent-primary);
   background: var(--surface-subtle);
 }
 
@@ -674,6 +695,20 @@ body:not(.is-dragging) .chip:hover {
 .fib { 
   display: grid; 
   gap: 1.5rem; 
+  grid-template-rows: auto 1fr minmax(180px, auto); /* prompt (auto), content (flexible), choices (min 180px) */
+  height: 100%; /* Use full available height */
+}
+
+.fib-prompt {
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 500;
+  text-align: center;
 }
 
 .fib-content { 
@@ -687,30 +722,67 @@ body:not(.is-dragging) .chip:hover {
 
 .blank { 
   display: inline-block; 
-  min-width: 7rem; 
-  padding: 0.375rem 0.75rem; 
-  margin: 0 0.25rem; 
-  border-bottom: 2px dashed var(--border-secondary); 
-  border-radius: 0.375rem; 
+  min-width: 4rem; 
+  padding: 0.25rem 0.5rem; 
+  margin: 0 0.125rem; 
+  border: 1px dashed var(--border-secondary); 
+  border-radius: 0.25rem; 
   text-align: center;
-  background: var(--surface-subtle);
+  background: transparent;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1.0625rem; /* Match the content font size */
+  line-height: 1.7; /* Match the content line height */
+  letter-spacing: -0.011rem;
+  box-sizing: border-box;
+  vertical-align: baseline; /* Align with text baseline */
+  /* Fixed height to prevent vertical growth */
+  height: 1rem; 
 }
 
-.blank:hover {
-  background: var(--surface);
-  border-color: var(--border-focus);
+/* When blank contains a chip, adjust styling */
+.blank:has(.chip) {
+  padding: 0.125rem 0.25rem; /* Reduce padding when filled */
+  min-width: auto; /* Allow shrinking to content size */
+  width: auto; /* Size to content */
+  border: 1px solid transparent; /* Hide border when filled */
 }
 
-.blank.over { 
+.blank.current { 
   outline: 2px solid var(--accent-primary); 
   outline-offset: 2px; 
   background: var(--info-bg);
+  border-color: var(--accent-primary);
+  border-style: solid; /* Change from dashed to solid when current */
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 .blank .chip { 
-  cursor: grab;
+  cursor: pointer;
   margin: 0;
+  padding: 0.125rem 0rem; /* Minimal padding for filled state */
+  border: none; 
+  background: transparent;
+  color: var(--accent-primary);
+  border-radius: 0.25rem; 
+  box-shadow: none;
+  display: inline-block;
+  width: auto; /* Allow chip to size to content */
+  height: auto; /* Allow natural height */
+  font-weight: 500; 
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  min-width: 0; /* Allow shrinking */
+  white-space: nowrap; /* Prevent wrapping */
 }
 
 

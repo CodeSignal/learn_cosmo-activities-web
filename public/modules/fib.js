@@ -5,6 +5,7 @@ export function initFib({ activity, state, postResults }) {
   // Create the fib container
   elContainer.innerHTML = `
     <div id="fib" class="fib">
+      ${fib.prompt ? `<div id="fib-prompt" class="fib-prompt"></div>` : ''}
       <div id="fib-content" class="fib-content"></div>
       <div class="pool">
         <div class="pool-title">Choices</div>
@@ -14,28 +15,24 @@ export function initFib({ activity, state, postResults }) {
   `;
   
   const elFib = document.getElementById('fib');
+  const elFibPrompt = document.getElementById('fib-prompt');
   const elFibContent = document.getElementById('fib-content');
   const elFibChoices = document.getElementById('fib-choices');
 
-  // Convert simple markdown-ish to HTML with blanks widgets
+  // Set the prompt content if it exists
+  if (elFibPrompt && fib.prompt) {
+    let promptHtml = fib.prompt;
+    // Escape basic HTML
+    promptHtml = promptHtml.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    elFibPrompt.innerHTML = promptHtml
+      .replace(/\n\n+/g, '<br/><br/>')
+      .replace(/\n/g, '<br/>');
+  }
+
+  // Convert simple markdown-ish to HTML with blanks widgets  
   let html = fib.htmlWithPlaceholders;
   // Escape basic HTML
   html = html.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  // Convert blockquote lines starting with '>' to <blockquote>
-  const lines = html.split(/\r?\n/);
-  let inQuote = false;
-  const out = [];
-  for (const line of lines) {
-    if (/^\s*>/.test(line)) {
-      if (!inQuote) { out.push('<blockquote>'); inQuote = true; }
-      out.push(line.replace(/^\s*>\s?/, ''));
-    } else {
-      if (inQuote) { out.push('</blockquote>'); inQuote = false; }
-      out.push(line);
-    }
-  }
-  if (inQuote) out.push('</blockquote>');
-  html = out.join('\n');
 
   // Replace placeholders with blank elements
   fib.blanks.forEach(b => {
@@ -53,52 +50,86 @@ export function initFib({ activity, state, postResults }) {
     const chip = document.createElement('div');
     chip.className = 'chip';
     chip.textContent = choice;
-    chip.setAttribute('draggable', 'true');
     chip.dataset.choice = choice;
     chip.dataset.idx = String(idx);
+    chip.dataset.used = 'false';
     elFibChoices.appendChild(chip);
   });
 
-  // Drag handlers
-  function onDragStart(e) {
-    const t = e.target;
-    if (!(t instanceof HTMLElement)) return;
-    if (!t.classList.contains('chip')) return;
-    t.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', t.dataset.choice || '');
+  // State for linear progression
+  let currentBlankIndex = 0;
+  
+  // Get all blanks and sort by their index
+  const blanks = Array.from(elFibContent.querySelectorAll('.blank')).sort((a, b) => {
+    const aIdx = parseInt(a.getAttribute('data-blank') || '0', 10);
+    const bIdx = parseInt(b.getAttribute('data-blank') || '0', 10);
+    return aIdx - bIdx;
+  });
+  
+  function updateBlankHighlighting() {
+    blanks.forEach((blank, i) => {
+      blank.classList.toggle('current', i === currentBlankIndex && !blank.querySelector('.chip'));
+    });
   }
   
-  function onDragEnd(e) {
-    const t = e.target;
-    if (!(t instanceof HTMLElement)) return;
-    t.classList.remove('dragging');
-  }
-  
-  function onDragOver(e) {
-    if (!(e.currentTarget instanceof HTMLElement)) return;
-    e.preventDefault();
-    e.currentTarget.classList.add('over');
-  }
-  
-  function onDragLeave(e) {
-    if (!(e.currentTarget instanceof HTMLElement)) return;
-    e.currentTarget.classList.remove('over');
-  }
-  
-  function onDrop(e) {
-    if (!(e.currentTarget instanceof HTMLElement)) return;
-    e.preventDefault();
-    const choice = e.dataTransfer.getData('text/plain');
-    if (!choice) return;
-    const existing = e.currentTarget.querySelector('.chip');
-    if (existing) elFibChoices.appendChild(existing);
-    const fromChip = document.querySelector(`.chip.dragging[data-choice="${CSS.escape(choice)}"]`) || elFibChoices.querySelector(`.chip[data-choice="${CSS.escape(choice)}"]`);
-    if (fromChip instanceof HTMLElement) {
-      e.currentTarget.appendChild(fromChip);
+  function getNextEmptyBlankIndex() {
+    for (let i = 0; i < blanks.length; i++) {
+      if (!blanks[i].querySelector('.chip')) {
+        return i;
+      }
     }
-    e.currentTarget.classList.remove('over');
+    return -1; // All filled
+  }
+  
+  function onChoiceClick(e) {
+    const chip = e.target;
+    if (!(chip instanceof HTMLElement) || !chip.classList.contains('chip')) return;
+    if (chip.dataset.used === 'true') return; // Already used
+    
+    const nextEmptyIndex = getNextEmptyBlankIndex();
+    if (nextEmptyIndex === -1) return; // All blanks filled
+    
+    const targetBlank = blanks[nextEmptyIndex];
+    
+    // Move chip to blank
+    const chipClone = chip.cloneNode(true);
+    chipClone.classList.add('filled');
+    targetBlank.appendChild(chipClone);
+    
+    // Mark original chip as used
+    chip.dataset.used = 'true';
+    chip.classList.add('used');
+    
+    // Update current blank index
+    currentBlankIndex = getNextEmptyBlankIndex();
+    updateBlankHighlighting();
+    
+    // Add click handler to filled chip for undo
+    chipClone.addEventListener('click', onFilledChipClick);
+    
     checkFibCompletion();
+  }
+  
+  function onFilledChipClick(e) {
+    e.stopPropagation();
+    const filledChip = e.target;
+    if (!(filledChip instanceof HTMLElement)) return;
+    
+    const choice = filledChip.dataset.choice;
+    const originalChip = elFibChoices.querySelector(`.chip[data-choice="${CSS.escape(choice)}"]`);
+    
+    if (originalChip) {
+      // Re-enable the original chip
+      originalChip.dataset.used = 'false';
+      originalChip.classList.remove('used');
+      
+      // Remove the filled chip
+      filledChip.remove();
+      
+      // Update highlighting to first empty blank
+      currentBlankIndex = getNextEmptyBlankIndex();
+      updateBlankHighlighting();
+    }
   }
 
   function checkFibCompletion() {
@@ -124,24 +155,14 @@ export function initFib({ activity, state, postResults }) {
     postResults();
   }
 
-  elFibChoices.addEventListener('dragstart', onDragStart);
-  elFibChoices.addEventListener('dragend', onDragEnd);
-  const blanks = elFibContent.querySelectorAll('.blank');
-  blanks.forEach(blank => {
-    blank.addEventListener('dragover', onDragOver);
-    blank.addEventListener('dragleave', onDragLeave);
-    blank.addEventListener('drop', onDrop);
-  });
+  // Initialize highlighting and add click event listeners
+  currentBlankIndex = 0;
+  updateBlankHighlighting();
+  
+  elFibChoices.addEventListener('click', onChoiceClick);
 
   return () => {
-    elFibChoices.removeEventListener('dragstart', onDragStart);
-    elFibChoices.removeEventListener('dragend', onDragEnd);
-    const blanks = elFibContent.querySelectorAll('.blank');
-    blanks.forEach(blank => {
-      blank.removeEventListener('dragover', onDragOver);
-      blank.removeEventListener('dragleave', onDragLeave);
-      blank.removeEventListener('drop', onDrop);
-    });
+    elFibChoices.removeEventListener('click', onChoiceClick);
     elContainer.innerHTML = ''; // Remove the dynamically created fib container
   };
 }

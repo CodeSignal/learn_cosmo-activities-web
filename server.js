@@ -102,9 +102,35 @@ function buildActivityFromMarkdown(markdownText) {
     const fibTokens = sections.get('Markdown With Blanks') || [];
     const fibMarkdown = fibTokens.map(t => t.raw || t.text || '').join('\n').trim();
     const suggested = readListItems(sections.get('Suggested Answers'));
+    
+    // Split the content into prompt and fill-in-the-blanks content
+    const lines = fibMarkdown.split(/\r?\n/);
+    let promptLines = [];
+    let contentLines = [];
+    let foundBlockquote = false;
+    
+    for (const line of lines) {
+      if (/^\s*>/.test(line)) {
+        foundBlockquote = true;
+        // Remove the '> ' marker and add to content
+        contentLines.push(line.replace(/^\s*>\s?/, ''));
+      } else if (foundBlockquote) {
+        // After finding blockquote, everything goes to content
+        contentLines.push(line);
+      } else {
+        // Before blockquote, everything goes to prompt (unless it's empty)
+        if (line.trim()) {
+          promptLines.push(line);
+        }
+      }
+    }
+    
+    const prompt = promptLines.join('\n').trim();
+    const content = contentLines.join('\n').trim();
+    
     const blanks = [];
     let idx = 0;
-    const htmlPlaceholders = fibMarkdown.replace(/\[\[blank:([^\]]+)\]\]/gi, (_, token) => {
+    const htmlPlaceholders = content.replace(/\[\[blank:([^\]]+)\]\]/gi, (_, token) => {
       const answer = String(token).trim();
       blanks.push({ index: idx, answer });
       return `__BLANK_${idx++}__`;
@@ -119,7 +145,7 @@ function buildActivityFromMarkdown(markdownText) {
       const j = Math.floor(rand() * (i + 1));
       [choices[i], choices[j]] = [choices[j], choices[i]];
     }
-    return { type, question, fib: { raw: fibMarkdown, htmlWithPlaceholders: htmlPlaceholders, blanks, choices } };
+    return { type, question, fib: { raw: fibMarkdown, prompt, content, htmlWithPlaceholders: htmlPlaceholders, blanks, choices } };
   }
 
   const labels = readListItems(sections.get('Labels'));
