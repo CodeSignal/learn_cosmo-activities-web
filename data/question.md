@@ -1,26 +1,23 @@
 __Type__
 
-Sort Into Boxes
+Fill In The Blanks
 
-__Practice Question__
+__Markdown With Blanks__
 
-Sort these people leadership behaviors into the correct dimension categories:
+Fill in the blanks to complete these basic addition equations:
 
-__Labels__
+> 1. 2 + 3 = [[blank:5]]
+> 2. 1 + 1 = [[blank:2]]
+> 3. 6 + 2 = [[blank:8]]
+> 4. 7 + 0 = [[blank:7]]
+> 5. 5 + 4 = [[blank:9]]
+> 6. 5 + 6 = [[blank:11]]
 
-- First Box Label: Directive Behavior
-- Second Box Label: Supportive Behavior
+__Suggested Answers__
 
-__First Box Items__
-
-- Setting expectations
-- Giving guidancey
-- Tracking progress
-
-__Second Box Items__
-
-- Active listening
-- Recognizing wins
-- Offering assistance
-
-
+- 7
+- 2
+- 8
+- 9
+- 5
+- 11
