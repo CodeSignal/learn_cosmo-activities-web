@@ -4,29 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Swipe Activity</title>
+  <link rel="stylesheet" href="/bespoke.css" />
   <link rel="stylesheet" href="/styles.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%98%85%3C/text%3E%3C/svg%3E" />
   <meta name="color-scheme" content="light dark" />
   <meta name="description" content="Swipe left/right activity with plain JS" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="bespoke">
   <header class="header">
     <h1 id="activity-type" class="type"></h1>
     <p id="practice-question" class="question"></p>
     <div id="completion" class="completion hidden">
       <h3>Activity Complete!</h3>
       <p>Submit your results to see how you did.</p>
-      <button id="restart">Try Again</button>
+      <button id="restart" class="primary">Try Again</button>
     </div>
   </header>
 
   <main class="main">
     <div id="activity-container" class="activity-container" aria-live="polite"></div>
-
-
   </main>
 
 
