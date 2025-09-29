@@ -206,7 +206,7 @@
   background: var(--bespoke-box); 
   border: 1px solid var(--bespoke-stroke); 
   border-radius: var(--bespoke-radius-lg); 
-  padding: var(--bespoke-space-md); /* Reduced padding to save space */
+  padding: 0.5rem; /* Reduced padding to save space */
   height: 100%;
   width: 100%;
   box-sizing: border-box;
@@ -231,11 +231,11 @@
   align-items: flex-start;
   gap: var(--bespoke-space-sm); 
   flex: 1; /* Take remaining space after title */
-  padding: var(--bespoke-space-md) 1; /* 0.75rem vertical, 1rem horizontal */
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0; /* Allow proper flex behavior */
+  
 }
 
 /* ===== CHOICE CHIPS (used in multiple activities) ===== */
@@ -255,6 +255,7 @@
   color: var(--bespoke-fg);
   flex-shrink: 0;
   align-self: flex-start;
+  margin-top: 0.1rem;
 }
 
 .chip.used {
@@ -384,11 +385,16 @@
 }
 
 .completion {
-  margin: var(--bespoke-space-xs) auto 0 auto;
-  padding: 0;
+  margin: 0 auto;
+  padding: var(--bespoke-space-xl);
   max-width: 20rem;
   text-align: center;
+  background: var(--bespoke-box);
+  border: 1px solid var(--bespoke-stroke);
+  border-radius: var(--bespoke-radius-lg);
+  box-shadow: var(--bespoke-shadow-md);
 }
+
 
 /* Completion text uses bespoke typography */
 .completion h3 {

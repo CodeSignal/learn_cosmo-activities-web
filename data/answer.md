@@ -1,46 +1,54 @@
 __Type__
 
-Fill In The Blanks
+Sort Into Boxes
 
-__Markdown With Blanks__
+__Practice Question__
 
-Complete this adaptive management scenario:
+Sort these people leadership behaviors into the correct dimension categories:
 
+__Labels__
 
-
-> Lisa notices her team member Kevin always needs time to process decisions and gets anxious with quick turnarounds. Instead of continuing her usual [[blank:fast-moving]] approach, Lisa decides to provide more [[blank:advance]] notice and processing time. This shows she's acting like a [[blank:coach]] rather than just a [[blank:scorekeeper]].
-
-__Suggested Answers__
-
-- manager
-- coach
-- advance
-- scorekeeper
-- fast-moving
+- First Box Label: Directive Behavior
+- Second Box Label: Supportive Behavior
 
 __Summary__
 
-1/4 correct
+2/7 correct
 
 __Responses__
 
-1. **Blank 1**
-   - Selected: manager
-   - Correct: fast-moving
+1. **Offering assistance**
+   - Selected: first
+   - Correct: second
    - Result: ✗ Incorrect
 
-2. **Blank 2**
-   - Selected: coach
-   - Correct: advance
+2. **Recognizing wins**
+   - Selected: first
+   - Correct: second
    - Result: ✗ Incorrect
 
-3. **Blank 3**
-   - Selected: advance
-   - Correct: coach
-   - Result: ✗ Incorrect
-
-4. **Blank 4**
-   - Selected: scorekeeper
-   - Correct: scorekeeper
+3. **Setting expectations**
+   - Selected: first
+   - Correct: first
    - Result: ✓ Correct
+
+4. **Tracking progress**
+   - Selected: second
+   - Correct: first
+   - Result: ✗ Incorrect
+
+5. **Giving guidancey**
+   - Selected: second
+   - Correct: first
+   - Result: ✗ Incorrect
+
+6. **Active listening**
+   - Selected: second
+   - Correct: second
+   - Result: ✓ Correct
+
+7. **Active listening**
+   - Selected: pool
+   - Correct: second
+   - Result: ✗ Incorrect
 
