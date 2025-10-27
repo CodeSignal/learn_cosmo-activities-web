@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { Lexer } = require('marked');
+const { Lexer, marked } = require('marked');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -130,10 +130,12 @@ function buildActivityFromMarkdown(markdownText) {
     
     const blanks = [];
     let idx = 0;
-    const htmlPlaceholders = content.replace(/\[\[blank:([^\]]+)\]\]/gi, (_, token) => {
+    // Replace blank tokens with actual HTML spans that will be preserved by the markdown renderer
+    const contentWithBlankSpans = content.replace(/\[\[blank:([^\]]+)\]\]/gi, (_, token) => {
       const answer = String(token).trim();
-      blanks.push({ index: idx, answer });
-      return `__BLANK_${idx++}__`;
+      const currentIndex = idx++;
+      blanks.push({ index: currentIndex, answer });
+      return `<span class="blank" data-blank="${currentIndex}" aria-label="blank ${currentIndex + 1}" tabindex="0"></span>`;
     });
     const choiceSet = new Set(suggested.map(s => s.trim()));
     blanks.forEach(b => choiceSet.add(b.answer));
@@ -145,7 +147,10 @@ function buildActivityFromMarkdown(markdownText) {
       const j = Math.floor(rand() * (i + 1));
       [choices[i], choices[j]] = [choices[j], choices[i]];
     }
-    return { type, question, fib: { raw: fibMarkdown, prompt, content, htmlWithPlaceholders: htmlPlaceholders, blanks, choices } };
+    // Render markdown to HTML for prompt and content
+    const promptHtml = prompt ? marked.parse(prompt) : '';
+    const contentHtml = marked.parse(contentWithBlankSpans);
+    return { type, question, fib: { raw: fibMarkdown, prompt, promptHtml, content, htmlWithPlaceholders: contentHtml, blanks, choices } };
   }
 
   const labels = readListItems(sections.get('Labels'));

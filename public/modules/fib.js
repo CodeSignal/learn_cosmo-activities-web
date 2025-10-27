@@ -19,31 +19,13 @@ export function initFib({ activity, state, postResults }) {
   const elFibContent = document.getElementById('fib-content');
   const elFibChoices = document.getElementById('fib-choices');
 
-  // Set the prompt content if it exists
-  if (elFibPrompt && fib.prompt) {
-    let promptHtml = fib.prompt;
-    // Escape basic HTML
-    promptHtml = promptHtml.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-    elFibPrompt.innerHTML = promptHtml
-      .replace(/\n\n+/g, '<br/><br/>')
-      .replace(/\n/g, '<br/>');
+  // Set the prompt content if it exists (already HTML from server)
+  if (elFibPrompt && (fib.promptHtml || fib.prompt)) {
+    elFibPrompt.innerHTML = fib.promptHtml || fib.prompt;
   }
 
-  // Convert simple markdown-ish to HTML with blanks widgets  
-  let html = fib.htmlWithPlaceholders;
-  // Escape basic HTML
-  html = html.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-
-  // Replace placeholders with blank elements
-  fib.blanks.forEach(b => {
-    const placeholder = `__BLANK_${b.index}__`;
-    const blankEl = `<span class="blank" data-blank="${b.index}" aria-label="blank ${b.index+1}" tabindex="0"></span>`;
-    html = html.split(placeholder).join(blankEl);
-  });
-
-  elFibContent.innerHTML = html
-    .replace(/\n\n+/g, '<br/><br/>')
-    .replace(/\n/g, '<br/>');
+  // Content HTML is provided by server with embedded blank spans
+  elFibContent.innerHTML = fib.htmlWithPlaceholders;
 
   // Build choices chips
   fib.choices.forEach((choice, idx) => {

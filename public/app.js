@@ -6,9 +6,6 @@ import { initFib } from './modules/fib.js';
   'use strict';
 
   // Shared DOM references only
-  const elType = document.getElementById('activity-type');
-  const elQuestion = document.getElementById('practice-question');
-
   const elCompletion = document.getElementById('completion');
   const elRestart = document.getElementById('restart');
 
@@ -20,13 +17,6 @@ import { initFib } from './modules/fib.js';
 
   let currentActivity = null;
   let currentActivityData = null;
-
-  function renderHeader(activity) {
-    elType.textContent = activity.type || 'Swipe Activity';
-    elQuestion.textContent = activity.question || '';
-  }
-
-
 
   async function postResults() {
     try {
@@ -106,7 +96,6 @@ import { initFib } from './modules/fib.js';
       state.items = /^fill in the blanks$/i.test(activity.type)
         ? new Array(activity.fib.blanks.length).fill(null)
         : activity.items;
-      renderHeader(activity);
       reset();
       initActivity(activity);
       
