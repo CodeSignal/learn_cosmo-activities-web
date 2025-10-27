@@ -240,6 +240,17 @@ const server = http.createServer((req, res) => {
         if (activity) {
           markdown += `__Type__\n\n${activity.type}\n\n`;
           
+          // Add results section
+          markdown += `__Summary__\n\n${correctCount}/${totalCount} correct\n\n`;
+          markdown += '__Responses__\n\n';
+          
+          data.results.forEach((result, index) => {
+            markdown += `${index + 1}. **${result.text}**\n`;
+            markdown += `   - Selected Answer: ${result.selected}\n`;
+            markdown += `   - Correct Answer: ${result.correct}\n`;
+            markdown += `   - Result: ${result.selected === result.correct ? '✓ Correct' : '✗ Incorrect'}\n\n`;
+          });
+
           if (/^fill in the blanks$/i.test(activity.type)) {
             // For fill-in-the-blanks, include the original markdown with blanks
             markdown += `__Markdown With Blanks__\n\n${activity.fib.raw}\n\n`;
@@ -266,17 +277,6 @@ const server = http.createServer((req, res) => {
             }
           }
         }
-        
-        // Add results section
-        markdown += `__Summary__\n\n${correctCount}/${totalCount} correct\n\n`;
-        markdown += '__Responses__\n\n';
-        
-        data.results.forEach((result, index) => {
-          markdown += `${index + 1}. **${result.text}**\n`;
-          markdown += `   - Selected: ${result.selected}\n`;
-          markdown += `   - Correct: ${result.correct}\n`;
-          markdown += `   - Result: ${result.selected === result.correct ? '✓ Correct' : '✗ Incorrect'}\n\n`;
-        });
         
         fs.writeFile(answerFile, markdown, 'utf8', (err) => {
           if (err) {

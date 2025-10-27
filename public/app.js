@@ -6,7 +6,8 @@ import { initFib } from './modules/fib.js';
   'use strict';
 
   // Shared DOM references only
-  const elCompletion = document.getElementById('completion');
+  const elType = document.getElementById('activity-type');
+  const elQuestion = document.getElementById('practice-question');
   const elRestart = document.getElementById('restart');
 
   const state = {
@@ -31,26 +32,17 @@ import { initFib } from './modules/fib.js';
           completedAt: new Date().toISOString()
         })
       });
-      
       if (!response.ok) {
         throw new Error('Failed to save results');
       }
-      
-      showCompletion();
     } catch (error) {
       console.error('Error saving results:', error);
-      showCompletion(); // Still show completion even if save fails
     }
-  }
-
-  function showCompletion() {
-    elCompletion.classList.remove('hidden');
   }
 
   function reset() {
     state.index = 0;
     state.results = [];
-    elCompletion.classList.add('hidden');
     if (currentActivity) {
       if (typeof currentActivity === 'function') {
         currentActivity(); // Old cleanup function style
@@ -67,6 +59,11 @@ import { initFib } from './modules/fib.js';
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
     return await res.json();
+  }
+
+  function renderHeader(activity) {
+    elType.textContent = activity.type || 'Swipe Activity';
+    elQuestion.textContent = activity.question || '';
   }
 
   function initActivity(activity) {
@@ -96,6 +93,7 @@ import { initFib } from './modules/fib.js';
       state.items = /^fill in the blanks$/i.test(activity.type)
         ? new Array(activity.fib.blanks.length).fill(null)
         : activity.items;
+      renderHeader(activity);
       reset();
       initActivity(activity);
       
@@ -106,6 +104,7 @@ import { initFib } from './modules/fib.js';
         state.items = /^fill in the blanks$/i.test(activity2.type)
           ? new Array(activity2.fib.blanks.length).fill(null)
           : activity2.items;
+        renderHeader(activity2);
         initActivity(activity2);
       });
     } catch (err) {

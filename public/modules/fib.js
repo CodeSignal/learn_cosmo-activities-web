@@ -41,11 +41,21 @@ export function initFib({ activity, state, postResults }) {
     blank.setAttribute('aria-expanded', 'false');
     blank.tabIndex = 0;
     blank.textContent = 'Choose…';
-    blank.addEventListener('click', () => openMenuForBlank(blank, idx));
+    blank.addEventListener('click', () => {
+      if (selectedByBlankIdx[idx]) {
+        setSelection(idx, '');
+        return;
+      }
+      openMenuForBlank(blank, idx);
+    });
     blank.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        openMenuForBlank(blank, idx);
+        if (selectedByBlankIdx[idx]) {
+          setSelection(idx, '');
+        } else {
+          openMenuForBlank(blank, idx);
+        }
       }
     });
   });
@@ -104,23 +114,6 @@ export function initFib({ activity, state, postResults }) {
     menu.style.top = docY + 'px';
 
     const available = fib.choices.filter(choice => !used.has(choice) || choice === current);
-    if (current) {
-      const optClear = document.createElement('div');
-      optClear.className = 'fib-option clear';
-      optClear.setAttribute('role', 'option');
-      optClear.textContent = 'Clear selection';
-      optClear.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        setSelection(idx, '');
-        closeMenu();
-      });
-      menu.appendChild(optClear);
-      const hr = document.createElement('div');
-      hr.style.height = '1px';
-      hr.style.background = 'var(--bespoke-stroke)';
-      hr.style.margin = '4px 2px';
-      menu.appendChild(hr);
-    }
     available.forEach(choice => {
       const opt = document.createElement('div');
       opt.className = 'fib-option';
@@ -134,7 +127,6 @@ export function initFib({ activity, state, postResults }) {
         e.preventDefault();
         setSelection(idx, choice);
         closeMenu();
-        checkFibCompletion();
       });
       menu.appendChild(opt);
     });
@@ -150,13 +142,12 @@ export function initFib({ activity, state, postResults }) {
   function setSelection(idx, choice) {
     selectedByBlankIdx[idx] = choice;
     updateBlankDisplays();
+    updateResultsAndPost();
   }
 
-  function checkFibCompletion() {
+  function updateResultsAndPost() {
     const total = selectedByBlankIdx.length;
-    const selectedCount = selectedByBlankIdx.reduce((acc, v) => acc + (v ? 1 : 0), 0);
-    if (selectedCount !== total) return;
-    // evaluate and record results
+    state.results = [];
     blanks.forEach((_, i) => {
       const idx = i;
       const correctAnswer = fib.blanks.find(x => x.index === idx)?.answer || '';
@@ -167,7 +158,7 @@ export function initFib({ activity, state, postResults }) {
         correct: correctAnswer
       });
     });
-    state.index = total;
+    state.index = selectedByBlankIdx.reduce((acc, v) => acc + (v ? 1 : 0), 0);
     postResults();
   }
 

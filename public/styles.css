@@ -412,32 +412,6 @@
   color: var(--bespoke-danger);
 }
 
-/* ===== COMPLETION STATE ===== */
-
-.completion.hidden { 
-  display: none; 
-}
-
-.completion {
-  margin: 0 auto;
-  padding: var(--bespoke-space-xl);
-  max-width: 20rem;
-  text-align: center;
-  background: var(--bespoke-box);
-  border: 1px solid var(--bespoke-stroke);
-  border-radius: var(--bespoke-radius-lg);
-  box-shadow: var(--bespoke-shadow-md);
-}
-
-
-/* Completion text uses bespoke typography */
-.completion h3 {
-  margin: 0 0 var(--bespoke-space-md) 0;
-}
-
-.completion p {
-  margin: 0 0 var(--bespoke-space-xl) 0;
-}
 
 /* ===== RESPONSIVE DESIGN ===== */
 

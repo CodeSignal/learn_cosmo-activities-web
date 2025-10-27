@@ -2,89 +2,62 @@ __Type__
 
 Fill In The Blanks
 
-__Markdown With Blanks__
-
-Match the bosses with their style
-
-
-
-> **Boss 1**: You start your presentation with a bold vision and a simple chart showing the potential for rapid market growth. You avoid lengthy details and focus on the big win, using compelling visuals to capture attention. [[blank:Charismatic]]
-
-
-> **Boss 2**: You provide a detailed spreadsheet with raw data and multiple scenarios, allowing your boss to analyze the numbers independently. You avoid drawing conclusions for them and instead give them all the information they need to verify on their own. [[blank:Controller]]
-
-
-**Boss 3**: You open your pitch by referencing endorsements from respected colleagues and industry experts. You anticipate tough questions and are prepared to defend every data point, knowing your boss will challenge your credibility and sources. [[blank:Skeptic]]
-
-
-
-**Boss 4**: You organize your proposal with comprehensive research, case studies, and a clear explanation of your methodology. You give your boss time to process the information and invite them to discuss the logic behind your recommendations. [[blank:Thinker]]
-
-
-
-**Boss 5**: You highlight how similar companies have successfully implemented your idea, providing testimonials and references. You focus on proven results and established brands to reassure your boss that your proposal is a safe choice. [[blank:Follower]]
-
-__Suggested Answers__
-
-- Controller
-- Skeptic
-- Follower
-- Charismatic
-- Thinker
-
 __Summary__
 
-2/10 correct
+1/5 correct
 
 __Responses__
 
 1. **Blank 1**
-   - Selected: Controller
-   - Correct: Charismatic
+   - Selected: Empathy
+   - Correct: Self-Awareness
    - Result: ✗ Incorrect
 
 2. **Blank 2**
-   - Selected: Follower
-   - Correct: Controller
+   - Selected: Social Skills
+   - Correct: Self-Regulation
    - Result: ✗ Incorrect
 
 3. **Blank 3**
-   - Selected: Charismatic
-   - Correct: Skeptic
-   - Result: ✗ Incorrect
+   - Selected: Motivation
+   - Correct: Motivation
+   - Result: ✓ Correct
 
 4. **Blank 4**
-   - Selected: Thinker
-   - Correct: Thinker
-   - Result: ✓ Correct
+   - Selected: Self-Regulation
+   - Correct: Empathy
+   - Result: ✗ Incorrect
 
 5. **Blank 5**
-   - Selected: Skeptic
-   - Correct: Follower
+   - Selected: Self-Awareness
+   - Correct: Social Skills
    - Result: ✗ Incorrect
 
-6. **Blank 1**
-   - Selected: Controller
-   - Correct: Charismatic
-   - Result: ✗ Incorrect
+__Markdown With Blanks__
 
-7. **Blank 2**
-   - Selected: Charismatic
-   - Correct: Controller
-   - Result: ✗ Incorrect
+Match the abilities with their definitions
 
-8. **Blank 3**
-   - Selected: Follower
-   - Correct: Skeptic
-   - Result: ✗ Incorrect
 
-9. **Blank 4**
-   - Selected: Thinker
-   - Correct: Thinker
-   - Result: ✓ Correct
 
-10. **Blank 5**
-   - Selected: Skeptic
-   - Correct: Follower
-   - Result: ✗ Incorrect
+> 1. [[blank:Self-Awareness]] is the ability to recognize and understand your own emotions as they occur, allowing you to accurately assess your strengths and weaknesses and maintain grounded confidence in your interactions.
+
+
+> 2. [[blank:Self-Regulation]] involves controlling disruptive impulses, staying calm under pressure, and adapting to changing circumstances, which helps you maintain consistency and integrity in your actions.
+
+
+> 3. [[blank:Motivation]] is the internal drive that keeps you pursuing goals with energy and persistence, even when faced with setbacks, and is fueled by your own standards of excellence rather than external rewards.
+
+
+> 4. [[blank:Empathy]] means moving beyond surface reactions to truly understand the feelings, concerns, and motivations of others, enabling you to respond thoughtfully and build stronger relationships.
+
+
+> 5. [[blank:Social Skills]] refers to the ability to manage relationships and build networks effectively, using communication and collaboration skills to unite diverse groups and achieve shared objectives.
+
+__Suggested Answers__
+
+- Empathy
+- Self-Regulation
+- Social Skills
+- Motivation
+- Self-Awareness
 
