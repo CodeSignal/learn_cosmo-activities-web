@@ -4,7 +4,7 @@ Fill In The Blanks
 
 __Markdown With Blanks__
 
-Match the bosses with their style:
+Match the bosses with their style
 
 
 
@@ -26,40 +26,65 @@ Match the bosses with their style:
 
 __Suggested Answers__
 
+- Controller
 - Skeptic
 - Follower
-- Controller
 - Charismatic
 - Thinker
 
 __Summary__
 
-2/5 correct
+2/10 correct
 
 __Responses__
 
 1. **Blank 1**
-   - Selected: Charismatic
+   - Selected: Controller
    - Correct: Charismatic
-   - Result: ✓ Correct
+   - Result: ✗ Incorrect
 
 2. **Blank 2**
-   - Selected: Controller
+   - Selected: Follower
    - Correct: Controller
-   - Result: ✓ Correct
+   - Result: ✗ Incorrect
 
 3. **Blank 3**
-   - Selected: Follower
+   - Selected: Charismatic
    - Correct: Skeptic
    - Result: ✗ Incorrect
 
 4. **Blank 4**
-   - Selected: Skeptic
+   - Selected: Thinker
    - Correct: Thinker
-   - Result: ✗ Incorrect
+   - Result: ✓ Correct
 
 5. **Blank 5**
+   - Selected: Skeptic
+   - Correct: Follower
+   - Result: ✗ Incorrect
+
+6. **Blank 1**
+   - Selected: Controller
+   - Correct: Charismatic
+   - Result: ✗ Incorrect
+
+7. **Blank 2**
+   - Selected: Charismatic
+   - Correct: Controller
+   - Result: ✗ Incorrect
+
+8. **Blank 3**
+   - Selected: Follower
+   - Correct: Skeptic
+   - Result: ✗ Incorrect
+
+9. **Blank 4**
    - Selected: Thinker
+   - Correct: Thinker
+   - Result: ✓ Correct
+
+10. **Blank 5**
+   - Selected: Skeptic
    - Correct: Follower
    - Result: ✗ Incorrect
 

@@ -335,7 +335,9 @@
   line-height: 1.7;
   box-sizing: border-box;
   vertical-align: baseline;
-  height: 1rem; 
+  height: 2.3rem;
+  color: var(--bespoke-accent);
+  cursor: pointer;
 }
 
 .blank:has(.chip) {
@@ -376,6 +378,38 @@
   line-height: inherit;
   min-width: 0;
   white-space: nowrap;
+}
+
+/* Custom Dropdown for FIB */
+.fib-dropdown {
+  position: absolute;
+  z-index: var(--bespoke-z-popover);
+  background: var(--bespoke-box);
+  border: 1px solid var(--bespoke-stroke);
+  border-radius: var(--bespoke-radius-lg);
+  box-shadow: var(--bespoke-shadow-lg);
+  padding: 4px;
+  color: var(--bespoke-fg);
+}
+
+.fib-option {
+  padding: 6px 8px;
+  border-radius: var(--bespoke-radius-md);
+  cursor: pointer;
+  user-select: none;
+}
+
+.fib-option:hover {
+  background: var(--bespoke-secondary-bg);
+}
+
+.fib-option.selected {
+  background: var(--bespoke-secondary-bg);
+  font-weight: var(--bespoke-font-weight-semibold);
+}
+
+.fib-option.clear {
+  color: var(--bespoke-danger);
 }
 
 /* ===== COMPLETION STATE ===== */

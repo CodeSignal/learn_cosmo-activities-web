@@ -4,7 +4,7 @@ Fill In The Blanks
 
 __Markdown With Blanks__
 
-Match the bosses with their style:
+Match the bosses with their style
 
 > **Boss 1**: You start your presentation with a bold vision and a simple chart showing the potential for rapid market growth. You avoid lengthy details and focus on the big win, using compelling visuals to capture attention. [[blank:Charismatic]]
 
