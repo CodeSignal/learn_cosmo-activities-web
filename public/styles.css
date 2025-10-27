@@ -469,7 +469,7 @@
 /* Fixed Clear Answers button */
 #restart {
   position: fixed;
-  top: 24px;
+  bottom: 12px;
   left: 12px;
   z-index: var(--bespoke-z-popover);
   padding: var(--bespoke-button-padding-sm);
