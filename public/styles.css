@@ -43,7 +43,6 @@
   place-items: center;
   height: 100%;
   min-height: 25rem;
-  padding: var(--bespoke-space-lg);
 }
 
 /* ===== SWIPE ACTIVITY STYLES ===== */
@@ -299,6 +298,17 @@
   height: 100%;
 }
 
+.fib-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--bespoke-space-md);
+  align-items: start;
+}
+
+.fib-actions #restart {
+  padding: var(--bespoke-button-padding-sm);
+}
+
 /* Prompt extends bespoke card styling */
 .fib-prompt {
   background: var(--bespoke-canvas);
@@ -448,15 +458,21 @@
     padding: var(--bespoke-space-lg);
   }
   
-  .activity-container {
-    padding: var(--bespoke-space-sm);
-  }
 }
 
 /* ===== UTILITY CLASSES ===== */
 
 .hidden { 
   display: none; 
+}
+
+/* Fixed Clear Answers button */
+#restart {
+  position: fixed;
+  top: 24px;
+  left: 12px;
+  z-index: var(--bespoke-z-popover);
+  padding: var(--bespoke-button-padding-sm);
 }
 
 .sr-only {

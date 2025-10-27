@@ -9,28 +9,28 @@ __Summary__
 __Responses__
 
 1. **Blank 1**
-   - Selected: Empathy
-   - Correct: Self-Awareness
+   - Selected Answer: Self-Regulation
+   - Correct Answer: Self-Awareness
    - Result: ✗ Incorrect
 
 2. **Blank 2**
-   - Selected: Social Skills
-   - Correct: Self-Regulation
+   - Selected Answer: Social Skills
+   - Correct Answer: Self-Regulation
    - Result: ✗ Incorrect
 
 3. **Blank 3**
-   - Selected: Motivation
-   - Correct: Motivation
+   - Selected Answer: Motivation
+   - Correct Answer: Motivation
    - Result: ✓ Correct
 
 4. **Blank 4**
-   - Selected: Self-Regulation
-   - Correct: Empathy
+   - Selected Answer: Self-Awareness
+   - Correct Answer: Empathy
    - Result: ✗ Incorrect
 
 5. **Blank 5**
-   - Selected: Self-Awareness
-   - Correct: Social Skills
+   - Selected Answer: Empathy
+   - Correct Answer: Social Skills
    - Result: ✗ Incorrect
 
 __Markdown With Blanks__

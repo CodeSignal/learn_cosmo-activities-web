@@ -5,7 +5,7 @@ export function initFib({ activity, state, postResults }) {
   // Create the fib container
   elContainer.innerHTML = `
     <div id="fib" class="fib">
-      ${fib.prompt ? `<div id="fib-prompt" class="fib-prompt"></div>` : ''}
+      ${fib.prompt ? `<div id=\"fib-prompt\" class=\"fib-prompt\"></div>` : ''}
       <div id="fib-content" class="fib-content"></div>
     </div>
   `;
