@@ -294,8 +294,6 @@
 .fib { 
   display: grid; 
   gap: var(--bespoke-space-xl); 
-  grid-template-rows: auto 1fr minmax(180px, auto);
-  height: 100%;
 }
 
 .fib-header {
@@ -306,7 +304,16 @@
 }
 
 .fib-actions #restart {
-  padding: var(--bespoke-button-padding-sm);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--bespoke-accent);
+  text-decoration: underline;
+  font-weight: var(--bespoke-font-weight-medium);
+}
+
+.fib-actions #restart:hover {
+  filter: brightness(0.9);
 }
 
 /* Prompt extends bespoke card styling */
@@ -467,13 +474,7 @@
 }
 
 /* Fixed Clear Answers button */
-#restart {
-  position: fixed;
-  bottom: 12px;
-  left: 12px;
-  z-index: var(--bespoke-z-popover);
-  padding: var(--bespoke-button-padding-sm);
-}
+
 
 .sr-only {
   position: absolute;

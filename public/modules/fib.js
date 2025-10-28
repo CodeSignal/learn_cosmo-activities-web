@@ -16,7 +16,10 @@ export function initFib({ activity, state, postResults }) {
 
   // Set the prompt content if it exists (already HTML from server)
   if (elFibPrompt && (fib.promptHtml || fib.prompt)) {
-    elFibPrompt.innerHTML = fib.promptHtml || fib.prompt;
+    elFibPrompt.innerHTML = `
+      ${fib.promptHtml || fib.prompt}
+      <div class="fib-actions"><a id="restart" href="#" class="as-button">Clear Answers</a></div>
+    `;
   }
 
   // Content HTML is provided by server with embedded blank spans

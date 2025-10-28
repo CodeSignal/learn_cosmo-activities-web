@@ -4,19 +4,19 @@ Fill In The Blanks
 
 __Summary__
 
-1/5 correct
+2/5 correct
 
 __Responses__
 
 1. **Blank 1**
-   - Selected Answer: Self-Regulation
+   - Selected Answer: Social Skills
    - Correct Answer: Self-Awareness
    - Result: ✗ Incorrect
 
 2. **Blank 2**
-   - Selected Answer: Social Skills
+   - Selected Answer: Self-Regulation
    - Correct Answer: Self-Regulation
-   - Result: ✗ Incorrect
+   - Result: ✓ Correct
 
 3. **Blank 3**
    - Selected Answer: Motivation
@@ -29,7 +29,7 @@ __Responses__
    - Result: ✗ Incorrect
 
 5. **Blank 5**
-   - Selected Answer: Empathy
+   - Selected Answer: 
    - Correct Answer: Social Skills
    - Result: ✗ Incorrect
 

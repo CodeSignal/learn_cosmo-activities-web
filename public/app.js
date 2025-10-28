@@ -6,7 +6,6 @@ import { initFib } from './modules/fib.js';
   'use strict';
 
   // Shared DOM references only
-  const elRestart = document.getElementById('restart');
 
   const state = {
     items: [],
@@ -79,6 +78,22 @@ import { initFib } from './modules/fib.js';
     }
   }
 
+  function bindRestart() {
+    const elRestart = document.getElementById('restart');
+    if (!elRestart) return;
+    elRestart.addEventListener('click', async (e) => {
+      e.preventDefault();
+      reset();
+      const activity2 = await loadActivityJson();
+      currentActivityData = activity2; // Update activity data for results
+      state.items = /^fill in the blanks$/i.test(activity2.type)
+        ? new Array(activity2.fib.blanks.length).fill(null)
+        : activity2.items;
+      initActivity(activity2);
+      bindRestart(); // re-bind for the newly rendered DOM
+    });
+  }
+
   async function start() {
     try {
       const activity = await loadActivityJson();
@@ -88,18 +103,8 @@ import { initFib } from './modules/fib.js';
         : activity.items;
       reset();
       initActivity(activity);
-      
-      elRestart.addEventListener('click', async () => {
-        reset();
-        const activity2 = await loadActivityJson();
-        currentActivityData = activity2; // Update activity data for results
-        state.items = /^fill in the blanks$/i.test(activity2.type)
-          ? new Array(activity2.fib.blanks.length).fill(null)
-          : activity2.items;
-        initActivity(activity2);
-      });
+      bindRestart();
     } catch (err) {
-      elQuestion.textContent = 'Failed to load activity.';
       // eslint-disable-next-line no-console
       console.error(err);
     }
