@@ -2,6 +2,18 @@
 /* This file contains only styles specific to the learning activities */
 /* Base styles, layout, and components are provided by bespoke.css */
 
+/* ===== PAGE LAYOUT ===== */
+html, body {
+  height: 100%;
+}
+
+body.bespoke {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f4f5f9;
+}
+
 /* ===== ACTIVITY LAYOUT OVERRIDES ===== */
 
 /* Header customization for activities (extends bespoke .header) */
@@ -29,6 +41,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: var(--bespoke-space-lg);
   padding: var(--bespoke-space-xl) var(--bespoke-space-lg);
   max-width: 56rem;
@@ -38,10 +51,8 @@
 
 /* Activity container */
 .activity-container {
-  flex: 1;
   display: grid;
   place-items: center;
-  height: 100%;
   min-height: 25rem;
 }
 
@@ -293,27 +304,89 @@
 
 .fib { 
   display: grid; 
-  gap: var(--bespoke-space-xl); 
+  gap: 0;
+  background: #f4f5f9;
+  border-radius: 6px 6px 0 0;
+  padding: var(--bespoke-space-xl);
+  padding-left: var(--bespoke-space-xl);
+  padding-right: var(--bespoke-space-xl);
 }
 
 .fib-header {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--bespoke-space-md);
-  align-items: start;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding-bottom: 16px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+  margin-bottom: 0;
 }
 
-.fib-actions #restart {
+.fib-heading {
+  flex: 1 0 0;
+  font-family: 'Founders Grotesk', var(--bespoke-font-family);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #182139;
+  letter-spacing: -0.24px;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.fib-heading p {
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  max-width: 585px;
+}
+
+.fib-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.fib-clear-all {
+  display: flex;
+  gap: 6px;
+  align-items: center;
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--bespoke-accent);
-  text-decoration: underline;
-  font-weight: var(--bespoke-font-weight-medium);
+  color: #515c7a;
+  text-decoration: none;
+  font-family: var(--bespoke-font-family);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.13px;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  flex-shrink: 0;
 }
 
-.fib-actions #restart:hover {
-  filter: brightness(0.9);
+.fib-clear-all span {
+  display: inline-block;
+  line-height: 1.35;
+}
+
+.fib-clear-all:hover {
+  opacity: 0.8;
+}
+
+.fib-clear-all svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
 }
 
 /* Prompt extends bespoke card styling */
@@ -330,38 +403,54 @@
 
 /* Content extends bespoke card styling */
 .fib-content { 
-  background: var(--bespoke-box); 
-  border: 1px solid var(--bespoke-stroke); 
-  border-radius: var(--bespoke-radius-lg); 
-  padding: var(--bespoke-space-xl); 
-  line-height: 1.7;
-  font-size: 1.0625rem;
+  background: transparent; 
+  border: none; 
+  border-radius: 0; 
+  padding: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin-top: 0;
+  line-height: 1.72;
+  font-size: 21px;
+  color: #2d3855;
+  letter-spacing: -0.21px;
+  font-family: var(--bespoke-font-family);
+  font-weight: var(--bespoke-font-weight-normal);
+  width: 670px;
+}
+
+.fib-content p { 
+  margin-top: 8px;
 }
 
 .blank { 
-  display: inline-block; 
-  min-width: 4rem; 
-  padding: 0.25rem 0.5rem; 
+  display: inline-flex;
+  align-items: center;
+  width: 96px;
+  padding: 0 6px 0 8px;
   margin: 0 0.125rem; 
-  border: 1px dashed var(--bespoke-stroke); 
-  border-radius: var(--bespoke-radius-sm); 
+  border: 1.5px solid #e7eaf2;
+  border-radius: 8px;
   text-align: center;
-  background: transparent;
+  background: #ffffff;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 1.0625rem;
-  line-height: 1.7;
+  font-size: 21px;
+  line-height: 1.35;
+  letter-spacing: -0.21px;
   box-sizing: border-box;
-  vertical-align: baseline;
-  height: 2.3rem;
-  color: var(--bespoke-accent);
+  vertical-align: sub;
+  height: 32px;
+  color: #2d3855;
   cursor: pointer;
+  font-family: var(--bespoke-font-family);
+  font-weight: var(--bespoke-font-weight-normal);
+  gap: 10px;
 }
 
-.blank:has(.chip) {
-  padding: 0.125rem 0.25rem;
-  min-width: auto;
+.blank:not(:empty) {
   width: auto;
-  border: 1px solid transparent;
+  min-width: 0;
+  vertical-align: baseline;
 }
 
 .blank.current { 

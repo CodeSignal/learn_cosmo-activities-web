@@ -4,25 +4,23 @@ Fill In The Blanks
 
 __Markdown With Blanks__
 
-Match each example to the correct type of defensiveness sign (physical, verbal, or emotional):
+Match the abilities with their definitions
 
-> **Example 1**: Someone crosses their arms and avoids eye contact during a tough conversation. [[blank:Physical]]
+> 1. [[blank:Self-Awareness]] is the ability to recognize and understand your own emotions as they occur, allowing you to accurately assess your strengths and weaknesses and maintain grounded confidence in your interactions.
 
-> **Example 2**: A person says, "You always do this!" when feeling upset. [[blank:Verbal]]
+> 2. [[blank:Self-Regulation]] involves controlling disruptive impulses, staying calm under pressure, and adapting to changing circumstances, which helps you maintain consistency and integrity in your actions.
 
-> **Example 3**: You notice your heart beating faster and feel the urge to interrupt. [[blank:Emotional]]
+> 3. [[blank:Motivation]] is the internal drive that keeps you pursuing goals with energy and persistence, even when faced with setbacks, and is fueled by your own standards of excellence rather than external rewards.
 
-> **Example 4**: Someone starts raising their voice and brings up old arguments. [[blank:Verbal]]
+> 4. [[blank:Empathy]] means moving beyond surface reactions to truly understand the feelings, concerns, and motivations of others, enabling you to respond thoughtfully and build stronger relationships.
 
-> **Example 5**: You clench your fists and your jaw feels tight. [[blank:Physical]]
+> 5. [[blank:Social Skills]] refers to the ability to manage relationships and build networks effectively, using communication and collaboration skills to unite diverse groups and achieve shared objectives.
 
-> **Example 6**: You catch yourself thinking, "That's not fair!" and planning your comeback instead of listening. [[blank:Emotional]]
 
 __Suggested Answers__
 
-- Physical 
-- Physical
-- Verbal 
-- Verbal
-- Emotional 
-- Emotional
+- Self-Awareness
+- Self-Regulation
+- Motivation
+- Empathy
+- Social Skills

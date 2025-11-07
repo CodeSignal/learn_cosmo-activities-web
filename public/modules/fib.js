@@ -5,21 +5,28 @@ export function initFib({ activity, state, postResults }) {
   // Create the fib container
   elContainer.innerHTML = `
     <div id="fib" class="fib">
-      ${fib.prompt ? `<div id=\"fib-prompt\" class=\"fib-prompt\"></div>` : ''}
+      <div class="fib-header">
+        <h2 class="fib-heading"></h2>
+        <div class="fib-actions">
+          <a id="restart" href="#" class="fib-clear-all">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 2.5H8M7.5 2.5V8.5C7.5 8.77614 7.27614 9 7 9H3C2.72386 9 2.5 8.77614 2.5 8.5V2.5M3.5 2.5V1.5C3.5 1.22386 3.72386 1 4 1H6C6.27614 1 6.5 1.22386 6.5 1.5V2.5M4 4.5V7.5M6 4.5V7.5" stroke="#acb4c7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Clear all</span>
+          </a>
+        </div>
+      </div>
       <div id="fib-content" class="fib-content"></div>
     </div>
   `;
   
   const elFib = document.getElementById('fib');
-  const elFibPrompt = document.getElementById('fib-prompt');
+  const elFibHeading = elFib.querySelector('.fib-heading');
   const elFibContent = document.getElementById('fib-content');
 
-  // Set the prompt content if it exists (already HTML from server)
-  if (elFibPrompt && (fib.promptHtml || fib.prompt)) {
-    elFibPrompt.innerHTML = `
-      ${fib.promptHtml || fib.prompt}
-      <div class="fib-actions"><a id="restart" href="#" class="as-button">Clear Answers</a></div>
-    `;
+  // Set the prompt content as the heading if it exists (already HTML from server)
+  if (elFibHeading && (fib.promptHtml || fib.prompt)) {
+    elFibHeading.innerHTML = fib.promptHtml || fib.prompt;
   }
 
   // Content HTML is provided by server with embedded blank spans
@@ -45,7 +52,7 @@ export function initFib({ activity, state, postResults }) {
     blank.setAttribute('aria-haspopup', 'listbox');
     blank.setAttribute('aria-expanded', 'false');
     blank.tabIndex = 0;
-    blank.textContent = 'Choose…';
+    blank.textContent = '';
     blank.addEventListener('click', () => {
       if (selectedByBlankIdx[idx]) {
         setSelection(idx, '');
@@ -78,7 +85,7 @@ export function initFib({ activity, state, postResults }) {
   function updateBlankDisplays() {
     blanks.forEach((blank, i) => {
       const value = selectedByBlankIdx[i];
-      blank.textContent = value || 'Choose…';
+      blank.textContent = value || '';
       blank.classList.toggle('empty', !value);
     });
   }

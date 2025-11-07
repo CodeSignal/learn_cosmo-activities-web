@@ -4,69 +4,60 @@ Fill In The Blanks
 
 __Summary__
 
-0/6 correct
+1/5 correct
 
 __Responses__
 
 1. **Blank 1**
-   - Selected Answer: Emotional
-   - Correct Answer: Physical
+   - Selected Answer: Empathy
+   - Correct Answer: Self-Awareness
    - Result: ✗ Incorrect
 
 2. **Blank 2**
-   - Selected Answer: Emotional
-   - Correct Answer: Verbal
+   - Selected Answer: Social Skills
+   - Correct Answer: Self-Regulation
    - Result: ✗ Incorrect
 
 3. **Blank 3**
-   - Selected Answer: Physical
-   - Correct Answer: Emotional
-   - Result: ✗ Incorrect
+   - Selected Answer: Motivation
+   - Correct Answer: Motivation
+   - Result: ✓ Correct
 
 4. **Blank 4**
-   - Selected Answer: Physical
-   - Correct Answer: Verbal
+   - Selected Answer: Self-Awareness
+   - Correct Answer: Empathy
    - Result: ✗ Incorrect
 
 5. **Blank 5**
-   - Selected Answer: Verbal
-   - Correct Answer: Physical
-   - Result: ✗ Incorrect
-
-6. **Blank 6**
-   - Selected Answer: Verbal
-   - Correct Answer: Emotional
+   - Selected Answer: Self-Regulation
+   - Correct Answer: Social Skills
    - Result: ✗ Incorrect
 
 __Markdown With Blanks__
 
-Match each example to the correct type of defensiveness sign (physical, verbal, or emotional):
+Match the abilities with their definitions
 
 
 
-> **Example 1**: Someone crosses their arms and avoids eye contact during a tough conversation. [[blank:Physical]]
+> 1. [[blank:Self-Awareness]] is the ability to recognize and understand your own emotions as they occur, allowing you to accurately assess your strengths and weaknesses and maintain grounded confidence in your interactions.
 
 
-> **Example 2**: A person says, "You always do this!" when feeling upset. [[blank:Verbal]]
+> 2. [[blank:Self-Regulation]] involves controlling disruptive impulses, staying calm under pressure, and adapting to changing circumstances, which helps you maintain consistency and integrity in your actions.
 
 
-> **Example 3**: You notice your heart beating faster and feel the urge to interrupt. [[blank:Emotional]]
+> 3. [[blank:Motivation]] is the internal drive that keeps you pursuing goals with energy and persistence, even when faced with setbacks, and is fueled by your own standards of excellence rather than external rewards.
 
 
-> **Example 4**: Someone starts raising their voice and brings up old arguments. [[blank:Verbal]]
+> 4. [[blank:Empathy]] means moving beyond surface reactions to truly understand the feelings, concerns, and motivations of others, enabling you to respond thoughtfully and build stronger relationships.
 
 
-> **Example 5**: You clench your fists and your jaw feels tight. [[blank:Physical]]
-
-
-> **Example 6**: You catch yourself thinking, "That's not fair!" and planning your comeback instead of listening. [[blank:Emotional]]
+> 5. [[blank:Social Skills]] refers to the ability to manage relationships and build networks effectively, using communication and collaboration skills to unite diverse groups and achieve shared objectives.
 
 __Suggested Answers__
 
-- Emotional
-- Physical
-- Emotional
-- Verbal
-- Verbal
-- Physical
+- Empathy
+- Self-Regulation
+- Social Skills
+- Motivation
+- Self-Awareness
 
