@@ -137,9 +137,23 @@ function buildActivityFromMarkdown(markdownText) {
       blanks.push({ index: currentIndex, answer });
       return `<span class="blank" data-blank="${currentIndex}" aria-label="blank ${currentIndex + 1}" tabindex="0"></span>`;
     });
-    const choiceSet = new Set(suggested.map(s => s.trim()));
-    blanks.forEach(b => choiceSet.add(b.answer));
-    const choices = Array.from(choiceSet);
+    // Build choices preserving duplicates from Suggested Answers, and ensure
+    // at least as many copies of each correct answer as there are blanks.
+    const suggestedTrimmed = suggested.map(s => s.trim()).filter(Boolean);
+    const requiredCounts = new Map();
+    blanks.forEach(b => {
+      const k = b.answer;
+      requiredCounts.set(k, (requiredCounts.get(k) || 0) + 1);
+    });
+    const suggestedCounts = new Map();
+    suggestedTrimmed.forEach(s => {
+      suggestedCounts.set(s, (suggestedCounts.get(s) || 0) + 1);
+    });
+    const choices = suggestedTrimmed.slice();
+    requiredCounts.forEach((req, k) => {
+      const have = suggestedCounts.get(k) || 0;
+      for (let i = have; i < req; i++) choices.push(k);
+    });
     // simple shuffle
     let s = (markdownText.length || 1337) % 2147483647 || 1337;
     function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }

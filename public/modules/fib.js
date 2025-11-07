@@ -35,6 +35,8 @@ export function initFib({ activity, state, postResults }) {
   // Selection state
   const selectedByBlankIdx = blanks.map(() => '');
   let openDropdown = null; // { container, blank, idx }
+  const totalCounts = new Map();
+  fib.choices.forEach(c => totalCounts.set(c, (totalCounts.get(c) || 0) + 1));
 
   // Prepare blanks to be clickable triggers
   blanks.forEach((blank) => {
@@ -63,10 +65,12 @@ export function initFib({ activity, state, postResults }) {
     });
   });
 
-  function getUsedChoices(exceptIdx) {
-    const used = new Set();
+  function getUsedCounts(exceptIdx) {
+    const used = new Map();
     selectedByBlankIdx.forEach((val, i) => {
-      if (val && i !== exceptIdx) used.add(val);
+      if (val && i !== exceptIdx) {
+        used.set(val, (used.get(val) || 0) + 1);
+      }
     });
     return used;
   }
@@ -100,7 +104,7 @@ export function initFib({ activity, state, postResults }) {
   function openMenuForBlank(blank, idx) {
     if (openDropdown && openDropdown.blank === blank) { closeMenu(); return; }
     closeMenu();
-    const used = getUsedChoices(idx);
+    const used = getUsedCounts(idx);
     const current = selectedByBlankIdx[idx];
 
     const rect = blank.getBoundingClientRect();
@@ -116,7 +120,20 @@ export function initFib({ activity, state, postResults }) {
     menu.style.left = docX + 'px';
     menu.style.top = docY + 'px';
 
-    const available = fib.choices.filter(choice => !used.has(choice) || choice === current);
+    // Build available list preserving duplicates but respecting remaining counts
+    const availCounts = new Map();
+    totalCounts.forEach((total, key) => {
+      const usedCount = used.get(key) || 0;
+      availCounts.set(key, Math.max(0, total - usedCount));
+    });
+    const available = [];
+    fib.choices.forEach(choice => {
+      const left = availCounts.get(choice) || 0;
+      if (left > 0) {
+        available.push(choice);
+        availCounts.set(choice, left - 1);
+      }
+    });
     available.forEach(choice => {
       const opt = document.createElement('div');
       opt.className = 'fib-option';
