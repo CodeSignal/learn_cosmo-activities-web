@@ -59,7 +59,7 @@
     --Colors-Shadow-Medium-Soft: rgba(13, 21, 40, 0.4);
     --Colors-Menu-Option-Hover: rgba(193, 199, 215, 0.1);
     --Colors-Menu-Option-Background: #414D6B;
-    --Colors-Menu-Option-Background-Selected: #394563;
+    --Colors-Menu-Option-Background-Selected: #414D6B;
     --Colors-Menu-Tab-Active: #FFFFFF;
   }
 }
@@ -68,6 +68,11 @@
   position: relative;
   display: inline-block;
   width: 100%;
+}
+
+.dropdown-container.grow-to-fit {
+  width: auto;
+  min-width: 200px;
 }
 
 /* Toggle Button */
@@ -127,6 +132,11 @@
   transition: color 0.2s ease;
 }
 
+.dropdown-container.grow-to-fit .dropdown-toggle-label {
+  overflow: visible;
+  text-overflow: clip;
+}
+
 .dropdown-toggle:hover .dropdown-toggle-label {
   color: var(--Colors-Text-Body-Strong);
 }
@@ -170,15 +180,21 @@
   top: calc(100% + 4px);
   left: 0;
   width: 240px;
-  height: 284px;
+  height: auto;
+  max-height: 284px;
   background: var(--Colors-Dropdown-Panel, #FFFFFF);
   border: 1px solid var(--Colors-Dropdown-Panel-Stroke, #E2E5EE);
   border-radius: var(--UI-Radius-radius-s);
   box-shadow: 0px 12px 38px 0px var(--Colors-Shadow-Float);
   z-index: 1000;
   display: none;
-  overflow: hidden;
+  overflow: visible;
   opacity: 1;
+}
+
+.dropdown-container.grow-to-fit .dropdown-menu {
+  width: 100%;
+  min-width: 200px;
 }
 
 .dropdown-container.open .dropdown-menu {
@@ -190,6 +206,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 12px;
+  overflow-y: visible;
 }
 
 /* Menu Items */
@@ -197,7 +214,9 @@
   display: flex;
   align-items: center;
   width: 216px;
-  height: 40px;
+  height: 40px !important;
+  min-height: 40px !important;
+  flex-shrink: 0 !important;
   padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal) !important;
   gap: var(--UI-Spacing-spacing-s);
   background: var(--Colors-Dropdown-Panel, #414D6B) !important;
@@ -216,6 +235,11 @@
   opacity: 1;
 }
 
+.dropdown-container.grow-to-fit .dropdown-menu-item {
+  width: 100%;
+  min-width: 216px;
+}
+
 .dropdown-menu-item:hover:not(.selected) {
   background: var(--Colors-Menu-Option-Hover, rgba(193, 199, 215, 0.1)) !important;
 }
@@ -232,7 +256,7 @@
   padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal) !important;
   gap: var(--UI-Spacing-spacing-s);
   opacity: 1;
-  background: var(--Colors-Dropdown-Panel, #414D6B) !important;
+  background: var(--Colors-Menu-Option-Background-Selected, #ECF2FF) !important;
   font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
   font-style: normal;
@@ -275,6 +299,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.dropdown-container.grow-to-fit .dropdown-menu-item-label {
+  overflow: visible;
+  text-overflow: clip;
 }
 
 /* Responsive adjustments */

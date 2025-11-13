@@ -20,6 +20,7 @@ class Dropdown {
       selectedValue: options.selectedValue || null,
       onSelect: options.onSelect || null,
       width: options.width || 'auto',
+      growToFit: options.growToFit || false,
       ...options
     };
 
@@ -76,15 +77,25 @@ class Dropdown {
     
     this.menu.appendChild(this.menuList);
     
+    // Calculate and set menu height dynamically
+    this.updateMenuHeight();
+    
     // Append to container
     this.container.appendChild(this.toggle);
     this.container.appendChild(this.menu);
     
-    // Set width if specified
-    if (this.config.width !== 'auto') {
+    // Set width if specified (but not if growToFit is enabled)
+    if (!this.config.growToFit && this.config.width !== 'auto') {
       this.container.style.width = typeof this.config.width === 'number' 
         ? `${this.config.width}px` 
         : this.config.width;
+    }
+    
+    // Add grow-to-fit class if enabled
+    if (this.config.growToFit) {
+      this.container.classList.add('grow-to-fit');
+      // Set initial width to min-width
+      this.container.style.width = '200px';
     }
     
     // Bind events
@@ -198,6 +209,41 @@ class Dropdown {
     this.updateToggleState();
   }
 
+  updateMenuHeight() {
+    const itemCount = this.config.items.length;
+    const itemHeight = 40; // Height of each menu item
+    const gap = 4; // Gap between items
+    const padding = 24; // Total padding (12px top + 12px bottom)
+    const maxItems = 6; // Maximum items before scrolling
+    
+    // Calculate height: (itemHeight * itemCount) + (gap * (itemCount - 1)) + padding
+    let calculatedHeight = (itemHeight * itemCount) + (gap * Math.max(0, itemCount - 1)) + padding;
+    
+    // Cap at max height for 6 items (284px) to enable scrolling
+    const maxHeight = (itemHeight * maxItems) + (gap * (maxItems - 1)) + padding;
+    
+    if (itemCount <= maxItems) {
+      // Set exact height for 6 or fewer items
+      this.menu.style.height = `${calculatedHeight}px`;
+      this.menu.style.maxHeight = `${calculatedHeight}px`;
+      this.menu.style.overflow = 'visible';
+      this.menuList.style.overflowY = 'visible';
+      this.menuList.style.maxHeight = 'none';
+      this.menuList.style.height = 'auto';
+    } else {
+      // Set max height and enable scrolling for more than 6 items
+      // The menu container constrains the height to 284px, and the list scrolls
+      this.menu.style.height = `${maxHeight}px`;
+      this.menu.style.maxHeight = `${maxHeight}px`;
+      this.menu.style.overflow = 'hidden';
+      // List should be constrained by max-height and scroll, maintaining item heights
+      // Don't set explicit height, let it grow naturally but constrain with max-height
+      this.menuList.style.overflowY = 'auto';
+      this.menuList.style.maxHeight = `${maxHeight - padding}px`;
+      this.menuList.style.height = '';
+    }
+  }
+
   updateToggleState() {
     if (this.isOpen) {
       this.container.classList.add('open');
@@ -219,6 +265,134 @@ class Dropdown {
     } else {
       this.toggle.classList.remove('has-selection');
     }
+    
+    // Update width if growToFit is enabled
+    if (this.config.growToFit) {
+      this.updateToggleWidth();
+    }
+  }
+
+  updateToggleWidth() {
+    // Only measure and grow toggle if there's a selected value
+    let toggleWidth = 200; // Default minimum width
+    if (this.selectedValue) {
+      const toggleLabel = this.toggle.querySelector('.dropdown-toggle-label');
+      const toggleContent = this.toggle.querySelector('.dropdown-toggle-content');
+      const toggleIcon = this.toggle.querySelector('.dropdown-toggle-icon');
+      const originalContainerWidth = this.container.style.width;
+      
+      // Temporarily remove truncation to measure full width
+      const originalOverflow = toggleLabel.style.overflow;
+      const originalTextOverflow = toggleLabel.style.textOverflow;
+      const originalWhiteSpace = toggleLabel.style.whiteSpace;
+      
+      // Set container and toggle to auto width temporarily for measurement
+      const originalToggleWidth = this.toggle.style.width;
+      this.container.style.width = 'auto';
+      this.toggle.style.width = 'auto';
+      toggleLabel.style.overflow = 'visible';
+      toggleLabel.style.textOverflow = 'clip';
+      toggleLabel.style.whiteSpace = 'nowrap';
+      
+      // Force a layout recalculation to get accurate measurements
+      void this.container.offsetHeight;
+      void this.toggle.offsetHeight;
+      void toggleContent.offsetHeight;
+      
+      // Measure components individually to calculate total width
+      const contentStyles = window.getComputedStyle(toggleContent);
+      const labelStyles = window.getComputedStyle(toggleLabel);
+      const iconStyles = window.getComputedStyle(toggleIcon);
+      
+      // Get padding and gap values
+      const paddingLeft = parseFloat(contentStyles.paddingLeft) || 0;
+      const paddingRight = parseFloat(contentStyles.paddingRight) || 0;
+      const gap = parseFloat(contentStyles.gap) || 0;
+      
+      // Measure label and icon widths when unconstrained
+      // Use getBoundingClientRect for more accurate measurement
+      const labelRect = toggleLabel.getBoundingClientRect();
+      const iconRect = toggleIcon.getBoundingClientRect();
+      const labelWidth = labelRect.width;
+      const iconWidth = iconRect.width;
+      
+      // Calculate total content width: padding-left + label + gap + icon + padding-right
+      const contentWidth = paddingLeft + labelWidth + gap + iconWidth + paddingRight;
+      
+      // Get computed border width
+      const toggleStyles = window.getComputedStyle(this.toggle);
+      const borderLeft = parseFloat(toggleStyles.borderLeftWidth) || 0;
+      const borderRight = parseFloat(toggleStyles.borderRightWidth) || 0;
+      
+      // With box-sizing: border-box, borders are included in the width
+      // So toggle width = content width + borders
+      // Add a buffer to account for measurement inaccuracies and ensure proper 12px padding
+      const buffer = 16; // Buffer to ensure proper padding spacing (accounts for flexbox layout and measurement accuracy)
+      toggleWidth = Math.max(200, contentWidth + borderLeft + borderRight + buffer);
+      
+      // Restore toggle width
+      this.toggle.style.width = originalToggleWidth;
+      
+      // Restore original styles
+      toggleLabel.style.overflow = originalOverflow;
+      toggleLabel.style.textOverflow = originalTextOverflow;
+      toggleLabel.style.whiteSpace = originalWhiteSpace;
+      this.container.style.width = originalContainerWidth;
+    }
+    
+    // Set container width based on toggle width only
+    this.container.style.width = `${toggleWidth}px`;
+    
+    // Always measure menu items to ensure menu is wide enough
+    const menuItems = this.menuList.querySelectorAll('.dropdown-menu-item');
+    let maxMenuItemWidth = 0;
+    
+    // Temporarily show menu and set to auto width for accurate measurement
+    const originalMenuDisplay = this.menu.style.display;
+    const originalMenuWidth = this.menu.style.width;
+    const originalMenuVisibility = this.menu.style.visibility;
+    this.menu.style.display = 'block';
+    this.menu.style.visibility = 'hidden';
+    this.menu.style.width = 'auto';
+    this.menu.style.position = 'absolute';
+    this.menu.style.top = '-9999px';
+    
+    menuItems.forEach(item => {
+      const itemContent = item.querySelector('.dropdown-menu-item-content');
+      const itemLabel = item.querySelector('.dropdown-menu-item-label');
+      if (itemContent && itemLabel) {
+        // Temporarily remove truncation to measure full width
+        const originalItemWidth = item.style.width;
+        const originalLabelOverflow = itemLabel.style.overflow;
+        const originalLabelTextOverflow = itemLabel.style.textOverflow;
+        
+        item.style.width = 'auto';
+        itemLabel.style.overflow = 'visible';
+        itemLabel.style.textOverflow = 'clip';
+        
+        const itemWidth = itemContent.scrollWidth;
+        maxMenuItemWidth = Math.max(maxMenuItemWidth, itemWidth);
+        
+        // Restore styles
+        item.style.width = originalItemWidth;
+        itemLabel.style.overflow = originalLabelOverflow;
+        itemLabel.style.textOverflow = originalLabelTextOverflow;
+      }
+    });
+    
+    // Restore menu styles
+    this.menu.style.display = originalMenuDisplay;
+    this.menu.style.visibility = originalMenuVisibility;
+    this.menu.style.width = originalMenuWidth;
+    this.menu.style.top = '';
+    
+    // Add padding for menu (12px on each side = 24px total)
+    const menuPadding = 24;
+    // Menu width should be at least as wide as the container, but can be wider
+    const menuWidth = Math.max(toggleWidth, maxMenuItemWidth + menuPadding);
+    
+    // Apply the calculated width to menu (can be wider than container)
+    this.menu.style.width = `${menuWidth}px`;
   }
 
   selectItem(value) {

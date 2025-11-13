@@ -195,6 +195,24 @@
         <strong>Selected Value:</strong> <span id="output-many">None</span>
       </div>
     </div>
+
+    <!-- Grow to Fit -->
+    <div class="test-section">
+      <h2>Grow to Fit Selected Value</h2>
+      <div class="test-row">
+        <div class="test-item">
+          <label>Grow to Fit Enabled</label>
+          <div id="dropdown-grow" style="width: 240px;"></div>
+        </div>
+      </div>
+      <div class="test-output">
+        <strong>Selected Value:</strong> <span id="output-grow">None</span>
+        <br>
+        <small style="color: var(--test-label-color); margin-top: 8px; display: block;">
+          Select a long option to see the dropdown grow to fit the text.
+        </small>
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -202,17 +220,26 @@
 
     // Sample data
     const sampleItems = [
-      { value: 'option-1', label: 'Menu option label' },
-      { value: 'option-2', label: 'Menu option label' },
-      { value: 'option-3', label: 'Menu option label' },
-      { value: 'option-4', label: 'Menu option label' },
-      { value: 'option-5', label: 'Menu option label' },
-      { value: 'option-6', label: 'Menu option label' }
+      { value: 'option-1', label: 'Option 1' },
+      { value: 'option-2', label: 'Option 2' },
+      { value: 'option-3', label: 'Option 3' },
+      { value: 'option-4', label: 'Option 4' },
+      { value: 'option-5', label: 'Option 5' },
+      { value: 'option-6', label: 'Option 6' }
+    ];
+
+    // Items with varying lengths for grow-to-fit test
+    const growItems = [
+      { value: 'short', label: 'Short' },
+      { value: 'medium', label: 'Medium Length Option' },
+      { value: 'long', label: 'This is a Very Long Option Label That Should Grow' },
+      { value: 'very-long', label: 'This is an Extremely Long Option Label That Will Definitely Require More Space' },
+      { value: 'normal', label: 'Normal Option' }
     ];
 
     const manyItems = Array.from({ length: 10 }, (_, i) => ({
       value: `option-${i + 1}`,
-      label: `Menu option label ${i + 1}`
+      label: `Option ${i + 1}`
     }));
 
     // Basic dropdown
@@ -260,8 +287,19 @@
     // Many options
     const dropdownMany = new Dropdown('#dropdown-many', {
       items: manyItems,
+      growToFit: true,
       onSelect: (value, item) => {
         document.getElementById('output-many').textContent = value || 'None';
+        console.log('Selected:', value, item);
+      }
+    });
+
+    // Grow to fit dropdown
+    const dropdownGrow = new Dropdown('#dropdown-grow', {
+      items: growItems,
+      growToFit: true,
+      onSelect: (value, item) => {
+        document.getElementById('output-grow').textContent = value || 'None';
         console.log('Selected:', value, item);
       }
     });
@@ -271,7 +309,8 @@
       basic: dropdownBasic,
       preselected: dropdownPreselected,
       custom: dropdownCustom,
-      many: dropdownMany
+      many: dropdownMany,
+      grow: dropdownGrow
     };
   </script>
 </body>
