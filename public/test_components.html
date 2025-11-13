@@ -11,10 +11,38 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --test-bg: #f4f5f9;
+      --test-section-bg: #ffffff;
+      --test-section-shadow: rgba(0, 0, 0, 0.1);
+      --test-heading-color: #182139;
+      --test-subheading-color: #2d3855;
+      --test-label-color: #495573;
+      --test-output-bg: #f6f6f6;
+      --test-output-text: #2d3855;
+      --test-output-strong: #182139;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --test-bg: #1a1f2e;
+        --test-section-bg: #2d3855;
+        --test-section-shadow: rgba(0, 0, 0, 0.3);
+        --test-heading-color: #ffffff;
+        --test-subheading-color: #c1c7d7;
+        --test-label-color: #c1c7d7;
+        --test-output-bg: rgba(193, 199, 215, 0.1);
+        --test-output-text: #c1c7d7;
+        --test-output-strong: #ffffff;
+      }
+    }
+
     body {
-      background: #f4f5f9;
+      background: var(--test-bg);
       padding: 40px 20px;
       font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+      color: var(--test-heading-color);
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .test-container {
@@ -23,18 +51,19 @@
     }
 
     .test-section {
-      background: #ffffff;
+      background: var(--test-section-bg);
       border-radius: 12px;
       padding: 32px;
       margin-bottom: 32px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px var(--test-section-shadow);
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .test-section h2 {
       margin: 0 0 24px 0;
       font-size: 24px;
       font-weight: 600;
-      color: #182139;
+      color: var(--test-heading-color);
       letter-spacing: -0.24px;
     }
 
@@ -42,7 +71,7 @@
       margin: 0 0 16px 0;
       font-size: 18px;
       font-weight: 500;
-      color: #2d3855;
+      color: var(--test-subheading-color);
       letter-spacing: -0.18px;
     }
 
@@ -63,27 +92,32 @@
     .test-item label {
       font-size: 14px;
       font-weight: 500;
-      color: #495573;
+      color: var(--test-label-color);
     }
 
     .test-output {
       margin-top: 16px;
       padding: 12px;
-      background: #f6f6f6;
+      background: var(--test-output-bg);
       border-radius: 8px;
       font-size: 14px;
-      color: #2d3855;
+      color: var(--test-output-text);
       font-family: 'Courier New', monospace;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .test-output strong {
-      color: #182139;
+      color: var(--test-output-strong);
+    }
+
+    h1 {
+      transition: color 0.2s ease;
     }
   </style>
 </head>
 <body class="bespoke">
   <div class="test-container">
-    <h1 style="margin-bottom: 32px; font-size: 32px; font-weight: 700; color: #182139;">
+    <h1 style="margin-bottom: 32px; font-size: 32px; font-weight: 700; color: var(--test-heading-color);">
       Component Tests - Dropdown
     </h1>
 
@@ -216,7 +250,7 @@
     // Custom placeholder
     const dropdownCustom = new Dropdown('#dropdown-custom', {
       items: sampleItems,
-      placeholder: 'Choose an option...',
+      placeholder: 'Dropdown Toggle',
       onSelect: (value, item) => {
         document.getElementById('output-custom').textContent = value || 'None';
         console.log('Selected:', value, item);

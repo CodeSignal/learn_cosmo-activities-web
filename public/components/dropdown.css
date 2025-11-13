@@ -3,6 +3,67 @@
  * Matches CodeSignal Design System - Light Mode Default Toggle
  */
 
+:root {
+  /* Colors - Light Mode */
+  --Colors-Dropdown-Toggle-Text: #495573;
+  --Colors-Text-Body-Strong: #182139;
+  --Colors-Text-Body-Default: #2d3855;
+  --Colors-Dropdown-Icon: #808AA5;
+  --Colors-Dropdown-Icon-Hover: #8B94AB;
+  --Colors-Dropdown-Icon-Active: #377DFF;
+  --Colors-Primary-Medium: #377DFF;
+  --Colors-Dropdown-Panel: #FFFFFF;
+  --Colors-Dropdown-Panel-Stroke: #E2E5EE;
+  --Colors-Dropdown-Toggle: #FFFFFF;
+  --Colors-Dropdown-Toggle-Background: #FFFFFF;
+  --Colors-Dropdown-Toggle-Stroke: #E2E5EE;
+  --Colors-Dropdown-Toggle-Hover: #FFFFFF;
+  --Colors-Dropdown-Toggle-Hover-Border: #CBD5E1;
+  --Colors-Dropdown-Panel-Stroke-Hover: #CBD5E1;
+  --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
+  --Colors-Shadow-Medium-Soft: rgba(22, 44, 96, 0.12);
+  --Colors-Menu-Option-Hover: #f6f6f6;
+  --Colors-Menu-Option-Background: #FFFFFF;
+  --Colors-Menu-Option-Background-Selected: #ECF2FF;
+  --Colors-Menu-Tab-Active: #FFFFFF;
+  
+  /* Spacing */
+  --UI-Spacing-spacing-none: 0;
+  --UI-Spacing-spacing-s: 8px;
+  --Menu-Item-Padding-Horizontal: 12px;
+  
+  /* Radius */
+  --UI-Radius-radius-s: 8px;
+  --Menu-Item-Roundness: 8px;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Colors - Dark Mode */
+    --Colors-Dropdown-Toggle-Text: #C1C7D7;
+    --Colors-Text-Body-Strong: #FFFFFF;
+    --Colors-Text-Body-Default: #C1C7D7;
+    --Colors-Dropdown-Icon-Hover: #8B94AB;
+    --Colors-Dropdown-Icon-Active: #377DFF;
+    --Colors-Primary-Medium: #377DFF;
+    --Colors-Dropdown-Panel: #414D6B;
+    --Colors-Dropdown-Panel-Stroke: #37425F;
+    --Colors-Dropdown-Toggle: #414D6B;
+    --Colors-Dropdown-Toggle-Background: #414D6B;
+    --Colors-Dropdown-Toggle-Stroke: #37425F;
+    --Colors-Dropdown-Toggle-Hover: #495573;
+    --Colors-Dropdown-Toggle-Hover-Border: rgba(193, 199, 215, 0.35);
+    --Colors-Dropdown-Panel-Stroke-Hover: #37425F;
+    --Colors-Shadow-Float: rgba(13, 21, 40, 0.3);
+    --Colors-Shadow-Medium-Soft: rgba(13, 21, 40, 0.4);
+    --Colors-Menu-Option-Hover: rgba(193, 199, 215, 0.1);
+    --Colors-Menu-Option-Background: #414D6B;
+    --Colors-Menu-Option-Background-Selected: #394563;
+    --Colors-Menu-Tab-Active: #FFFFFF;
+  }
+}
+
 .dropdown-container {
   position: relative;
   display: inline-block;
@@ -13,20 +74,20 @@
 .dropdown-toggle {
   width: 100%;
   height: 40px;
-  background: #ffffff !important;
-  border: 1px solid #e2e5ee;
-  border-radius: 8px;
+  background: var(--Colors-Dropdown-Toggle) !important;
+  border: 1px solid var(--Colors-Dropdown-Toggle-Stroke) !important;
+  border-radius: var(--UI-Radius-radius-s) !important;
   padding: 0;
   cursor: pointer;
   position: relative;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
-  box-shadow: none;
+  box-shadow: 0px 2px 3px 0px var(--Colors-Shadow-Medium-Soft);
 }
 
 .dropdown-toggle:hover {
-  background: #ffffff !important;
-  border-color: #cbd5e1;
+  background: var(--Colors-Dropdown-Toggle-Hover) !important;
+  border-color: var(--Colors-Dropdown-Panel-Stroke-Hover) !important;
   box-shadow: 0 2px 8px rgba(76, 90, 123, 0.08);
 }
 
@@ -57,9 +118,9 @@
   font-weight: 500;
   font-style: normal;
   line-height: 145%;
-  letter-spacing: -1.5%;
+  letter-spacing: -0.24px; /* -1.5% of 16px */
   vertical-align: middle;
-  color: var(--Colors-Dropdown-Toggle-Text, #495573);
+  color: var(--Colors-Dropdown-Toggle-Text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -67,26 +128,28 @@
 }
 
 .dropdown-toggle:hover .dropdown-toggle-label {
-  color: var(--Colors-Text-Body-Strong, #182139);
+  color: var(--Colors-Text-Body-Strong);
 }
 
 .dropdown-toggle.has-selection .dropdown-toggle-label {
-  color: var(--Colors-Text-Body-Strong, #182139);
+  color: var(--Colors-Text-Body-Strong);
 }
 
 .dropdown-toggle-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   flex-shrink: 0;
   width: 20px;
   height: 20px;
+  position: relative;
 }
 
 .dropdown-toggle-icon svg {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 10px;
+  height: 5px;
+  position: absolute;
+  top: 7.5px;
+  left: 5px;
 }
 
 .dropdown-toggle-icon svg path {
@@ -94,7 +157,7 @@
 }
 
 .dropdown-toggle:hover .dropdown-toggle-icon svg path {
-  stroke: var(--Colors-Dropdown-Icon-Hover, #808AA5);
+  stroke: var(--Colors-Dropdown-Icon-Hover, #8B94AB);
 }
 
 .dropdown-container.open .dropdown-toggle-icon svg path {
@@ -110,8 +173,8 @@
   height: 284px;
   background: var(--Colors-Dropdown-Panel, #FFFFFF);
   border: 1px solid var(--Colors-Dropdown-Panel-Stroke, #E2E5EE);
-  border-radius: var(--UI-Radius-radius-s, 8px);
-  box-shadow: 0px 12px 38px 0px var(--Colors-Shadow-Float, rgba(22, 44, 96, 0.12));
+  border-radius: var(--UI-Radius-radius-s);
+  box-shadow: 0px 12px 38px 0px var(--Colors-Shadow-Float);
   z-index: 1000;
   display: none;
   overflow: hidden;
@@ -135,26 +198,26 @@
   align-items: center;
   width: 216px;
   height: 40px;
-  padding: var(--UI-Spacing-spacing-none, 0) var(--Menu-Item-Padding-Horizontal, 12px) !important;
-  gap: var(--UI-Spacing-spacing-s, 8px);
-  background: var(--Colors-Menu-Option-Background, #FFFFFF);
+  padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal) !important;
+  gap: var(--UI-Spacing-spacing-s);
+  background: var(--Colors-Dropdown-Panel, #414D6B) !important;
   border: none !important;
-  border-radius: var(--Menu-Item-Roundness, 8px) !important;
+  border-radius: var(--Menu-Item-Roundness) !important;
   cursor: pointer;
   font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
   letter-spacing: -0.24px;
-  color: #2d3855;
+  color: var(--Colors-Text-Body-Default);
   text-align: left;
   transition: background-color 0.15s ease;
   box-sizing: border-box;
   opacity: 1;
 }
 
-.dropdown-menu-item:hover {
-  background: #f6f6f6;
+.dropdown-menu-item:hover:not(.selected) {
+  background: var(--Colors-Menu-Option-Hover, rgba(193, 199, 215, 0.1)) !important;
 }
 
 .dropdown-menu-item:focus {
@@ -165,19 +228,28 @@
 .dropdown-menu-item.selected {
   width: 216px;
   height: 40px;
-  border-radius: var(--Menu-Item-Roundness, 8px);
-  padding: var(--UI-Spacing-spacing-none, 0) var(--Menu-Item-Padding-Horizontal, 12px) !important;
-  gap: var(--UI-Spacing-spacing-s, 8px);
+  border-radius: var(--Menu-Item-Roundness);
+  padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal) !important;
+  gap: var(--UI-Spacing-spacing-s);
   opacity: 1;
-  background: var(--Colors-Menu-Option-Background-Selected, #ECF2FF);
+  background: var(--Colors-Dropdown-Panel, #414D6B) !important;
+  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
-  color: #11192e;
+  font-style: normal;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.24px;
+  color: var(--Colors-Text-Body-Strong, #FFFFFF) !important;
+}
+
+.dropdown-menu-item.selected .dropdown-menu-item-label {
+  color: var(--Colors-Text-Body-Strong, #FFFFFF) !important;
 }
 
 .dropdown-menu-item-content {
   display: flex;
   align-items: center;
-  gap: var(--UI-Spacing-spacing-s, 8px);
+  gap: var(--UI-Spacing-spacing-s);
   width: 100%;
 }
 

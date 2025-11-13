@@ -39,7 +39,13 @@ body.bespoke {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f4f5f9;
+  background: var(--test-bg, #f4f5f9);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bespoke {
+    background: var(--test-bg, #1a1f2e);
+  }
 }
 
 /* ===== ACTIVITY LAYOUT OVERRIDES ===== */

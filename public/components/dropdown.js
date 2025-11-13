@@ -280,14 +280,14 @@ class Dropdown {
 
   // SVG Icons
   getChevronDownIcon() {
-    return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M5 7.5L10 12.5L15 7.5" stroke="var(--Colors-Dropdown-Icon, #B4BBCD)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+    return `<svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0L5 5L10 0" stroke="var(--Colors-Dropdown-Icon, #808AA5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
     </svg>`;
   }
 
   getChevronUpIcon() {
-    return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15 12.5L10 7.5L5 12.5" stroke="var(--Colors-Dropdown-Icon, #B4BBCD)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
+    return `<svg width="10" height="5" viewBox="0 0 10 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 5L5 0L10 5" stroke="var(--Colors-Dropdown-Icon-Active, #377DFF)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="1"/>
     </svg>`;
   }
 
