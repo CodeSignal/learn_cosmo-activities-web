@@ -55,7 +55,7 @@
   --Menu-Item-Roundness: 8px;
   --Menu-Item-Font-Size: 16px;
   --Menu-Item-Line-Height: 24px;
-  --Colors-Menu-Tab-Link-Hover: #E2E5EE;
+  --Colors-Menu-Tab-Link-Hover: #2D3855;
 }
 
 /* ===== PAGE LAYOUT ===== */
@@ -84,6 +84,7 @@ body.bespoke {
     --Colors-Dropdown-Panel-Stroke: rgba(45, 56, 85, 0.00);
     --Colors-Dropdown-Panel: #2D3855;
     --Colors-Shadow-Float: rgba(13, 21, 40, 0.30);
+    --Colors-Menu-Tab-Link-Hover: #E2E5EE;
   }
 }
 

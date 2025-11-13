@@ -4,22 +4,22 @@ Fill In The Blanks
 
 __Summary__
 
-1/3 correct
+0/3 correct
 
 __Responses__
 
 1. **Blank 1**
-   - Selected Answer: example
+   - Selected Answer: 
    - Correct Answer: example
-   - Result: ✓ Correct
+   - Result: ✗ Incorrect
 
 2. **Blank 2**
-   - Selected Answer: nonsense
+   - Selected Answer: 
    - Correct Answer: useless
    - Result: ✗ Incorrect
 
 3. **Blank 3**
-   - Selected Answer: useless
+   - Selected Answer: 
    - Correct Answer: nonsense
    - Result: ✗ Incorrect
 
