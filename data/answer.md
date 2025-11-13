@@ -9,17 +9,17 @@ __Summary__
 __Responses__
 
 1. **Blank 1**
-   - Selected Answer: nonsense
+   - Selected Answer: example
    - Correct Answer: example
-   - Result: ✗ Incorrect
-
-2. **Blank 2**
-   - Selected Answer: useless
-   - Correct Answer: useless
    - Result: ✓ Correct
 
+2. **Blank 2**
+   - Selected Answer: nonsense
+   - Correct Answer: useless
+   - Result: ✗ Incorrect
+
 3. **Blank 3**
-   - Selected Answer: 
+   - Selected Answer: useless
    - Correct Answer: nonsense
    - Result: ✗ Incorrect
 
