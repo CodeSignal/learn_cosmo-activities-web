@@ -475,7 +475,7 @@ body.bespoke {
   margin: 0 0.125rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
-  vertical-align: baseline; /* sub */
+  vertical-align: middle;
   cursor: pointer;
   border-radius: var(--UI-Radius-radius-s, 8px);
   border: 1.5px solid var(--Colors-Learn-Practice-Blank-Slot-Border, #E7EAF2);
@@ -492,11 +492,11 @@ body.bespoke {
 
   width: auto;
   min-width: 0;
+  min-height: 32px;
 }
 
 .blank.empty {
   width: 96px;
-  height: 32px;
 }
 
 .blank.current { 
