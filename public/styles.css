@@ -499,6 +499,11 @@ body.bespoke {
   width: 96px;
 }
 
+.blank:hover {
+  border-color: var(--Colors-Learn-Practice-Blank-Slot-Border-Hover, #E2E5EE);
+  background: var(--Colors-Learn-Practice-Blank-Slot-Hover, #F8F9FB);
+}
+
 .blank.current { 
   outline: 2px solid var(--bespoke-accent); 
   outline-offset: 2px; 

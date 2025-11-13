@@ -4,14 +4,14 @@ Fill In The Blanks
 
 __Summary__
 
-3/3 correct
+1/3 correct
 
 __Responses__
 
 1. **Blank 1**
-   - Selected Answer: example
+   - Selected Answer: nonsense
    - Correct Answer: example
-   - Result: ✓ Correct
+   - Result: ✗ Incorrect
 
 2. **Blank 2**
    - Selected Answer: useless
@@ -19,9 +19,9 @@ __Responses__
    - Result: ✓ Correct
 
 3. **Blank 3**
-   - Selected Answer: nonsense
+   - Selected Answer: 
    - Correct Answer: nonsense
-   - Result: ✓ Correct
+   - Result: ✗ Incorrect
 
 __Markdown With Blanks__
 
