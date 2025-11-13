@@ -30,6 +30,34 @@
   font-style: italic;
 }
 
+/* ===== CSS VARIABLES ===== */
+:root {
+  --Colors-Backgrounds-Main-Default: #F4F5F9;
+  --Colors-Text-Body-Strong: #182139;
+  --Fonts-Headlines-sm: 24px;
+  --Colors-Buttons-Text-Default: #979FB4;
+  --Fonts-Body-Default-xxs: 13px;
+  --Colors-Text-Body-Default: #2D3855;
+  --Fonts-Body-Default-xxl: 21px;
+  --UI-Spacing-spacing-xs: 8px;
+  --UI-Spacing-spacing-s: 8px;
+  --UI-Spacing-spacing-none: 0;
+  --UI-Radius-radius-s: 8px;
+  --Colors-Learn-Practice-Blank-Slot-Border: #E7EAF2;
+  --Colors-Learn-Practice-Blank-Slot: #FFF;
+  --Colors-Learn-Practice-Blank-Slot-Border-Hover: #E2E5EE;
+  --Colors-Learn-Practice-Blank-Slot-Hover: #F8F9FB;
+  --Colors-Dropdown-Panel-Stroke: #E2E5EE;
+  --Colors-Dropdown-Panel: #FFF;
+  --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
+  --Menu-Item-Height: 40px;
+  --Menu-Item-Padding-Horizontal: 12px;
+  --Menu-Item-Roundness: 8px;
+  --Menu-Item-Font-Size: 16px;
+  --Menu-Item-Line-Height: 24px;
+  --Colors-Menu-Tab-Link-Hover: #E2E5EE;
+}
+
 /* ===== PAGE LAYOUT ===== */
 html, body {
   height: 100%;
@@ -39,7 +67,7 @@ body.bespoke {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--Colors-Backgrounds-Main-Default, #F4F5F9);
+  background: var(--Colors-Backgrounds-Main-Default);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -350,7 +378,7 @@ body.bespoke {
 .fib { 
   display: grid; 
   gap: 0;
-  background: var(--Colors-Backgrounds-Main-Default, #F4F5F9);
+  background: var(--Colors-Backgrounds-Main-Default);
   border-radius: 6px 6px 0 0;
   padding: var(--bespoke-space-xl);
   padding-left: var(--bespoke-space-xl);
@@ -370,9 +398,9 @@ body.bespoke {
 
 .fib-heading {
   flex: 1 0 0;
-  color: var(--Colors-Text-Body-Strong, #182139);
+  color: var(--Colors-Text-Body-Strong);
   font-family: "Founders Grotesk";
-  font-size: var(--Fonts-Headlines-sm, 24px);
+  font-size: var(--Fonts-Headlines-sm);
   font-style: normal;
   font-weight: 500;
   line-height: 120%; /* 28.8px */
@@ -408,11 +436,11 @@ body.bespoke {
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--Colors-Buttons-Text-Default, #979FB4);
+  color: var(--Colors-Buttons-Text-Default);
   text-align: center;
   text-decoration: none;
   font-family: "Work Sans";
-  font-size: var(--Fonts-Body-Default-xxs, 13px);
+  font-size: var(--Fonts-Body-Default-xxs);
   font-style: normal;
   font-weight: 600;
   line-height: 135%; /* 17.55px */
@@ -471,9 +499,9 @@ body.bespoke {
 
 .fib-content p { 
   margin-top: 8px;
-  color: var(--Colors-Text-Body-Default, #2D3855);
+  color: var(--Colors-Text-Body-Default);
   font-family: "Work Sans";
-  font-size: var(--Fonts-Body-Default-xxl, 21px);
+  font-size: var(--Fonts-Body-Default-xxl);
   font-style: normal;
   font-weight: 400;
   line-height: 172%; /* 36.12px */
@@ -483,7 +511,7 @@ body.bespoke {
 .blank { 
   display: inline-flex;
   width: 96px;
-  padding: 0 var(--UI-Spacing-spacing-xs, 8px) 0 var(--UI-Spacing-spacing-s, 8px);
+  padding: 0 var(--UI-Spacing-spacing-xs) 0 var(--UI-Spacing-spacing-s);
   align-items: center;
   gap: 10px;
   margin: 0 0.125rem;
@@ -491,14 +519,14 @@ body.bespoke {
   box-sizing: border-box;
   vertical-align: middle;
   cursor: pointer;
-  border-radius: var(--UI-Radius-radius-s, 8px);
-  border: 1.5px solid var(--Colors-Learn-Practice-Blank-Slot-Border, #E7EAF2);
-  background: var(--Colors-Learn-Practice-Blank-Slot, #FFF);
+  border-radius: var(--UI-Radius-radius-s);
+  border: 1.5px solid var(--Colors-Learn-Practice-Blank-Slot-Border);
+  background: var(--Colors-Learn-Practice-Blank-Slot);
 
-  color: var(--Colors-Text-Body-Default, #2D3855);
+  color: var(--Colors-Text-Body-Default);
   text-align: center;
   font-family: "Work Sans";
-  font-size: var(--Fonts-Body-Default-xxl, 21px);
+  font-size: var(--Fonts-Body-Default-xxl);
   font-style: normal;
   font-weight: 400;
   line-height: 135%; /* 28.35px */
@@ -514,8 +542,8 @@ body.bespoke {
 }
 
 .blank:hover {
-  border-color: var(--Colors-Learn-Practice-Blank-Slot-Border-Hover, #E2E5EE);
-  background: var(--Colors-Learn-Practice-Blank-Slot-Hover, #F8F9FB);
+  border-color: var(--Colors-Learn-Practice-Blank-Slot-Border-Hover);
+  background: var(--Colors-Learn-Practice-Blank-Slot-Hover);
 }
 
 .blank.current { 
@@ -561,10 +589,10 @@ body.bespoke {
   color: var(--bespoke-fg);
 
   width: 220px;
-  border-radius: var(--UI-Radius-radius-s, 8px);
-  border: 1px solid var(--Colors-Dropdown-Panel-Stroke, #E2E5EE);
-  background: var(--Colors-Dropdown-Panel, #FFF);
-  box-shadow: 0 12px 38px 0 var(--Colors-Shadow-Float, rgba(22, 44, 96, 0.12));
+  border-radius: var(--UI-Radius-radius-s);
+  border: 1px solid var(--Colors-Dropdown-Panel-Stroke);
+  background: var(--Colors-Dropdown-Panel);
+  box-shadow: 0 12px 38px 0 var(--Colors-Shadow-Float);
 }
 
 .fib-option {
@@ -573,37 +601,37 @@ body.bespoke {
   user-select: none;
 
   display: flex;
-  height: var(--Menu-Item-Height, 40px);
-  padding: var(--UI-Spacing-spacing-none, 0) var(--Menu-Item-Padding-Horizontal, 12px);
+  height: var(--Menu-Item-Height);
+  padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal);
   align-items: center;
-  gap: var(--UI-Spacing-spacing-s, 8px);
+  gap: var(--UI-Spacing-spacing-s);
   align-self: stretch;
-  border-radius: var(--Menu-Item-Roundness, 8px);
-  background: var(--Colors-Dropdown-Panel, #FFF);
+  border-radius: var(--Menu-Item-Roundness);
+  background: var(--Colors-Dropdown-Panel);
 
-  color: var(--Colors-Text-Body-Default, #2D3855);
+  color: var(--Colors-Text-Body-Default);
   font-family: "Work Sans";
-  font-size: var(--Menu-Item-Font-Size, 16px);
+  font-size: var(--Menu-Item-Font-Size);
   font-style: normal;
   font-weight: 400;
-  line-height: var(--Menu-Item-Line-Height, 24px); /* 150% */
+  line-height: var(--Menu-Item-Line-Height); /* 150% */
   letter-spacing: -0.24px;
 }
 
 .fib-option:hover {
   display: flex;
-  height: var(--Menu-Item-Height, 40px);
-  padding: var(--UI-Spacing-spacing-none, 0) var(--Menu-Item-Padding-Horizontal, 12px);
+  height: var(--Menu-Item-Height);
+  padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal);
   align-items: center;
-  gap: var(--UI-Spacing-spacing-s, 8px);
+  gap: var(--UI-Spacing-spacing-s);
   align-self: stretch;
   background: var(--bespoke-secondary-bg);
-  color: var(--Colors-Menu-Tab-Link-Hover, #E2E5EE);
+  color: var(--Colors-Menu-Tab-Link-Hover);
   font-family: "Work Sans";
-  font-size: var(--Menu-Item-Font-Size, 16px);
+  font-size: var(--Menu-Item-Font-Size);
   font-style: normal;
   font-weight: 500;
-  line-height: var(--Menu-Item-Line-Height, 24px); /* 150% */
+  line-height: var(--Menu-Item-Line-Height); /* 150% */
   letter-spacing: -0.24px;
 }
 
