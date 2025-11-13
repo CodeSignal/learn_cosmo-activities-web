@@ -52,7 +52,7 @@ export function initFib({ activity, state, postResults }) {
     blank.setAttribute('aria-haspopup', 'listbox');
     blank.setAttribute('aria-expanded', 'false');
     blank.tabIndex = 0;
-    blank.textContent = '';
+    blank.textContent = '...';
     blank.addEventListener('click', () => {
       if (selectedByBlankIdx[idx]) {
         setSelection(idx, '');

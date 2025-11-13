@@ -119,13 +119,13 @@
   flex: 1;
   text-align: left;
   font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 16px; /* Fonts/Body Default/md */
+  font-weight: 500; /* Medium */
   font-style: normal;
   line-height: 145%;
-  letter-spacing: -0.24px; /* -1.5% of 16px */
+  letter-spacing: -0.24px; /* -1.5% of 16px font-size */
   vertical-align: middle;
-  color: var(--Colors-Dropdown-Toggle-Text);
+  color: var(--Colors-Dropdown-Toggle-Text, #495573);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -141,7 +141,7 @@
   color: var(--Colors-Text-Body-Strong);
 }
 
-.dropdown-toggle.has-selection .dropdown-toggle-label {
+.dropdown-container.open .dropdown-toggle-label {
   color: var(--Colors-Text-Body-Strong);
 }
 

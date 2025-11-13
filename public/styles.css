@@ -359,13 +359,14 @@ body.bespoke {
 
 .fib-heading {
   flex: 1 0 0;
-  font-family: 'Founders Grotesk', var(--bespoke-font-family);
-  --webkit-font-smoothing: antialiased;
-  font-size: 24px;
+  color: var(--Colors-Text-Body-Strong, #182139);
+  font-family: "Founders Grotesk";
+  font-size: var(--Fonts-Headlines-sm, 24px);
+  font-style: normal;
   font-weight: 500;
-  line-height: 1.2;
-  color: #182139;
+  line-height: 120%; /* 28.8px */
   letter-spacing: -0.24px;
+  --webkit-font-smoothing: antialiased;
   margin: 0;
   padding: 0;
   min-height: 0;
@@ -456,36 +457,46 @@ body.bespoke {
 
 .fib-content p { 
   margin-top: 8px;
+  color: var(--Colors-Text-Body-Default, #2D3855);
+  font-family: "Work Sans";
+  font-size: var(--Fonts-Body-Default-xxl, 21px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 172%; /* 36.12px */
+  letter-spacing: -0.21px;
 }
 
 .blank { 
   display: inline-flex;
-  align-items: center;
   width: 96px;
-  padding: 0 6px 0 8px;
-  margin: 0 0.125rem; 
-  border: 1.5px solid #e7eaf2;
-  border-radius: 8px;
-  text-align: center;
-  background: #ffffff;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 21px;
-  line-height: 1.35;
-  letter-spacing: -0.21px;
-  box-sizing: border-box;
-  vertical-align: sub;
-  height: 32px;
-  color: #2d3855;
-  cursor: pointer;
-  font-family: var(--bespoke-font-family);
-  font-weight: var(--bespoke-font-weight-normal);
+  padding: 0 var(--UI-Spacing-spacing-xs, 8px) 0 var(--UI-Spacing-spacing-s, 8px);
+  align-items: center;
   gap: 10px;
-}
+  margin: 0 0.125rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  vertical-align: baseline; /* sub */
+  cursor: pointer;
+  border-radius: var(--UI-Radius-radius-s, 8px);
+  border: 1.5px solid var(--Colors-Learn-Practice-Blank-Slot-Border, #E7EAF2);
+  background: var(--Colors-Learn-Practice-Blank-Slot, #FFF);
 
-.blank:not(:empty) {
+  color: var(--Colors-Text-Body-Default, #2D3855);
+  text-align: center;
+  font-family: var(--bespoke-font-family);
+  font-size: var(--Fonts-Body-Default-xxl, 21px);
+  font-style: normal;
+  font-weight: var(--bespoke-font-weight-normal);
+  line-height: 135%; /* 28.35px */
+  letter-spacing: -0.21px;
+
   width: auto;
   min-width: 0;
-  vertical-align: baseline;
+}
+
+.blank.empty {
+  width: 96px;
+  height: 32px;
 }
 
 .blank.current { 
@@ -526,22 +537,49 @@ body.bespoke {
   position: absolute;
   z-index: var(--bespoke-z-popover);
   background: var(--bespoke-box);
-  border: 1px solid var(--bespoke-stroke);
-  border-radius: var(--bespoke-radius-lg);
   box-shadow: var(--bespoke-shadow-lg);
-  padding: 4px;
+  padding: 12px;
   color: var(--bespoke-fg);
+
+  width: 220px;
+  border-radius: var(--UI-Radius-radius-s, 8px);
+  border: 1px solid var(--Colors-Dropdown-Panel-Stroke, #E2E5EE);
+  background: var(--Colors-Dropdown-Panel, #FFF);
+  box-shadow: 0 12px 38px 0 var(--Colors-Shadow-Float, rgba(22, 44, 96, 0.12));
 }
 
 .fib-option {
-  padding: 6px 8px;
   border-radius: var(--bespoke-radius-md);
   cursor: pointer;
   user-select: none;
+
+  display: flex;
+  height: var(--Menu-Item-Height, 40px);
+  padding: var(--UI-Spacing-spacing-none, 0) var(--Menu-Item-Padding-Horizontal, 12px);
+  align-items: center;
+  gap: var(--UI-Spacing-spacing-s, 8px);
+  align-self: stretch;
+  border-radius: var(--Menu-Item-Roundness, 8px);
+  background: var(--Colors-Menu-Option-Background, #FFF);
+
+  color: var(--Colors-Text-Body-Default, #2D3855);
+  font-family: "Work Sans";
+  font-size: var(--Menu-Item-Font-Size, 16px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--Menu-Item-Line-Height, 24px); /* 150% */
+  letter-spacing: -0.24px;
 }
 
 .fib-option:hover {
   background: var(--bespoke-secondary-bg);
+  color: var(--Colors-Menu-Tab-Link-Hover, #2D3855);
+  font-family: "Work Sans";
+  font-size: var(--Menu-Item-Font-Size, 16px);
+  font-style: normal;
+  font-weight: 500;
+  line-height: var(--Menu-Item-Line-Height, 24px); /* 150% */
+  letter-spacing: -0.24px;
 }
 
 .fib-option.selected {
