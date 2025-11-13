@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Component Tests - Dropdown</title>
+  <link rel="stylesheet" href="/bespoke.css" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/components/dropdown.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #f4f5f9;
+      padding: 40px 20px;
+      font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .test-section {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-section h2 {
+      margin: 0 0 24px 0;
+      font-size: 24px;
+      font-weight: 600;
+      color: #182139;
+      letter-spacing: -0.24px;
+    }
+
+    .test-section h3 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      font-weight: 500;
+      color: #2d3855;
+      letter-spacing: -0.18px;
+    }
+
+    .test-row {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .test-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .test-item label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #495573;
+    }
+
+    .test-output {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f6f6f6;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #2d3855;
+      font-family: 'Courier New', monospace;
+    }
+
+    .test-output strong {
+      color: #182139;
+    }
+  </style>
+</head>
+<body class="bespoke">
+  <div class="test-container">
+    <h1 style="margin-bottom: 32px; font-size: 32px; font-weight: 700; color: #182139;">
+      Component Tests - Dropdown
+    </h1>
+
+    <!-- Basic Dropdown -->
+    <div class="test-section">
+      <h2>Basic Dropdown</h2>
+      <div class="test-row">
+        <div class="test-item">
+          <label>Default State</label>
+          <div id="dropdown-basic" style="width: 240px;"></div>
+        </div>
+      </div>
+      <div class="test-output">
+        <strong>Selected Value:</strong> <span id="output-basic">None</span>
+      </div>
+    </div>
+
+    <!-- Dropdown with Selection -->
+    <div class="test-section">
+      <h2>Dropdown with Pre-selected Value</h2>
+      <div class="test-row">
+        <div class="test-item">
+          <label>Pre-selected: Option 2</label>
+          <div id="dropdown-preselected" style="width: 240px;"></div>
+        </div>
+      </div>
+      <div class="test-output">
+        <strong>Selected Value:</strong> <span id="output-preselected">option-2</span>
+      </div>
+    </div>
+
+    <!-- Different Widths -->
+    <div class="test-section">
+      <h2>Different Widths</h2>
+      <div class="test-row">
+        <div class="test-item">
+          <label>Narrow (180px)</label>
+          <div id="dropdown-narrow" style="width: 180px;"></div>
+        </div>
+        <div class="test-item">
+          <label>Medium (240px)</label>
+          <div id="dropdown-medium" style="width: 240px;"></div>
+        </div>
+        <div class="test-item">
+          <label>Wide (320px)</label>
+          <div id="dropdown-wide" style="width: 320px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Placeholder -->
+    <div class="test-section">
+      <h2>Custom Placeholder</h2>
+      <div class="test-row">
+        <div class="test-item">
+          <label>Custom Placeholder Text</label>
+          <div id="dropdown-custom" style="width: 240px;"></div>
+        </div>
+      </div>
+      <div class="test-output">
+        <strong>Selected Value:</strong> <span id="output-custom">None</span>
+      </div>
+    </div>
+
+    <!-- Many Options -->
+    <div class="test-section">
+      <h2>Many Options</h2>
+      <div class="test-row">
+        <div class="test-item">
+          <label>10 Options</label>
+          <div id="dropdown-many" style="width: 240px;"></div>
+        </div>
+      </div>
+      <div class="test-output">
+        <strong>Selected Value:</strong> <span id="output-many">None</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import Dropdown from '/components/dropdown.js';
+
+    // Sample data
+    const sampleItems = [
+      { value: 'option-1', label: 'Menu option label' },
+      { value: 'option-2', label: 'Menu option label' },
+      { value: 'option-3', label: 'Menu option label' },
+      { value: 'option-4', label: 'Menu option label' },
+      { value: 'option-5', label: 'Menu option label' },
+      { value: 'option-6', label: 'Menu option label' }
+    ];
+
+    const manyItems = Array.from({ length: 10 }, (_, i) => ({
+      value: `option-${i + 1}`,
+      label: `Menu option label ${i + 1}`
+    }));
+
+    // Basic dropdown
+    const dropdownBasic = new Dropdown('#dropdown-basic', {
+      items: sampleItems,
+      onSelect: (value, item) => {
+        document.getElementById('output-basic').textContent = value || 'None';
+        console.log('Selected:', value, item);
+      }
+    });
+
+    // Pre-selected dropdown
+    const dropdownPreselected = new Dropdown('#dropdown-preselected', {
+      items: sampleItems,
+      selectedValue: 'option-2',
+      onSelect: (value, item) => {
+        document.getElementById('output-preselected').textContent = value || 'None';
+        console.log('Selected:', value, item);
+      }
+    });
+
+    // Different widths
+    new Dropdown('#dropdown-narrow', {
+      items: sampleItems.slice(0, 4)
+    });
+
+    new Dropdown('#dropdown-medium', {
+      items: sampleItems
+    });
+
+    new Dropdown('#dropdown-wide', {
+      items: sampleItems
+    });
+
+    // Custom placeholder
+    const dropdownCustom = new Dropdown('#dropdown-custom', {
+      items: sampleItems,
+      placeholder: 'Choose an option...',
+      onSelect: (value, item) => {
+        document.getElementById('output-custom').textContent = value || 'None';
+        console.log('Selected:', value, item);
+      }
+    });
+
+    // Many options
+    const dropdownMany = new Dropdown('#dropdown-many', {
+      items: manyItems,
+      onSelect: (value, item) => {
+        document.getElementById('output-many').textContent = value || 'None';
+        console.log('Selected:', value, item);
+      }
+    });
+
+    // Make dropdowns available globally for debugging
+    window.testDropdowns = {
+      basic: dropdownBasic,
+      preselected: dropdownPreselected,
+      custom: dropdownCustom,
+      many: dropdownMany
+    };
+  </script>
+</body>
+</html>
+
