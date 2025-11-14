@@ -167,6 +167,164 @@ function buildActivityFromMarkdown(markdownText) {
     return { type, question, fib: { raw: fibMarkdown, prompt, promptHtml, content, htmlWithPlaceholders: contentHtml, blanks, choices } };
   }
 
+  if (/^multiple choice$/i.test(type)) {
+    // Parse MCQ with support for multiple questions
+    const questions = [];
+    const allTokens = Lexer.lex(markdownText);
+    
+    let currentQuestion = null;
+    let currentSection = null;
+    let questionBuffer = [];
+    let answerBuffer = [];
+    
+    // Deterministic shuffle using text as seed
+    function seededShuffle(array, seed) {
+      // Simple seeded random number generator
+      let s = seed;
+      function seededRandom() {
+        s = (s * 9301 + 49297) % 233280;
+        return s / 233280;
+      }
+      
+      // Fisher-Yates shuffle with seeded random
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+    
+    // Generate seed from question text and all option texts
+    function generateSeed(questionText, options) {
+      const allText = questionText + options.map(opt => opt.text + opt.label).join('');
+      let hash = 0;
+      for (let i = 0; i < allText.length; i++) {
+        const char = allText.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+      }
+      return Math.abs(hash);
+    }
+    
+    function processQuestion() {
+      if (!currentQuestion || questionBuffer.length === 0) return;
+      
+      // Parse options from question text
+      const questionText = questionBuffer.map(t => t.raw || t.text || '').join('\n').trim();
+      const options = [];
+      
+      // Extract options (A., B., C., etc.)
+      const optionRegex = /^([A-Z])\.\s*(.+)$/gm;
+      let match;
+      const optionMap = new Map();
+      while ((match = optionRegex.exec(questionText)) !== null) {
+        const label = match[1];
+        const text = match[2].trim();
+        optionMap.set(label, text);
+        options.push({
+          label: label,
+          text: text,
+          correct: false // Will be set from Suggested Answers
+        });
+      }
+      
+      // Extract question text without options
+      const questionTextOnly = questionText.replace(/^[A-Z]\.\s*.+$/gm, '').trim();
+      
+      currentQuestion.text = questionTextOnly || questionText;
+      currentQuestion.options = options;
+    }
+    
+    function processAnswers() {
+      if (!currentQuestion || answerBuffer.length === 0) return;
+      
+      const answerItems = readListItems(answerBuffer);
+      const correctAnswers = new Set();
+      
+      answerItems.forEach(item => {
+        const trimmed = item.trim();
+        // Match patterns like "A", "A - Correct", "B - Correct", etc.
+        const match = trimmed.match(/^([A-Z])\s*(?:-?\s*(?:Correct)?)?$/i);
+        if (match) {
+          const label = match[1].toUpperCase();
+          if (trimmed.toLowerCase().includes('correct')) {
+            correctAnswers.add(label);
+          }
+        }
+      });
+      
+      // Mark correct options
+      currentQuestion.options.forEach(opt => {
+        opt.correct = correctAnswers.has(opt.label);
+      });
+      
+      // Determine if multi-select
+      currentQuestion.isMultiSelect = correctAnswers.size > 1;
+      
+      // Shuffle options using deterministic seed based on question and option text
+      const seed = generateSeed(currentQuestion.text, currentQuestion.options);
+      currentQuestion.options = seededShuffle(currentQuestion.options, seed);
+      
+      // Add to questions array
+      questions.push(currentQuestion);
+    }
+    
+    // Parse tokens sequentially
+    for (const token of allTokens) {
+      if (token.type === 'paragraph') {
+        const text = (token.text || '').trim();
+        const m = text.match(/^__([^_]+)__\s*$/);
+        if (m) {
+          const sectionName = m[1].trim();
+          
+          if (sectionName === 'Practice Question') {
+            // Process previous question/answers if any
+            if (currentQuestion) {
+              processAnswers();
+            }
+            
+            // Start new question
+            currentQuestion = { id: questions.length, text: '', options: [], isMultiSelect: false };
+            currentSection = 'question';
+            questionBuffer = [];
+            answerBuffer = [];
+            continue;
+          } else if (sectionName === 'Suggested Answers') {
+            // Process current question text
+            if (currentQuestion) {
+              processQuestion();
+              currentSection = 'answers';
+              answerBuffer = [];
+            }
+            continue;
+          } else if (sectionName === 'Type') {
+            // Skip type section
+            currentSection = null;
+            continue;
+          }
+        }
+      }
+      
+      if (currentSection === 'question' && currentQuestion) {
+        questionBuffer.push(token);
+      } else if (currentSection === 'answers' && currentQuestion) {
+        answerBuffer.push(token);
+      }
+    }
+    
+    // Process last question and answers
+    if (currentQuestion) {
+      processAnswers();
+    }
+    
+    if (questions.length === 0) {
+      throw new Error('No MCQ questions found');
+    }
+    
+    return { type, question: null, mcq: { questions } };
+  }
+
   const labels = readListItems(sections.get('Labels'));
   if (/^sort into boxes$/i.test(type)) {
     let first = '', second = '';
@@ -244,9 +402,18 @@ const server = http.createServer((req, res) => {
         const answerFile = path.join(DATA_DIR, 'answer.md');
         
         // Format results as markdown
-        const correctCount = data.results.filter(result => result.selected === result.correct).length;
-        const totalCount = data.results.length;
         const activity = data.activity;
+        // For MCQ, compare sorted arrays; for others, exact string match
+        const correctCount = data.results.filter(result => {
+          if (activity && /^multiple choice$/i.test(activity.type)) {
+            // For MCQ, compare sorted comma-separated values
+            const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
+            const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
+            return selected === correct;
+          }
+          return result.selected === result.correct;
+        }).length;
+        const totalCount = data.results.length;
         
         let markdown = '';
         
@@ -260,9 +427,18 @@ const server = http.createServer((req, res) => {
           
           data.results.forEach((result, index) => {
             markdown += `${index + 1}. **${result.text}**\n`;
-            markdown += `   - Selected Answer: ${result.selected}\n`;
+            markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
             markdown += `   - Correct Answer: ${result.correct}\n`;
-            markdown += `   - Result: ${result.selected === result.correct ? '✓ Correct' : '✗ Incorrect'}\n\n`;
+            // For MCQ, compare sorted arrays; for others, exact match
+            let isCorrect = false;
+            if (activity && /^multiple choice$/i.test(activity.type)) {
+              const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
+              const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
+              isCorrect = selected === correct;
+            } else {
+              isCorrect = result.selected === result.correct;
+            }
+            markdown += `   - Result: ${isCorrect ? '✓ Correct' : '✗ Incorrect'}\n\n`;
           });
 
           if (/^fill in the blanks$/i.test(activity.type)) {
@@ -273,6 +449,23 @@ const server = http.createServer((req, res) => {
               markdown += `- ${choice}\n`;
             });
             markdown += '\n';
+          } else if (/^multiple choice$/i.test(activity.type)) {
+            // For MCQ, include each question with options and suggested answers
+            if (activity.mcq && activity.mcq.questions) {
+              activity.mcq.questions.forEach((q, qIdx) => {
+                markdown += `__Practice Question__\n\n${q.text}\n\n`;
+                q.options.forEach(opt => {
+                  markdown += `${opt.label}. ${opt.text}\n`;
+                });
+                markdown += '\n';
+                markdown += `__Suggested Answers__\n\n`;
+                q.options.forEach(opt => {
+                  const correctMarker = opt.correct ? ' - Correct' : '';
+                  markdown += `- ${opt.label}${correctMarker}\n`;
+                });
+                markdown += '\n';
+              });
+            }
           } else {
             // For swipe/sort activities, include question and labels
             if (activity.question) {

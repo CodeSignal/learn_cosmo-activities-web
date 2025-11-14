@@ -1,6 +1,7 @@
 import { initSwipe } from './modules/swipe.js';
 import { initSort } from './modules/sort.js';
 import { initFib } from './modules/fib.js';
+import { initMcq } from './modules/mcq.js';
 
 (() => {
   'use strict';
@@ -68,6 +69,8 @@ import { initFib } from './modules/fib.js';
         state, 
         postResults 
       });
+    } else if (/^multiple choice$/i.test(activity.type)) {
+      currentActivity = initMcq({ activity, state, postResults });
     } else {
       currentActivity = initSwipe({ 
         items: state.items, 
