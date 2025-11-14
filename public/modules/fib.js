@@ -129,21 +129,7 @@ export function initFib({ activity, state, postResults }) {
     const current = selectedByBlankIdx[idx];
 
     const rect = blank.getBoundingClientRect();
-    const menu = document.createElement('div');
-    menu.className = 'fib-dropdown';
-    menu.setAttribute('role', 'listbox');
-    menu.style.position = 'absolute';
-    menu.style.minWidth = Math.max(rect.width, 120) + 'px';
-    menu.style.maxWidth = '320px';
-
-    const docX = rect.left + window.scrollX;
-    const docY = rect.bottom + window.scrollY + 4;
-    menu.style.left = docX + 'px';
-    menu.style.top = docY + 'px';
     
-    // Add class to blank to keep hover effect active
-    blank.classList.add('dropdown-open');
-
     // Build available list preserving duplicates but respecting remaining counts
     const availCounts = new Map();
     totalCounts.forEach((total, key) => {
@@ -158,6 +144,21 @@ export function initFib({ activity, state, postResults }) {
         availCounts.set(choice, left - 1);
       }
     });
+    
+    const menu = document.createElement('div');
+    menu.className = 'fib-dropdown';
+    menu.setAttribute('role', 'listbox');
+    menu.style.position = 'absolute';
+    menu.style.minWidth = Math.max(rect.width, 120) + 'px';
+
+    const docX = rect.left + window.scrollX;
+    const docY = rect.bottom + window.scrollY + 4;
+    menu.style.left = docX + 'px';
+    menu.style.top = docY + 'px';
+    
+    // Add class to blank to keep hover effect active
+    blank.classList.add('dropdown-open');
+
     available.forEach(choice => {
       const opt = document.createElement('div');
       opt.className = 'fib-option';
@@ -176,6 +177,38 @@ export function initFib({ activity, state, postResults }) {
     });
 
     document.body.appendChild(menu);
+    
+    // After rendering, lock the dropdown width to prevent growth on hover
+    // Measure with hover state applied to account for font-weight change (400 -> 500)
+    requestAnimationFrame(() => {
+      const options = menu.querySelectorAll('.fib-option');
+      
+      // Find the longest option by text content
+      let longestOption = options[0];
+      let maxTextLength = 0;
+      options.forEach(opt => {
+        if (opt.textContent.length > maxTextLength) {
+          maxTextLength = opt.textContent.length;
+          longestOption = opt;
+        }
+      });
+      
+      // Measure dropdown width with normal state
+      const normalWidth = menu.getBoundingClientRect().width;
+      
+      // Temporarily apply hover state to longest option to measure with bold font
+      if (longestOption) {
+        longestOption.classList.add('fib-option-hover-measure');
+        const hoverWidth = menu.getBoundingClientRect().width;
+        longestOption.classList.remove('fib-option-hover-measure');
+        
+        // Lock the dropdown width to the larger of the two measurements
+        menu.style.width = Math.max(normalWidth, hoverWidth) + 'px';
+      } else {
+        // Fallback: just lock current width
+        menu.style.width = normalWidth + 'px';
+      }
+    });
     blank.setAttribute('aria-expanded', 'true');
     openDropdown = { container: menu, blank, idx };
     

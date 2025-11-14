@@ -615,7 +615,9 @@ body.bespoke {
   padding: 12px;
   color: var(--bespoke-fg);
 
-  width: 220px;
+  width: max-content;
+  min-width: 120px;
+  max-width: min(600px, calc(100vw - 40px));
   border-radius: var(--UI-Radius-radius-s);
   border: 1px solid var(--Colors-Dropdown-Panel-Stroke);
   background: var(--Colors-Dropdown-Panel);
@@ -635,6 +637,7 @@ body.bespoke {
   align-self: stretch;
   border-radius: var(--Menu-Item-Roundness);
   background: var(--Colors-Dropdown-Panel);
+  white-space: nowrap;
 
   color: var(--Colors-Text-Body-Default);
   font-family: "Work Sans";
@@ -661,6 +664,10 @@ body.bespoke {
   line-height: var(--Menu-Item-Line-Height); /* 150% */
   letter-spacing: -0.24px;
   background: var(--Colors-Dropdown-Panel-Hover);
+}
+
+.fib-option-hover-measure {
+  font-weight: 500;
 }
 
 .fib-option.selected {
