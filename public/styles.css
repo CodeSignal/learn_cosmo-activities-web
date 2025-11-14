@@ -675,6 +675,14 @@ body.bespoke {
   display: flex;
   flex-direction: column;
   gap: var(--UI-Spacing-spacing-ms, 16px);
+  transition: border-color 0.2s ease;
+}
+
+.mcq-question-incorrect {
+  border: 2px solid #9C0227;
+  border-radius: var(--UI-Radius-radius-ml, 16px);
+  padding: var(--UI-Spacing-spacing-ms, 16px);
+  background-color: rgba(156, 2, 39, 0.05);
 }
 
 .mcq-question-text {

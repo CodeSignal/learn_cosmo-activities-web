@@ -16,6 +16,8 @@ import { initMcq } from './modules/mcq.js';
 
   let currentActivity = null;
   let currentActivityData = null;
+  let socket = null;
+  let validationHandler = null;
 
   async function postResults() {
     try {
@@ -41,6 +43,7 @@ import { initMcq } from './modules/mcq.js';
   function reset() {
     state.index = 0;
     state.results = [];
+    validationHandler = null;
     if (currentActivity) {
       if (typeof currentActivity === 'function') {
         currentActivity(); // Old cleanup function style
@@ -70,7 +73,15 @@ import { initMcq } from './modules/mcq.js';
         postResults 
       });
     } else if (/^multiple choice$/i.test(activity.type)) {
-      currentActivity = initMcq({ activity, state, postResults });
+      currentActivity = initMcq({ 
+        activity, 
+        state, 
+        postResults
+      });
+      // Store validation function reference
+      if (currentActivity && typeof currentActivity.validate === 'function') {
+        validationHandler = currentActivity.validate;
+      }
     } else {
       currentActivity = initSwipe({ 
         items: state.items, 
@@ -97,6 +108,46 @@ import { initMcq } from './modules/mcq.js';
     });
   }
 
+  // Initialize WebSocket connection
+  function connectWebSocket() {
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(`${protocol}//${window.location.host}`);
+      
+      socket.onopen = () => {
+        console.log('WebSocket connected');
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === 'validate') {
+            if (validationHandler) {
+              validationHandler();
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing WebSocket message:', e);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log('WebSocket disconnected');
+        // Try to reconnect after a few seconds
+        setTimeout(connectWebSocket, 5000);
+        socket = null;
+      };
+
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    } catch (e) {
+      console.error('Failed to connect WebSocket:', e);
+      // Try to reconnect after a few seconds
+      setTimeout(connectWebSocket, 5000);
+    }
+  }
+
   async function start() {
     try {
       const activity = await loadActivityJson();
@@ -107,6 +158,9 @@ import { initMcq } from './modules/mcq.js';
       reset();
       initActivity(activity);
       bindRestart();
+      
+      // Connect WebSocket after activity is initialized
+      connectWebSocket();
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);

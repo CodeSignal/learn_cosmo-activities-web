@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { Lexer, marked } = require('marked');
+const WebSocket = require('ws');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -368,6 +369,9 @@ function buildActivityFromMarkdown(markdownText) {
   return { type, question, labels: { left, right }, items };
 }
 
+// Store active WebSocket connections
+const clients = new Set();
+
 const server = http.createServer((req, res) => {
   const urlObj = new URL(req.url, 'http://localhost');
   let pathname = decodeURIComponent(urlObj.pathname || '/');
@@ -386,6 +390,23 @@ const server = http.createServer((req, res) => {
       } catch (e) {
         respondJson(res, 500, { error: 'Failed to parse markdown' });
       }
+    });
+    return;
+  }
+
+  // API: /validate
+  if (pathname === '/validate' && req.method === 'POST') {
+    // Send message to all connected WebSocket clients
+    clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ type: 'validate' }));
+      }
+    });
+    
+    respondJson(res, 200, { 
+      status: 'success', 
+      message: 'Validation message sent to all connected clients',
+      clientCount: clients.size
     });
     return;
   }
@@ -540,6 +561,27 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Server running at http://localhost:${PORT}`);
+});
+
+// Create WebSocket server using the ws module
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws, req) => {
+  // Add new client to the Set
+  clients.add(ws);
+  console.log('WebSocket connection established, total clients:', clients.size);
+  
+  // Handle WebSocket connection close
+  ws.on('close', () => {
+    clients.delete(ws);
+    console.log('WebSocket connection closed, remaining clients:', clients.size);
+  });
+  
+  // Handle errors
+  ws.on('error', (error) => {
+    console.error('WebSocket error:', error);
+    clients.delete(ws);
+  });
 });
 
 

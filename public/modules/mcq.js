@@ -22,6 +22,9 @@ export function initMcq({ activity, state, postResults }) {
   // Track selected answers per question
   const selectedAnswers = {};
   
+  // Track validation state
+  let isValidating = false;
+  
   // Initialize selected answers
   mcq.questions.forEach(q => {
     selectedAnswers[q.id] = [];
@@ -92,6 +95,8 @@ export function initMcq({ activity, state, postResults }) {
       
       // Add change listener
       input.addEventListener('change', () => {
+        // Clear validation when user changes any value
+        clearValidation();
         updateSelection(question.id, option.label, input.checked);
       });
     });
@@ -138,6 +143,39 @@ export function initMcq({ activity, state, postResults }) {
     return sortedA.every((val, idx) => val === sortedB[idx]);
   }
   
+  function clearValidation() {
+    if (!isValidating) return;
+    
+    isValidating = false;
+    // Remove validation classes from all questions
+    mcq.questions.forEach(q => {
+      const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
+      if (questionEl) {
+        questionEl.classList.remove('mcq-question-incorrect');
+      }
+    });
+  }
+  
+  function validateAnswers() {
+    isValidating = true;
+    
+    // Check each question and mark incorrect ones
+    mcq.questions.forEach(q => {
+      const selected = selectedAnswers[q.id] || [];
+      const correct = q.options.filter(opt => opt.correct).map(opt => opt.label);
+      const isCorrect = arraysEqual(selected.sort(), correct.sort());
+      
+      const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
+      if (questionEl) {
+        if (!isCorrect) {
+          questionEl.classList.add('mcq-question-incorrect');
+        } else {
+          questionEl.classList.remove('mcq-question-incorrect');
+        }
+      }
+    });
+  }
+  
   function updateResultsAndPost() {
     state.results = mcq.questions.map((q, idx) => {
       const selected = selectedAnswers[q.id] || [];
@@ -160,8 +198,11 @@ export function initMcq({ activity, state, postResults }) {
   // Initialize results
   updateResultsAndPost();
   
-  return () => {
-    elContainer.innerHTML = '';
+  return {
+    cleanup: () => {
+      elContainer.innerHTML = '';
+    },
+    validate: validateAnswers
   };
 }
 
