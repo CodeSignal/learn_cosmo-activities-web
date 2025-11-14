@@ -58,6 +58,16 @@
   --Menu-Item-Font-Size: 16px;
   --Menu-Item-Line-Height: 24px;
   --Colors-Menu-Tab-Link-Hover: #2D3855;
+  --Colors-Learn-Practice-Card: #FFF;
+  --Colors-Learn-Practice-Card-Border-Hover: #5C94FF;
+  --Fonts-Body-Default-lg: 17px;
+  --UI-Radius-radius-ml: 16px;
+  --Colors-Input-Background-Default: #ffffff;
+  --Colors-Input-Background-Checked: #ffffff;
+  --Colors-Input-Border: #e2e5ee;
+  --Colors-Input-Border-Default: #e2e5ee;
+  --Colors-Input-Border-Hover: #c8cddb;
+  --Colors-MCQ-Checkmark-Stroke: #182139;
 }
 
 /* ===== PAGE LAYOUT ===== */
@@ -89,7 +99,15 @@ body.bespoke {
     --Colors-Shadow-Float: rgba(13, 21, 40, 0.30);
     --Colors-Shadow-Medium-Soft: rgba(13, 21, 40, 0.40);
     --Colors-Menu-Tab-Link-Hover: #E2E5EE;
+    --Colors-Learn-Practice-Card-Border-Hover: #414D6B;
+    --Colors-Learn-Practice-Card: #26314C;
+    --Colors-Input-Border-Default: #26314C;
+    --Colors-Input-Border-Hover: #394563;
+    --Colors-Input-Background-Default: rgba(17, 25, 46, 0.50);
+    --Colors-Input-Background-Checked: rgba(17, 25, 46, 0.50);
+    --Colors-MCQ-Checkmark-Stroke: #ffffff;
   }
+
 }
 
 
@@ -686,9 +704,9 @@ body.bespoke {
 }
 
 .mcq-question-text {
-  color: var(--Colors-Text-Body-Default, #2D3855);
+  color: var(--Colors-Text-Body-Default);
   font-family: "Work Sans", sans-serif;
-  font-size: var(--Fonts-Body-Default-xxl, 21px);
+  font-size: var(--Fonts-Body-Default-xxl);
   font-style: normal;
   font-weight: 400;
   line-height: 140%; /* 29.4px */
@@ -706,9 +724,9 @@ body.bespoke {
 }
 
 .mcq-legend {
-  color: var(--Colors-Text-Body-Strong, #182139);
+  color: var(--Colors-Text-Body-Strong);
   font-family: "Founders Grotesk", sans-serif;
-  font-size: var(--Fonts-Headlines-sm, 24px);
+  font-size: var(--Fonts-Headlines-sm);
   font-style: normal;
   font-weight: 500;
   line-height: 120%; /* 28.8px */
@@ -724,9 +742,16 @@ body.bespoke {
   align-items: start;
   gap: var(--UI-Spacing-spacing-xs, 6px);
   align-self: stretch;
-  border-radius: var(--UI-Radius-radius-ml, 16px);
-  background: var(--Colors-Learn-Practice-Card, #FFF);
+  border-radius: var(--UI-Radius-radius-ml);
+  background: var(--Colors-Learn-Practice-Card);
   border: 2px solid transparent;
+  color: var(--Colors-Text-Body-Default);
+  font-family: "Work Sans", sans-serif;
+  font-size: var(--Fonts-Body-Default-lg);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 130%; /* 22.1px */
+  letter-spacing: -0.17px;
   cursor: pointer;
   user-select: none;
   position: relative;
@@ -740,14 +765,14 @@ body.bespoke {
 }
 
 .mcq-option:hover {
-  border-color: var(--Colors-Learn-Practice-Card-Border-Hover, #5C94FF);
-  background: var(--Colors-Learn-Practice-Card, #ffffff);
+  border-color: var(--Colors-Learn-Practice-Card-Border-Hover);
+  background: var(--Colors-Learn-Practice-Card);
 }
 
 .mcq-option input:checked ~ .mcq-option-card,
 .mcq-option:has(input:checked) {
-  border-color: var(--Colors-Learn-Practice-Card-Border-Hover, #5C94FF);
-  background: var(--Colors-Learn-Practice-Card, #ffffff);
+  border-color: var(--Colors-Learn-Practice-Card-Border-Hover);
+  background: var(--Colors-Learn-Practice-Card);
 }
 
 .mcq-input-wrapper {
@@ -764,9 +789,9 @@ body.bespoke {
   content: '';
   width: 32px;
   height: 32px;
-  border: 1.5px solid var(--Colors-Input-Border, #e2e5ee);
+  border: 1.5px solid var(--Colors-Input-Border-Default);
   border-radius: 32px;
-  background: var(--Colors-Input-Background-Default, #ffffff);
+  background: var(--Colors-Input-Background-Default);
   transition: border-color 0.2s ease, background-color 0.2s ease;
   position: absolute;
 }
@@ -776,7 +801,8 @@ body.bespoke {
 }
 
 .mcq-option:hover .mcq-input-wrapper::before {
-  border-color: var(--Colors-Input-Border-Hover, #c8cddb);
+  border: 1.5px solid var(--Colors-Input-Border-Hover);
+  background: var(--Colors-Input-Background-Default);
 }
 
 /* Radio button checked state: thick blue circle with white center */
@@ -789,8 +815,8 @@ body.bespoke {
 
 /* Checkbox checked state */
 .mcq-option input[type="checkbox"]:checked ~ .mcq-option-card .mcq-input-wrapper::before {
-  border-color: var(--Colors-Input-Border-Hover, #c8cddb);
-  background: var(--Colors-Input-Background-Default, #ffffff);
+  border-color: var(--Colors-Input-Border-Hover);
+  background: var(--Colors-Input-Background-Checked);
 }
 
 .mcq-option input[type="radio"]:checked ~ .mcq-option-card .mcq-input-wrapper::after {
@@ -818,6 +844,19 @@ body.bespoke {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Note: CSS variables cannot be used inside data URIs, so we override background-image directly */
+  .mcq-option input[type="checkbox"]:checked ~ .mcq-option-card .mcq-input-wrapper::before {
+    background: var(--Colors-Input-Background-Checked);
+    border-color: var(--Colors-Input-Border-Hover);
+  }
+  
+  .mcq-option input[type="checkbox"]:checked ~ .mcq-option-card .mcq-input-wrapper::after {
+    background-image: url("data:image/svg+xml,%3Csvg width='14' height='16' viewBox='0 0 14 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.5 4.5L5.5 10.5L2.5 7.5' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    z-index: 1;
+  }
 }
 
 .mcq-option input[type="radio"],

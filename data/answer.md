@@ -9,12 +9,12 @@ __Summary__
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: A
+   - Selected Answer: C
    - Correct Answer: B
    - Result: ✗ Incorrect
 
 2. **Question 2**
-   - Selected Answer: A, D
+   - Selected Answer: A, B, D
    - Correct Answer: A, C
    - Result: ✗ Incorrect
 
