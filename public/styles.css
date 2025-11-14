@@ -43,13 +43,15 @@
   --UI-Spacing-spacing-s: 8px;
   --UI-Spacing-spacing-none: 0;
   --UI-Radius-radius-s: 8px;
-  --Colors-Learn-Practice-Blank-Slot-Border: #E7EAF2;
+  --Colors-Learn-Practice-Blank-Slot-Border: #E2E5EE;
   --Colors-Learn-Practice-Blank-Slot: #FFF;
   --Colors-Learn-Practice-Blank-Slot-Border-Hover: #E2E5EE;
-  --Colors-Learn-Practice-Blank-Slot-Hover: #F8F9FB;
+  --Colors-Learn-Practice-Blank-Slot-Hover: #FFF;
   --Colors-Dropdown-Panel-Stroke: #E2E5EE;
   --Colors-Dropdown-Panel: #FFF;
+  --Colors-Dropdown-Panel-Hover: #F4F5F9;
   --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
+  --Colors-Shadow-Medium-Soft: rgba(76, 90, 123, 0.08);
   --Menu-Item-Height: 40px;
   --Menu-Item-Padding-Horizontal: 12px;
   --Menu-Item-Roundness: 8px;
@@ -77,16 +79,19 @@ body.bespoke {
     --Colors-Text-Body-Strong: #FFF;
     --Colors-Text-Body-Default: #C1C7D7;
     --Colors-Buttons-Text-Default: #979FB4;
-    --Colors-Learn-Practice-Blank-Slot-Border: #2D3855;
+    --Colors-Learn-Practice-Blank-Slot-Border: #242E47;
     --Colors-Learn-Practice-Blank-Slot: rgba(38, 49, 76, 0.30);
-    --Colors-Learn-Practice-Blank-Slot-Border-Hover: #3D4A65;
-    --Colors-Learn-Practice-Blank-Slot-Hover: rgba(45, 56, 85, 0.50);
+    --Colors-Learn-Practice-Blank-Slot-Border-Hover: #2D3855;
+    --Colors-Learn-Practice-Blank-Slot-Hover: rgba(38, 49, 76, 0.45);
     --Colors-Dropdown-Panel-Stroke: rgba(45, 56, 85, 0.00);
     --Colors-Dropdown-Panel: #2D3855;
+    --Colors-Dropdown-Panel-Hover: #26314C;
     --Colors-Shadow-Float: rgba(13, 21, 40, 0.30);
+    --Colors-Shadow-Medium-Soft: rgba(13, 21, 40, 0.40);
     --Colors-Menu-Tab-Link-Hover: #E2E5EE;
   }
 }
+
 
 /* ===== ACTIVITY LAYOUT OVERRIDES ===== */
 
@@ -542,9 +547,12 @@ body.bespoke {
   width: 96px;
 }
 
-.blank:hover {
-  border-color: var(--Colors-Learn-Practice-Blank-Slot-Border-Hover);
-  background: var(--Colors-Learn-Practice-Blank-Slot-Hover);
+.blank:hover,
+.blank.dropdown-open {
+  border-radius: var(--UI-Radius-radius-s);
+  border: 1.5px solid var(--Colors-Learn-Practice-Blank-Slot-Border-Hover);
+  box-shadow: 0 2px 3px 0 var(--Colors-Shadow-Medium-Soft);
+  background-color: var(--Colors-Learn-Practice-Blank-Slot-Hover);
 }
 
 .blank.current { 
@@ -634,6 +642,7 @@ body.bespoke {
   font-weight: 500;
   line-height: var(--Menu-Item-Line-Height); /* 150% */
   letter-spacing: -0.24px;
+  background: var(--Colors-Dropdown-Panel-Hover);
 }
 
 .fib-option.selected {

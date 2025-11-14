@@ -95,6 +95,7 @@ export function initFib({ activity, state, postResults }) {
     const { container, blank } = openDropdown;
     if (container && container.parentNode) container.parentNode.removeChild(container);
     blank.setAttribute('aria-expanded', 'false');
+    blank.classList.remove('dropdown-open');
     document.removeEventListener('mousedown', handleOutside);
     window.removeEventListener('resize', closeMenu);
     window.removeEventListener('scroll', closeMenu, true);
@@ -104,8 +105,21 @@ export function initFib({ activity, state, postResults }) {
   function handleOutside(e) {
     if (!openDropdown) return;
     const { container, blank } = openDropdown;
+    // Keep dropdown open if clicking inside dropdown or blank
     if (container.contains(e.target) || blank.contains(e.target)) return;
     closeMenu();
+  }
+  
+  function handleDropdownMouseEnter() {
+    if (!openDropdown) return;
+    // Ensure hover state is maintained when mouse enters dropdown
+    openDropdown.blank.classList.add('dropdown-open');
+  }
+  
+  function handleDropdownMouseLeave() {
+    if (!openDropdown) return;
+    // Don't remove the class immediately - let closeMenu handle it
+    // This prevents flickering when moving between blank and dropdown
   }
 
   function openMenuForBlank(blank, idx) {
@@ -126,6 +140,9 @@ export function initFib({ activity, state, postResults }) {
     const docY = rect.bottom + window.scrollY + 4;
     menu.style.left = docX + 'px';
     menu.style.top = docY + 'px';
+    
+    // Add class to blank to keep hover effect active
+    blank.classList.add('dropdown-open');
 
     // Build available list preserving duplicates but respecting remaining counts
     const availCounts = new Map();
@@ -161,6 +178,16 @@ export function initFib({ activity, state, postResults }) {
     document.body.appendChild(menu);
     blank.setAttribute('aria-expanded', 'true');
     openDropdown = { container: menu, blank, idx };
+    
+    // Add mouse event listeners to maintain hover state
+    menu.addEventListener('mouseenter', handleDropdownMouseEnter);
+    menu.addEventListener('mouseleave', handleDropdownMouseLeave);
+    blank.addEventListener('mouseenter', () => {
+      if (openDropdown && openDropdown.blank === blank) {
+        blank.classList.add('dropdown-open');
+      }
+    });
+    
     document.addEventListener('mousedown', handleOutside);
     window.addEventListener('resize', closeMenu);
     window.addEventListener('scroll', closeMenu, true);

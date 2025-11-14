@@ -1,52 +1,40 @@
 __Type__
 
-Multiple Choice
+Fill In The Blanks
 
 __Summary__
 
-0/2 correct
+0/3 correct
 
 __Responses__
 
-1. **Question 1**
-   - Selected Answer: D
-   - Correct Answer: B
+1. **Blank 1**
+   - Selected Answer: something
+   - Correct Answer: test
    - Result: ✗ Incorrect
 
-2. **Question 2**
-   - Selected Answer: A, C, D
-   - Correct Answer: A, C
+2. **Blank 2**
+   - Selected Answer: No answer selected
+   - Correct Answer: placeholder
    - Result: ✗ Incorrect
 
-__Practice Question__
+3. **Blank 3**
+   - Selected Answer: No answer selected
+   - Correct Answer: example
+   - Result: ✗ Incorrect
 
-Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
+__Markdown With Blanks__
 
-B. Her actual brand doesn't match her identity
-A. Her brand identity is wrong
-C. Her brand image is too positive
-D. She needs a better logo
+Fill in the blanks:
+
+
+
+> This paragraph exists solely to serve as an [[blank:test]], which makes it both useful and completely [[blank:placeholder]] at the same time. Its main purpose is to pretend it has a purpose, while subtly teaching you that sometimes learning happens through [[blank:example]] rather than deep meaning.
 
 __Suggested Answers__
 
-- B - Correct
-- A
-- C
-- D
-
-__Practice Question__
-
-Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
-
-D. He needs a new logo
-A. His actual brand doesn't match his intended identity
-B. He needs to improve his communication skills
-C. His brand image is inconsistent with his identity
-
-__Suggested Answers__
-
-- D
-- A - Correct
-- B
-- C - Correct
+- placeholder
+- example
+- something
+- test
 
