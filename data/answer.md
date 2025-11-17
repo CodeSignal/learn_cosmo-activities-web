@@ -4,37 +4,69 @@ Fill In The Blanks
 
 __Summary__
 
-1/3 correct
+0/6 correct
 
 __Responses__
 
 1. **Blank 1**
-   - Selected Answer: No answer selected
-   - Correct Answer: example
+   - Selected Answer: Verbal
+   - Correct Answer: Physical
    - Result: ✗ Incorrect
 
 2. **Blank 2**
-   - Selected Answer: example
-   - Correct Answer: useless
+   - Selected Answer: No answer selected
+   - Correct Answer: Verbal
    - Result: ✗ Incorrect
 
 3. **Blank 3**
-   - Selected Answer: nonsense
-   - Correct Answer: nonsense
-   - Result: ✓ Correct
+   - Selected Answer: No answer selected
+   - Correct Answer: Emotional
+   - Result: ✗ Incorrect
+
+4. **Blank 4**
+   - Selected Answer: No answer selected
+   - Correct Answer: Verbal
+   - Result: ✗ Incorrect
+
+5. **Blank 5**
+   - Selected Answer: No answer selected
+   - Correct Answer: Physical
+   - Result: ✗ Incorrect
+
+6. **Blank 6**
+   - Selected Answer: No answer selected
+   - Correct Answer: Emotional
+   - Result: ✗ Incorrect
 
 __Markdown With Blanks__
 
-Fill in the blanks:
+Match each example to the correct type of defensiveness sign (physical, verbal, or emotional):
 
 
 
-> This paragraph exists solely to serve as an [[blank:example]], which makes it both useful and completely [[blank:useless]] at the same time. Its main purpose is to pretend it has a purpose, while subtly teaching you that sometimes learning happens through [[blank:nonsense]] rather than deep meaning.
+> **Example 1**: Someone crosses their arms and avoids eye contact during a tough conversation. [[blank:Physical]]
+
+
+> **Example 2**: A person says, "You always do this!" when feeling upset. [[blank:Verbal]]
+
+
+> **Example 3**: You notice your heart beating faster and feel the urge to interrupt. [[blank:Emotional]]
+
+
+> **Example 4**: Someone starts raising their voice and brings up old arguments. [[blank:Verbal]]
+
+
+> **Example 5**: You clench your fists and your jaw feels tight. [[blank:Physical]]
+
+
+> **Example 6**: You catch yourself thinking, "That's not fair!" and planning your comeback instead of listening. [[blank:Emotional]]
 
 __Suggested Answers__
 
-- example
-- nonsense
-- useless
-- test
+- Emotional
+- Physical
+- Emotional
+- Verbal
+- Verbal
+- Physical
 

@@ -164,6 +164,7 @@ export function initFib({ activity, state, postResults }) {
       opt.className = 'fib-option';
       opt.setAttribute('role', 'option');
       opt.textContent = choice;
+      
       if (choice === current) {
         opt.setAttribute('aria-selected', 'true');
         opt.classList.add('selected');
@@ -177,38 +178,6 @@ export function initFib({ activity, state, postResults }) {
     });
 
     document.body.appendChild(menu);
-    
-    // After rendering, lock the dropdown width to prevent growth on hover
-    // Measure with hover state applied to account for font-weight change (400 -> 500)
-    requestAnimationFrame(() => {
-      const options = menu.querySelectorAll('.fib-option');
-      
-      // Find the longest option by text content
-      let longestOption = options[0];
-      let maxTextLength = 0;
-      options.forEach(opt => {
-        if (opt.textContent.length > maxTextLength) {
-          maxTextLength = opt.textContent.length;
-          longestOption = opt;
-        }
-      });
-      
-      // Measure dropdown width with normal state
-      const normalWidth = menu.getBoundingClientRect().width;
-      
-      // Temporarily apply hover state to longest option to measure with bold font
-      if (longestOption) {
-        longestOption.classList.add('fib-option-hover-measure');
-        const hoverWidth = menu.getBoundingClientRect().width;
-        longestOption.classList.remove('fib-option-hover-measure');
-        
-        // Lock the dropdown width to the larger of the two measurements
-        menu.style.width = Math.max(normalWidth, hoverWidth) + 'px';
-      } else {
-        // Fallback: just lock current width
-        menu.style.width = normalWidth + 'px';
-      }
-    });
     blank.setAttribute('aria-expanded', 'true');
     openDropdown = { container: menu, blank, idx };
     

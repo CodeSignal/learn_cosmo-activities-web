@@ -19,7 +19,7 @@ Match each teammate's situation with the most empathetic response.
 > **Best Response:** [[blank:Thanks for helping me with that report! I really appreciated it.]]
 
 > **Situation 5:** You want to check in after a teammate mentioned an important event.  
-> **Best Response:** [[blank:How did it go?]]
+> **Best Response:** [[blank:How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?]]
 
 __Suggested Answers__
 
@@ -27,4 +27,4 @@ __Suggested Answers__
 - I hadn’t thought of it that way. Can you tell me more?
 - You seem a bit quiet today. Is everything okay?
 - Thanks for helping me with that report! I really appreciated it.
-- How did it go?
+- How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?

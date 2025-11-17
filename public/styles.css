@@ -622,6 +622,10 @@ body.bespoke {
   border: 1px solid var(--Colors-Dropdown-Panel-Stroke);
   background: var(--Colors-Dropdown-Panel);
   box-shadow: 0 12px 38px 0 var(--Colors-Shadow-Float);
+  
+  /* Use flexbox column to ensure proper sizing */
+  display: flex;
+  flex-direction: column;
 }
 
 .fib-option {
@@ -630,14 +634,14 @@ body.bespoke {
   user-select: none;
 
   display: flex;
-  height: var(--Menu-Item-Height);
+  min-height: var(--Menu-Item-Height);
   padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal);
   align-items: center;
-  gap: var(--UI-Spacing-spacing-s);
-  align-self: stretch;
   border-radius: var(--Menu-Item-Roundness);
   background: var(--Colors-Dropdown-Panel);
-  white-space: nowrap;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   color: var(--Colors-Text-Body-Default);
   font-family: "Work Sans";
@@ -646,24 +650,14 @@ body.bespoke {
   font-weight: 400;
   line-height: var(--Menu-Item-Line-Height); /* 150% */
   letter-spacing: -0.24px;
+  
+  width: 100%;
 }
 
 .fib-option:hover {
-  display: flex;
-  height: var(--Menu-Item-Height);
-  padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal);
-  align-items: center;
-  gap: var(--UI-Spacing-spacing-s);
-  align-self: stretch;
-  background: var(--bespoke-secondary-bg);
-  color: var(--Colors-Menu-Tab-Link-Hover);
-  font-family: "Work Sans";
-  font-size: var(--Menu-Item-Font-Size);
-  font-style: normal;
-  font-weight: 500;
-  line-height: var(--Menu-Item-Line-Height); /* 150% */
-  letter-spacing: -0.24px;
   background: var(--Colors-Dropdown-Panel-Hover);
+  color: var(--Colors-Menu-Tab-Link-Hover);
+  font-weight: 500;
 }
 
 .fib-option-hover-measure {
