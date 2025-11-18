@@ -2,24 +2,24 @@
 
 /* MCQ-specific CSS Variables */
 :root {
-  --Colors-Learn-Practice-Card: #FFF;
-  --Colors-Learn-Practice-Card-Border-Hover: #5C94FF;
-  --Colors-Input-Background-Default: #ffffff;
-  --Colors-Input-Background-Checked: #ffffff;
-  --Colors-Input-Border-Default: #e2e5ee;
-  --Colors-Input-Border-Hover: #c8cddb;
-  --Colors-MCQ-Checkmark-Stroke: #182139;
+  --Colors-Learn-Practice-Card: var(--color-bg-main-top);
+  --Colors-Learn-Practice-Card-Border-Hover: var(--color-stroke-primary-medium);
+  --Colors-Input-Background-Default: var(--color-bg-main-top);
+  --Colors-Input-Background-Checked: var(--color-bg-main-top);
+  --Colors-Input-Border-Default: var(--color-stroke-default);
+  --Colors-Input-Border-Hover: var(--color-stroke-strong);
+  --Colors-MCQ-Checkmark-Stroke: var(--color-text-body-strong);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --Colors-Learn-Practice-Card-Border-Hover: #414D6B;
-    --Colors-Learn-Practice-Card: #26314C;
-    --Colors-Input-Border-Default: #26314C;
-    --Colors-Input-Border-Hover: #394563;
+    --Colors-Learn-Practice-Card: var(--color-bg-main-light);
+    --Colors-Learn-Practice-Card-Border-Hover: var(--color-neutral-1100);
+    --Colors-Input-Border-Default: var(--color-bg-main-light);
     --Colors-Input-Background-Default: rgba(17, 25, 46, 0.50);
     --Colors-Input-Background-Checked: rgba(17, 25, 46, 0.50);
-    --Colors-MCQ-Checkmark-Stroke: #ffffff;
+    --Colors-Input-Border-Hover: var(--color-bg-main-strong);
+    --Colors-MCQ-Checkmark-Stroke: var(--color-icon-strong);
   }
 }
 
