@@ -54,14 +54,10 @@
 }
 
 .fib-heading {
+  /* Typography from .heading-small class */
+  /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .heading-small */
   flex: 1 0 0;
   color: var(--color-text-body-strong);
-  font-family: "Founders Grotesk";
-  font-size: var(--Fonts-Headlines-sm);
-  font-style: normal;
-  font-weight: 500;
-  line-height: 120%; /* 28.8px */
-  letter-spacing: -0.24px;
   --webkit-font-smoothing: antialiased;
   margin: 0;
   padding: 0;
@@ -87,6 +83,8 @@
 }
 
 .fib-clear-all {
+  /* Typography from .body-xxsmall class */
+  /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-xxsmall */
   display: flex;
   gap: 6px;
   align-items: center;
@@ -96,12 +94,7 @@
   color: var(--color-text-body-light);
   text-align: center;
   text-decoration: none;
-  font-family: "Work Sans";
-  font-size: var(--Fonts-Body-Default-xxs);
-  font-style: normal;
-  font-weight: 600;
-  line-height: 135%; /* 17.55px */
-  letter-spacing: -0.13px;
+  font-weight: 600; /* override font-weight from .body-xxsmall */
   cursor: pointer;
   white-space: nowrap;
   position: relative;
@@ -110,7 +103,6 @@
 
 .fib-clear-all span {
   display: inline-block;
-  line-height: 135%; /* 17.55px */
 }
 
 .fib-clear-all:hover {
@@ -138,6 +130,8 @@
 
 /* Content extends bespoke card styling */
 .fib-content { 
+  /* Typography from .body-xxlarge class */
+  /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-xxlarge */
   background: transparent; 
   border: none; 
   border-radius: 0; 
@@ -145,24 +139,14 @@
   padding-left: 0;
   padding-right: 0;
   margin-top: 0;
-  line-height: 1.72;
-  font-size: 21px;
   color: #2d3855;
-  letter-spacing: -0.21px;
-  font-family: var(--bespoke-font-family);
-  font-weight: var(--bespoke-font-weight-normal);
   width: 670px;
 }
 
 .fib-content p { 
   margin-top: 8px;
   color: var(--color-text-body-default);
-  font-family: "Work Sans";
-  font-size: var(--Fonts-Body-Default-xxl);
-  font-style: normal;
-  font-weight: 400;
-  line-height: 172%; /* 36.12px */
-  letter-spacing: -0.21px;
+  line-height: 172%; /* override line-height from .body-xxlarge */
 }
 
 .blank { 

@@ -6,9 +6,9 @@ export function initFib({ activity, state, postResults }) {
   elContainer.innerHTML = `
     <div id="fib" class="fib">
       <div class="fib-header">
-        <h2 class="fib-heading"></h2>
+        <h2 class="fib-heading heading-small"></h2>
         <div class="fib-actions">
-          <a id="restart" href="#" class="fib-clear-all">
+          <a id="restart" href="#" class="fib-clear-all body-xxsmall">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M2 2.5H8M7.5 2.5V8.5C7.5 8.77614 7.27614 9 7 9H3C2.72386 9 2.5 8.77614 2.5 8.5V2.5M3.5 2.5V1.5C3.5 1.22386 3.72386 1 4 1H6C6.27614 1 6.5 1.22386 6.5 1.5V2.5M4 4.5V7.5M6 4.5V7.5" stroke="#acb4c7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -16,7 +16,7 @@ export function initFib({ activity, state, postResults }) {
           </a>
         </div>
       </div>
-      <div id="fib-content" class="fib-content"></div>
+      <div id="fib-content" class="fib-content body-xxlarge"></div>
     </div>
   `;
   

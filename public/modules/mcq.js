@@ -38,13 +38,13 @@ export function initMcq({ activity, state, postResults }) {
     
     // Question legend (Question 1, Question 2, etc.)
     const legend = document.createElement('div');
-    legend.className = 'mcq-legend';
+    legend.className = 'mcq-legend heading-small';
     legend.textContent = `Question ${qIdx + 1}`;
     questionEl.appendChild(legend);
     
     // Question text
     const questionTextEl = document.createElement('div');
-    questionTextEl.className = 'mcq-question-text';
+    questionTextEl.className = 'mcq-question-text body-xxlarge';
     questionTextEl.textContent = question.text;
     questionEl.appendChild(questionTextEl);
     
@@ -65,7 +65,7 @@ export function initMcq({ activity, state, postResults }) {
       input.setAttribute('aria-label', `Option ${option.label}: ${option.text}`);
       
       const optionText = document.createElement('span');
-      optionText.className = 'mcq-option-text';
+      optionText.className = 'mcq-option-text body-large';
       optionText.textContent = option.text;
       
       const optionLabel = document.createElement('span');
