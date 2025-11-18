@@ -1,30 +1,36 @@
 __Type__
 
-Fill In The Blanks
+Multiple Choice
 
-__Markdown With Blanks__
+__Practice Question__
 
-Match each teammate's situation with the most empathetic response.
+Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-> **Situation 1:** A teammate says they're feeling stressed and overwhelmed.  
-> **Best Response:** [[blank:That sounds tough. Do you want to talk more about it?]]
-
-> **Situation 2:** A teammate suggests a new way to do something that you hadn't considered.  
-> **Best Response:** [[blank:I hadn’t thought of it that way. Can you tell me more?]]
-
-> **Situation 3:** You notice a teammate seems quieter than usual.  
-> **Best Response:** [[blank:You seem a bit quiet today. Is everything okay?]]
-
-> **Situation 4:** A teammate helps you finish a report on time.  
-> **Best Response:** [[blank:Thanks for helping me with that report! I really appreciated it.]]
-
-> **Situation 5:** You want to check in after a teammate mentioned an important event.  
-> **Best Response:** [[blank:How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?]]
+A. Her brand identity is wrong  
+B. Her actual brand doesn't match her identity  
+C. Her brand image is too positive  
+D. She needs a better logo
 
 __Suggested Answers__
 
-- That sounds tough—do you want to talk more about it?
-- I hadn’t thought of it that way. Can you tell me more?
-- You seem a bit quiet today. Is everything okay?
-- Thanks for helping me with that report! I really appreciated it.
-- How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?
+- A  
+- B - Correct  
+- C  
+- D
+
+__Practice Question__
+
+Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
+
+A. His actual brand doesn't match his intended identity  
+B. He needs to improve his communication skills  
+C. His brand image is inconsistent with his identity  
+D. He needs a new logo
+
+__Suggested Answers__
+
+- A - Correct  
+- B  
+- C - Correct  
+- D
+

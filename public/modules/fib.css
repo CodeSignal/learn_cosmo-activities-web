@@ -1,0 +1,308 @@
+/* ===== FILL IN THE BLANKS ACTIVITY STYLES ===== */
+
+/* FIB-specific CSS Variables */
+:root {
+  --Colors-Learn-Practice-Blank-Slot-Border: var(--color-stroke-light);
+  --Colors-Learn-Practice-Blank-Slot: var(--color-neutral-00);
+  --Colors-Learn-Practice-Blank-Slot-Border-Hover: var(--color-bg-main-strong);
+  --Colors-Learn-Practice-Blank-Slot-Hover: var(--color-bg-main-top);
+  --Colors-Dropdown-Panel-Stroke: var(--color-stroke-default);
+  --Colors-Dropdown-Panel: var(--color-bg-main-top);
+  --Colors-Dropdown-Panel-Hover: var(--color-neutral-50);
+  --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
+  --Colors-Shadow-Medium-Soft: rgba(76, 90, 123, 0.08);
+  --Colors-Menu-Tab-Link-Hover: var(--color-text-body-default);
+
+  --Menu-Item-Height: 40px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --Colors-Learn-Practice-Blank-Slot-Border: var(--color-bg-main-light);
+    --Colors-Learn-Practice-Blank-Slot: rgba(38, 49, 76, 0.30);
+    --Colors-Learn-Practice-Blank-Slot-Border-Hover: var(--color-bg-main-medium);
+    --Colors-Learn-Practice-Blank-Slot-Hover: rgba(38, 49, 76, 0.45);
+    --Colors-Dropdown-Panel-Stroke: rgba(13, 21, 40, 0.30);
+    --Colors-Dropdown-Panel-Hover: var(--color-bg-main-light);
+    --Colors-Dropdown-Panel: var(--color-bg-main-medium);
+    --Colors-Shadow-Float: rgba(13, 21, 40, 0.30);
+    --Colors-Shadow-Medium-Soft: rgba(13, 21, 40, 0.40);
+    --Colors-Menu-Tab-Link-Hover: var(--color-neutral-200);
+  }
+}
+
+/* FIB Container */
+.fib { 
+  display: grid; 
+  gap: 0;
+  background: var(--color-bg-main-default);
+  border-radius: 6px 6px 0 0;
+  padding: var(--bespoke-space-xl);
+  padding-left: var(--bespoke-space-xl);
+  padding-right: var(--bespoke-space-xl);
+}
+
+.fib-header {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding-bottom: 16px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+  margin-bottom: 0;
+}
+
+.fib-heading {
+  flex: 1 0 0;
+  color: var(--color-text-body-strong);
+  font-family: "Founders Grotesk";
+  font-size: var(--Fonts-Headlines-sm);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 120%; /* 28.8px */
+  letter-spacing: -0.24px;
+  --webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.fib-heading p {
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  max-width: 585px;
+}
+
+.fib-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.fib-clear-all {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-body-light);
+  text-align: center;
+  text-decoration: none;
+  font-family: "Work Sans";
+  font-size: var(--Fonts-Body-Default-xxs);
+  font-style: normal;
+  font-weight: 600;
+  line-height: 135%; /* 17.55px */
+  letter-spacing: -0.13px;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.fib-clear-all span {
+  display: inline-block;
+  line-height: 135%; /* 17.55px */
+}
+
+.fib-clear-all:hover {
+  opacity: 0.8;
+}
+
+.fib-clear-all svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+}
+
+/* Prompt extends bespoke card styling */
+.fib-prompt {
+  background: var(--bespoke-canvas);
+  border: 1px solid var(--bespoke-stroke);
+  border-radius: var(--bespoke-radius-lg);
+  padding: var(--bespoke-space-lg) var(--bespoke-space-xl);
+  font-size: var(--bespoke-font-size-base);
+  line-height: var(--bespoke-line-height-relaxed);
+  font-weight: var(--bespoke-font-weight-medium);
+  text-align: center;
+}
+
+/* Content extends bespoke card styling */
+.fib-content { 
+  background: transparent; 
+  border: none; 
+  border-radius: 0; 
+  padding: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin-top: 0;
+  line-height: 1.72;
+  font-size: 21px;
+  color: #2d3855;
+  letter-spacing: -0.21px;
+  font-family: var(--bespoke-font-family);
+  font-weight: var(--bespoke-font-weight-normal);
+  width: 670px;
+}
+
+.fib-content p { 
+  margin-top: 8px;
+  color: var(--color-text-body-default);
+  font-family: "Work Sans";
+  font-size: var(--Fonts-Body-Default-xxl);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 172%; /* 36.12px */
+  letter-spacing: -0.21px;
+}
+
+.blank { 
+  display: inline-flex;
+  width: 96px;
+  padding: 0 var(--UI-Spacing-spacing-xs) 0 var(--UI-Spacing-spacing-s);
+  align-items: center;
+  gap: 10px;
+  margin: 0 0.125rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  vertical-align: middle;
+  cursor: pointer;
+  border-radius: var(--UI-Radius-radius-s);
+  border: 1.5px solid var(--Colors-Learn-Practice-Blank-Slot-Border);
+  background: var(--Colors-Learn-Practice-Blank-Slot);
+
+  color: var(--color-text-body-default);
+  text-align: center;
+  font-family: "Work Sans";
+  font-size: var(--Fonts-Body-Default-xxl);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 135%; /* 28.35px */
+  letter-spacing: -0.21px;
+
+  width: auto;
+  min-width: 0;
+  min-height: 32px;
+}
+
+.blank.empty {
+  width: 96px;
+}
+
+.blank:hover,
+.blank.dropdown-open {
+  border-radius: var(--UI-Radius-radius-s);
+  border: 1.5px solid var(--Colors-Learn-Practice-Blank-Slot-Border-Hover);
+  box-shadow: 0 2px 3px 0 var(--Colors-Shadow-Medium-Soft);
+  background-color: var(--Colors-Learn-Practice-Blank-Slot-Hover);
+}
+
+.blank.current { 
+  outline: 2px solid var(--bespoke-accent); 
+  outline-offset: 2px; 
+  background: var(--bespoke-canvas);
+  border-color: var(--bespoke-accent);
+  border-style: solid;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.blank .chip { 
+  cursor: pointer;
+  margin: 0;
+  padding: 0.125rem 0rem;
+  border: none; 
+  background: transparent;
+  color: var(--bespoke-accent);
+  border-radius: var(--bespoke-radius-sm); 
+  box-shadow: none;
+  display: inline-block;
+  width: auto;
+  height: auto;
+  font-weight: var(--bespoke-font-weight-medium); 
+  font-size: inherit;
+  line-height: inherit;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* Custom Dropdown for FIB */
+.fib-dropdown {
+  position: absolute;
+  z-index: var(--bespoke-z-popover);
+  background: var(--bespoke-box);
+  box-shadow: var(--bespoke-shadow-lg);
+  padding: 12px;
+  color: var(--bespoke-fg);
+
+  width: max-content;
+  min-width: 120px;
+  max-width: min(600px, calc(100vw - 40px));
+  border-radius: var(--UI-Radius-radius-s);
+  border: 1px solid var(--Colors-Dropdown-Panel-Stroke);
+  background: var(--Colors-Dropdown-Panel);
+  box-shadow: 0 12px 38px 0 var(--Colors-Shadow-Float);
+  
+  /* Use flexbox column to ensure proper sizing */
+  display: flex;
+  flex-direction: column;
+}
+
+.fib-option {
+  border-radius: var(--bespoke-radius-md);
+  cursor: pointer;
+  user-select: none;
+
+  display: flex;
+  min-height: var(--Menu-Item-Height);
+  padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal);
+  align-items: center;
+  border-radius: var(--Menu-Item-Roundness);
+  background: var(--Colors-Dropdown-Panel);
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+
+  color: var(--color-text-body-default);
+  font-family: "Work Sans";
+  font-size: var(--Menu-Item-Font-Size);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--Menu-Item-Line-Height); /* 150% */
+  letter-spacing: -0.24px;
+  
+  width: 100%;
+}
+
+.fib-option:hover {
+  background: var(--Colors-Dropdown-Panel-Hover);
+  color: var(--Colors-Menu-Tab-Link-Hover);
+  font-weight: 500;
+}
+
+.fib-option-hover-measure {
+  font-weight: 500;
+}
+
+.fib-option.selected {
+  background: var(--bespoke-secondary-bg);
+  font-weight: var(--bespoke-font-weight-semibold);
+}
+
+.fib-option.clear {
+  color: var(--bespoke-danger);
+}
+

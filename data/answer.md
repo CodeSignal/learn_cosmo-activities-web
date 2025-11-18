@@ -1,72 +1,52 @@
 __Type__
 
-Fill In The Blanks
+Multiple Choice
 
 __Summary__
 
-0/6 correct
+0/2 correct
 
 __Responses__
 
-1. **Blank 1**
-   - Selected Answer: Verbal
-   - Correct Answer: Physical
+1. **Question 1**
+   - Selected Answer: C
+   - Correct Answer: B
    - Result: ✗ Incorrect
 
-2. **Blank 2**
-   - Selected Answer: No answer selected
-   - Correct Answer: Verbal
+2. **Question 2**
+   - Selected Answer: A, D
+   - Correct Answer: A, C
    - Result: ✗ Incorrect
 
-3. **Blank 3**
-   - Selected Answer: No answer selected
-   - Correct Answer: Emotional
-   - Result: ✗ Incorrect
+__Practice Question__
 
-4. **Blank 4**
-   - Selected Answer: No answer selected
-   - Correct Answer: Verbal
-   - Result: ✗ Incorrect
+Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-5. **Blank 5**
-   - Selected Answer: No answer selected
-   - Correct Answer: Physical
-   - Result: ✗ Incorrect
-
-6. **Blank 6**
-   - Selected Answer: No answer selected
-   - Correct Answer: Emotional
-   - Result: ✗ Incorrect
-
-__Markdown With Blanks__
-
-Match each example to the correct type of defensiveness sign (physical, verbal, or emotional):
-
-
-
-> **Example 1**: Someone crosses their arms and avoids eye contact during a tough conversation. [[blank:Physical]]
-
-
-> **Example 2**: A person says, "You always do this!" when feeling upset. [[blank:Verbal]]
-
-
-> **Example 3**: You notice your heart beating faster and feel the urge to interrupt. [[blank:Emotional]]
-
-
-> **Example 4**: Someone starts raising their voice and brings up old arguments. [[blank:Verbal]]
-
-
-> **Example 5**: You clench your fists and your jaw feels tight. [[blank:Physical]]
-
-
-> **Example 6**: You catch yourself thinking, "That's not fair!" and planning your comeback instead of listening. [[blank:Emotional]]
+B. Her actual brand doesn't match her identity
+A. Her brand identity is wrong
+C. Her brand image is too positive
+D. She needs a better logo
 
 __Suggested Answers__
 
-- Emotional
-- Physical
-- Emotional
-- Verbal
-- Verbal
-- Physical
+- B - Correct
+- A
+- C
+- D
+
+__Practice Question__
+
+Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
+
+D. He needs a new logo
+A. His actual brand doesn't match his intended identity
+B. He needs to improve his communication skills
+C. His brand image is inconsistent with his identity
+
+__Suggested Answers__
+
+- D
+- A - Correct
+- B
+- C - Correct
 

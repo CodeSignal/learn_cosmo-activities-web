@@ -7,7 +7,7 @@
   /* Colors - Light Mode */
   --Colors-Dropdown-Toggle-Text: #495573;
   --Colors-Text-Body-Strong: #182139;
-  --Colors-Text-Body-Default: #2d3855;
+  /* --Colors-Text-Body-Default: #2d3855; */
   --Colors-Dropdown-Icon: #808AA5;
   --Colors-Dropdown-Icon-Hover: #8B94AB;
   --Colors-Dropdown-Icon-Active: #377DFF;
@@ -43,7 +43,7 @@
     /* Colors - Dark Mode */
     --Colors-Dropdown-Toggle-Text: #C1C7D7;
     --Colors-Text-Body-Strong: #FFFFFF;
-    --Colors-Text-Body-Default: #C1C7D7;
+    /* --Colors-Text-Body-Default: #C1C7D7; */
     --Colors-Dropdown-Icon-Hover: #8B94AB;
     --Colors-Dropdown-Icon-Active: #377DFF;
     --Colors-Primary-Medium: #377DFF;
@@ -228,7 +228,7 @@
   font-weight: 400;
   line-height: 24px;
   letter-spacing: -0.24px;
-  color: var(--Colors-Text-Body-Default);
+  color: var(--color-text-body-default);
   text-align: left;
   transition: background-color 0.15s ease;
   box-sizing: border-box;
