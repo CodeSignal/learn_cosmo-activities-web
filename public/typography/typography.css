@@ -1,0 +1,286 @@
+@font-face {
+    font-family: 'Founders Grotesk';
+    src: url('/fonts/FoundersGrotesk-Light.woff2') format('woff2');
+    font-weight: 300;
+    font-style: normal;
+}
+  
+@font-face {
+    font-family: 'Founders Grotesk';
+    src: url('/fonts/FoundersGrotesk-Light-Italic.woff2') format('woff2');
+    font-weight: 300;
+    font-style: italic;
+}
+  
+@font-face {
+    font-family: 'Founders Grotesk';
+    src: url('/fonts/FoundersGrotesk-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+}
+  
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/fonts/JetBrainsMono-MediumItalic.woff2') format('woff2');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Founders Grotesk';
+    src: url('/fonts/FoundersGrotesk-Medium-Italic.woff2') format('woff2');
+    font-weight: 500;
+    font-style: italic;
+  }
+
+:root {
+    --body-family: "Work Sans";
+    --body-elegant-family: "Founders Grotesk";
+    --heading-family: "Founders Grotesk";
+    --label-family: "Work Sans";
+    --label-number-family: "Work Sans";
+
+    --Fonts-Body-Default-xxs: 13px;
+    --Fonts-Body-Default-xs: 14px;
+    --Fonts-Body-Default-sm: 15px;
+    --Fonts-Body-Default-md: 16px;
+    --Fonts-Body-Default-lg: 17px;
+    --Fonts-Body-Default-xl: 19px;
+    --Fonts-Body-Default-xxl: 21px;
+    --Fonts-Body-Default-xxxl: 24px;
+
+    --Fonts-Body-Elegant-xxs: 22px;
+    --Fonts-Body-Elegant-xs: 26px;
+    --Fonts-Body-Elegant-sm: 32px;
+    --Fonts-Body-Elegant-md: 38px;
+
+    --Fonts-Headlines-xxl: 64px;
+    --Fonts-Headlines-xl: 48px;
+    --Fonts-Headlines-l: 38px;
+    --Fonts-Headlines-md: 32px;
+    --Fonts-Headlines-sm: 24px;
+    --Fonts-Headlines-xsm: 22px;
+    --Fonts-Headlines-xxsm: 22px;
+    --Fonts-Headlines-xxxsm: 16px;
+
+    --Fonts-Special-xl: 15px;
+    --Fonts-Special-lg: 14px;
+    --Fonts-Special-sm: 12px;
+    --Fonts-Special-xs: 11px;
+    --Fonts-Special-xxs: 10px;
+}
+
+/* Base body class with shared properties */
+.body,
+.body-xxsmall,
+.body-xsmall,
+.body-small,
+.body-medium,
+.body-large,
+.body-xlarge,
+.body-xxlarge,
+.body-xxxlarge {
+    font-family: var(--body-family);
+    font-style: normal;
+    font-weight: 400;
+}
+
+.body-xxsmall {
+    font-size: var(--Fonts-Body-Default-xxs);
+    line-height: 135%;
+    letter-spacing: -0.13px;
+}
+
+.body-xsmall {
+    font-size: var(--Fonts-Body-Default-xs);
+    line-height: 135%;
+    letter-spacing: -0.14px;
+}
+
+.body-small {
+    font-size: var(--Fonts-Body-Default-sm);
+    line-height: 135%;
+    letter-spacing: -0.15px;
+}
+
+.body-medium {
+    font-size: var(--Fonts-Body-Default-md);
+    line-height: 145%;
+    letter-spacing: -0.16px;
+}
+
+.body-large {
+    font-size: var(--Fonts-Body-Default-lg);
+    line-height: 140%;
+    letter-spacing: -0.17px;
+}
+
+.body-xlarge {
+    font-size: var(--Fonts-Body-Default-xl);
+    line-height: 140%;
+    letter-spacing: -0.19px;
+}
+
+.body-xxlarge {
+    font-size: var(--Fonts-Body-Default-xxl);
+    line-height: 140%;
+    letter-spacing: -0.21px;
+}
+
+.body-xxxlarge {
+    font-size: var(--Fonts-Body-Default-xxxl);
+    line-height: 140%;
+    letter-spacing: -0.24px;
+}
+
+.body-elegant,
+.body-elegant-xxsmall,
+.body-elegant-xsmall,
+.body-elegant-small,
+.body-elegant-medium {
+    font-family: var(--body-elegant-family);
+    font-style: normal;
+    font-weight: 300;
+}
+
+.body-elegant-xxsmall {
+    font-size: var(--Fonts-Body-Elegant-xxs);
+    line-height: 138%;
+    letter-spacing: -0.22px;
+}
+
+.body-elegant-xsmall {
+    font-size: var(--Fonts-Body-Elegant-xs);
+    line-height: 138%;
+    letter-spacing: -0.26px;
+}
+
+.body-elegant-small {
+    font-size: var(--Fonts-Body-Elegant-sm);
+    line-height: 138%;
+    letter-spacing: -0.32px;
+}
+
+.body-elegant-medium {
+    font-size: var(--Fonts-Body-Elegant-md);
+    line-height: 138%;
+    letter-spacing: -0.38px;
+}
+
+
+.heading,
+.heading-xxlarge,
+.heading-xlarge,
+.heading-large,
+.heading-medium,
+.heading-small,
+.heading-xsmall,
+.heading-xxsmall {
+    font-family: var(--heading-family);
+    font-style: normal;
+    font-weight: 500;
+}
+
+.heading-xxlarge {
+    font-size: var(--Fonts-Headlines-xxl);
+    line-height: 100%;
+    letter-spacing: -0.64px;
+}
+
+.heading-xlarge {
+    font-size: var(--Fonts-Headlines-xl);
+    line-height: 100%;
+    letter-spacing: -0.48px;
+}
+
+.heading-large {
+    font-size: var(--Fonts-Headlines-l);
+    line-height: 110%;
+    letter-spacing: -0.38px;
+}
+
+.heading-medium {
+    font-size: var(--Fonts-Headlines-md);
+    line-height: 116%;
+    letter-spacing: -0.32px;
+}
+
+.heading-small {
+    font-size: var(--Fonts-Headlines-sm);
+    line-height: 120%;
+    letter-spacing: -0.24px;
+}
+
+.heading-xsmall {
+    font-size: var(--Fonts-Headlines-xsm);
+    line-height: 120%;
+    letter-spacing: -0.22px;
+}
+
+.heading-xxsmall {
+    font-size: var(--Fonts-Headlines-xxsm);
+    line-height: 120%;
+    letter-spacing: -0.22px;
+}
+
+.heading-xxxsmall {
+    font-size: var(--Fonts-Headlines-xxxsm);
+    line-height: 120%;
+    letter-spacing: -0.16px;
+}
+
+.label,
+.label-large,
+.label-medium,
+.label-small {
+    font-family: var(--label-family);
+    font-style: normal;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.label-large {
+    font-size: var(--Fonts-Special-lg);
+    line-height: normal;
+    letter-spacing: 1.4px;
+}
+
+.label-medium {
+    font-size: var(--Fonts-Special-xs);
+    line-height: normal;
+    letter-spacing: 1.1px;
+}
+
+.label-small {
+    font-size: var(--Fonts-Special-xxs);
+    line-height: 82%;
+    letter-spacing: 1px;
+}
+
+.label-number,
+.label-number-xsmall,
+.label-number-small,
+.label-number-medium,
+.label-number-large {
+    font-family: var(--label-number-family);
+    font-style: normal;
+    font-weight: 500;
+    line-height: 83%;
+}
+
+.label-number-xsmall {
+    font-size: var(--Fonts-Special-xs);
+}
+
+.label-number-small {
+    font-size: var(--Fonts-Special-sm, 12px);
+}
+
+.label-number-medium {
+    font-size: var(--Fonts-Special-lg);
+}
+
+.label-number-large {
+    font-size: var(--Fonts-Special-xl);
+}
+

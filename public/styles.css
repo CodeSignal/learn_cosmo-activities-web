@@ -2,34 +2,6 @@
 /* This file contains only styles specific to the learning activities */
 /* Base styles, layout, and components are provided by bespoke.css */
 
-@font-face {
-  font-family: 'Founders Grotesk';
-  src: url('/fonts/FoundersGrotesk-Light.woff2') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Founders Grotesk';
-  src: url('/fonts/FoundersGrotesk-Light-Italic.woff2') format('woff2');
-  font-weight: 300;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'Founders Grotesk';
-  src: url('/fonts/FoundersGrotesk-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Founders Grotesk';
-  src: url('/fonts/FoundersGrotesk-Medium-Italic.woff2') format('woff2');
-  font-weight: 500;
-  font-style: italic;
-}
-
 /* ===== CSS VARIABLES ===== */
 :root {
 
