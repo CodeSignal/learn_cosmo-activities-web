@@ -247,25 +247,25 @@
     --color-primary-darkest: var(--color-primary-1050);
 
     /* Background Colors - Semantic Names (Elevated Dark Mode) */
-    --color-bg-main-default: var(--color-neutral-1200);
-    --color-bg-main-light: var(--color-neutral-1150);      
-    --color-bg-main-medium: var(--color-neutral-1100);     
-    --color-bg-main-strong: var(--color-neutral-1050);     
+    --color-bg-main-default: var(--color-neutral-1300);
+    --color-bg-main-light: var(--color-neutral-1250);      
+    --color-bg-main-medium: var(--color-neutral-1200);     
+    --color-bg-main-strong: var(--color-neutral-1150);     
     --color-bg-main-dark: var(--color-neutral-1350);       
     --color-bg-main-darker: var(--color-neutral-1400);     
-    --color-bg-main-top: var(--color-neutral-1200);
+    --color-bg-main-top: var(--color-neutral-1300);
     --color-bg-main-black: var(--color-neutral-200);
 
     /* Text Colors - Semantic Names (Elevated Dark Mode) */
-    --color-text-body-default: var(--color-neutral-400);
-    --color-text-body-medium: var(--color-neutral-550);
-    --color-text-body-light: var(--color-neutral-650);
+    --color-text-body-default: var(--color-neutral-450);
+    --color-text-body-medium: var(--color-neutral-650);
+    --color-text-body-light: var(--color-neutral-750);
     --color-text-body-strong: var(--color-neutral-00);
     --color-text-body-strongest: var(--color-neutral-00);
     
     /* Icon Colors - Semantic Names (Elevated Dark Mode) */  
-    --color-icon-default: var(--color-neutral-800);
-    --color-icon-medium: var(--color-neutral-650);
+    --color-icon-default: var(--color-neutral-850);
+    --color-icon-medium: var(--color-neutral-750);
     --color-icon-strong: var(--color-neutral-00);
     --color-icon-primary: var(--color-primary-700);
 

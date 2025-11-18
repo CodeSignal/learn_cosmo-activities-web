@@ -9,7 +9,6 @@
 .bespoke {
   /* CSS Custom Properties - Light Theme */
   --bespoke-font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
-  --bespoke-bg: #ffffff;                      /* base background */
   --bespoke-secondary-bg: #f6f6f6;            /* secondary background */
   --bespoke-fg: rgb(24, 33, 57);              /* text-primary */
   --bespoke-muted: rgb(73, 85, 115);          /* text-secondary */
@@ -119,7 +118,6 @@
 /* Dark Theme Override */
 @media (prefers-color-scheme: dark) {
   .bespoke {
-    --bespoke-bg: #303d56;                    /* dark background - rgb(48, 61, 86) */
     --bespoke-secondary-bg: #26314c;          /* dark secondary background */
     --bespoke-fg: #ffffff;                    /* light text */
     --bespoke-muted: rgb(193, 199, 215);      /* muted text */
@@ -166,7 +164,7 @@ html, body {
 .bespoke {
   font-family: var(--bespoke-font-family);
   color: var(--bespoke-fg);
-  background: var(--bespoke-bg);
+  background: var(--color-bg-main-default);
   line-height: 1.6;
   margin: 0;
   padding: 0;
@@ -208,7 +206,7 @@ html, body {
   padding: var(--bespoke-space-sm);
   overflow: auto;
   border-right: 1px solid var(--bespoke-stroke);
-  background: var(--bespoke-bg);
+  background: var(--color-bg-main-default);
 }
 
 .bespoke .content-area {

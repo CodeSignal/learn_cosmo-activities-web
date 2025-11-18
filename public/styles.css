@@ -32,32 +32,31 @@
 
 /* ===== CSS VARIABLES ===== */
 :root {
-  --Colors-Backgrounds-Main-Default: #F4F5F9;
-  --Colors-Text-Body-Strong: #182139;
+  --Colors-Learn-Practice-Blank-Slot-Border: var(--color-stroke-light);
+  --Colors-Learn-Practice-Blank-Slot: var(--color-neutral-00);
+  --Colors-Learn-Practice-Blank-Slot-Border-Hover: var(--color-bg-main-strong);
+  --Colors-Learn-Practice-Blank-Slot-Hover: var(--color-bg-main-top);
+  --Colors-Dropdown-Panel-Stroke: var(--color-stroke-default);
+  --Colors-Dropdown-Panel: var(--color-bg-main-top);
+  --Colors-Dropdown-Panel-Hover: var(--color-neutral-50);
+  --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
+  --Colors-Shadow-Medium-Soft: rgba(76, 90, 123, 0.08);
+  --Colors-Menu-Tab-Link-Hover: var(--color-text-body-default);
+
   --Fonts-Headlines-sm: 24px;
-  --Colors-Buttons-Text-Default: #979FB4;
   --Fonts-Body-Default-xxs: 13px;
-  --Colors-Text-Body-Default: #2D3855;
   --Fonts-Body-Default-xxl: 21px;
   --UI-Spacing-spacing-xs: 8px;
   --UI-Spacing-spacing-s: 8px;
   --UI-Spacing-spacing-none: 0;
-  --UI-Radius-radius-s: 8px;
-  --Colors-Learn-Practice-Blank-Slot-Border: #E2E5EE;
-  --Colors-Learn-Practice-Blank-Slot: #FFF;
-  --Colors-Learn-Practice-Blank-Slot-Border-Hover: #E2E5EE;
-  --Colors-Learn-Practice-Blank-Slot-Hover: #FFF;
-  --Colors-Dropdown-Panel-Stroke: #E2E5EE;
-  --Colors-Dropdown-Panel: #FFF;
-  --Colors-Dropdown-Panel-Hover: #F4F5F9;
-  --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
-  --Colors-Shadow-Medium-Soft: rgba(76, 90, 123, 0.08);
+  --UI-Radius-radius-s: 8px;  
   --Menu-Item-Height: 40px;
   --Menu-Item-Padding-Horizontal: 12px;
   --Menu-Item-Roundness: 8px;
   --Menu-Item-Font-Size: 16px;
   --Menu-Item-Line-Height: 24px;
-  --Colors-Menu-Tab-Link-Hover: #2D3855;
+  
+
   --Colors-Learn-Practice-Card: #FFF;
   --Colors-Learn-Practice-Card-Border-Hover: #5C94FF;
   --Fonts-Body-Default-lg: 17px;
@@ -79,26 +78,22 @@ body.bespoke {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--Colors-Backgrounds-Main-Default);
+  background: var();
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --Colors-Backgrounds-Main-Default: #182139;
-    --Colors-Learn-Practice-Background: #182139;
-    --Colors-Text-Body-Strong: #FFF;
-    --Colors-Text-Body-Default: #C1C7D7;
-    --Colors-Buttons-Text-Default: #979FB4;
-    --Colors-Learn-Practice-Blank-Slot-Border: #242E47;
+    --Colors-Learn-Practice-Blank-Slot-Border: var(--color-bg-main-light);
     --Colors-Learn-Practice-Blank-Slot: rgba(38, 49, 76, 0.30);
-    --Colors-Learn-Practice-Blank-Slot-Border-Hover: #2D3855;
+    --Colors-Learn-Practice-Blank-Slot-Border-Hover: var(--color-bg-main-medium);
     --Colors-Learn-Practice-Blank-Slot-Hover: rgba(38, 49, 76, 0.45);
-    --Colors-Dropdown-Panel-Stroke: rgba(45, 56, 85, 0.00);
-    --Colors-Dropdown-Panel: #2D3855;
-    --Colors-Dropdown-Panel-Hover: #26314C;
+    --Colors-Dropdown-Panel-Stroke: rgba(13, 21, 40, 0.30);
+    --Colors-Dropdown-Panel-Hover: var(--color-bg-main-light);
+    --Colors-Dropdown-Panel: var(--color-bg-main-medium);
     --Colors-Shadow-Float: rgba(13, 21, 40, 0.30);
     --Colors-Shadow-Medium-Soft: rgba(13, 21, 40, 0.40);
-    --Colors-Menu-Tab-Link-Hover: #E2E5EE;
+    --Colors-Menu-Tab-Link-Hover: var(--color-neutral-200);
+
     --Colors-Learn-Practice-Card-Border-Hover: #414D6B;
     --Colors-Learn-Practice-Card: #26314C;
     --Colors-Input-Border-Default: #26314C;
@@ -402,7 +397,7 @@ body.bespoke {
 .fib { 
   display: grid; 
   gap: 0;
-  background: var(--Colors-Backgrounds-Main-Default);
+  background: var(--color-bg-main-default);
   border-radius: 6px 6px 0 0;
   padding: var(--bespoke-space-xl);
   padding-left: var(--bespoke-space-xl);
@@ -422,7 +417,7 @@ body.bespoke {
 
 .fib-heading {
   flex: 1 0 0;
-  color: var(--Colors-Text-Body-Strong);
+  color: var(--color-text-body-strong);
   font-family: "Founders Grotesk";
   font-size: var(--Fonts-Headlines-sm);
   font-style: normal;
@@ -460,7 +455,7 @@ body.bespoke {
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--Colors-Buttons-Text-Default);
+  color: var(--color-text-body-light);
   text-align: center;
   text-decoration: none;
   font-family: "Work Sans";
@@ -523,7 +518,7 @@ body.bespoke {
 
 .fib-content p { 
   margin-top: 8px;
-  color: var(--Colors-Text-Body-Default);
+  color: var(--color-text-body-default);
   font-family: "Work Sans";
   font-size: var(--Fonts-Body-Default-xxl);
   font-style: normal;
@@ -547,7 +542,7 @@ body.bespoke {
   border: 1.5px solid var(--Colors-Learn-Practice-Blank-Slot-Border);
   background: var(--Colors-Learn-Practice-Blank-Slot);
 
-  color: var(--Colors-Text-Body-Default);
+  color: var(--color-text-body-default);
   text-align: center;
   font-family: "Work Sans";
   font-size: var(--Fonts-Body-Default-xxl);
@@ -643,7 +638,7 @@ body.bespoke {
   word-wrap: break-word;
   overflow-wrap: break-word;
 
-  color: var(--Colors-Text-Body-Default);
+  color: var(--color-text-body-default);
   font-family: "Work Sans";
   font-size: var(--Menu-Item-Font-Size);
   font-style: normal;
@@ -705,7 +700,7 @@ body.bespoke {
 }
 
 .mcq-question-text {
-  color: var(--Colors-Text-Body-Default);
+  color: var(--color-text-body-default);
   font-family: "Work Sans", sans-serif;
   font-size: var(--Fonts-Body-Default-xxl);
   font-style: normal;
@@ -725,7 +720,7 @@ body.bespoke {
 }
 
 .mcq-legend {
-  color: var(--Colors-Text-Body-Strong);
+  color: var(--color-text-body-strong);
   font-family: "Founders Grotesk", sans-serif;
   font-size: var(--Fonts-Headlines-sm);
   font-style: normal;
@@ -746,7 +741,7 @@ body.bespoke {
   border-radius: var(--UI-Radius-radius-ml);
   background: var(--Colors-Learn-Practice-Card);
   border: 2px solid transparent;
-  color: var(--Colors-Text-Body-Default);
+  color: var(--color-text-body-default);
   font-family: "Work Sans", sans-serif;
   font-size: var(--Fonts-Body-Default-lg);
   font-style: normal;
@@ -880,7 +875,7 @@ body.bespoke {
 }
 
 .mcq-option-text {
-  color: var(--Colors-Text-Body-Default);
+  color: var(--color-text-body-default);
   font-family: "Work Sans", sans-serif;
   font-size: var(--Fonts-Body-Default-lg, 17px);
   font-weight: 400;
