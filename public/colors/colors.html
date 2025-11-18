@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeSignal Color Swatch Sheet</title>
+    <link rel="stylesheet" href="colors.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--color-bg-main-default);
+            color: var(--color-text-body-default);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-text-body-strongest);
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--color-stroke-default);
+            color: var(--color-text-body-strong);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--color-text-body-strong);
+        }
+
+        .intro {
+            margin-bottom: 2rem;
+            color: var(--color-text-body-medium);
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .color-swatch {
+            background: var(--color-bg-main-top);
+            border: 1px solid var(--color-stroke-default);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .color-swatch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-preview {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .color-preview::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(45deg, #ccc 25%, transparent 25%),
+                linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ccc 75%),
+                linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .color-fill {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .color-info {
+            padding: 0.75rem;
+        }
+
+        .color-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            color: var(--color-text-body-strong);
+            word-break: break-word;
+        }
+
+        .color-value {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: var(--color-text-body-medium);
+            background: var(--color-bg-main-light);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 0.25rem;
+        }
+
+        .color-reference {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: var(--color-text-body-light);
+            font-style: italic;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .scale-group {
+            margin-bottom: 2rem;
+        }
+
+        .scale-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--color-text-body-strong);
+        }
+    </style>
+</head>
+<body>
+    <h1>CodeSignal Color Swatch Sheet</h1>
+    <p class="intro">Visual reference for all colors defined in colors.css</p>
+
+    <h2>Numbered Color Scales</h2>
+    <p class="intro">Base color definitions - all semantic colors reference these</p>
+
+    <div class="section">
+        <h3>Primary Scale</h3>
+        <div class="color-grid" id="primary-scale"></div>
+    </div>
+
+    <div class="section">
+        <h3>Neutral Scale</h3>
+        <div class="color-grid" id="neutral-scale"></div>
+    </div>
+
+    <div class="section">
+        <h3>Accent Green Scale</h3>
+        <div class="color-grid" id="green-scale"></div>
+    </div>
+
+    <div class="section">
+        <h3>Accent Sky Blue Scale</h3>
+        <div class="color-grid" id="sky-blue-scale"></div>
+    </div>
+
+    <div class="section">
+        <h3>Accent Yellow Scale</h3>
+        <div class="color-grid" id="yellow-scale"></div>
+    </div>
+
+    <div class="section">
+        <h3>Accent Orange Scale</h3>
+        <div class="color-grid" id="orange-scale"></div>
+    </div>
+
+    <div class="section">
+        <h3>Accent Red Scale</h3>
+        <div class="color-grid" id="red-scale"></div>
+    </div>
+
+    <h2>Semantic Colors</h2>
+    <p class="intro">Semantic color names that reference the numbered scales above</p>
+
+    <div class="section">
+        <h3>Primary Semantic Colors</h3>
+        <div class="color-grid" id="primary-semantic"></div>
+    </div>
+
+    <div class="section">
+        <h3>Background Colors</h3>
+        <div class="color-grid" id="background-colors"></div>
+    </div>
+
+    <div class="section">
+        <h3>Text Colors</h3>
+        <div class="color-grid" id="text-colors"></div>
+    </div>
+
+    <div class="section">
+        <h3>Icon Colors</h3>
+        <div class="color-grid" id="icon-colors"></div>
+    </div>
+
+    <div class="section">
+        <h3>Stroke Colors</h3>
+        <div class="color-grid" id="stroke-colors"></div>
+    </div>
+
+    <div class="section">
+        <h3>Alert Success Colors</h3>
+        <div class="color-grid" id="success-colors"></div>
+    </div>
+
+    <div class="section">
+        <h3>Alert Error Colors</h3>
+        <div class="color-grid" id="error-colors"></div>
+    </div>
+
+    <div class="section">
+        <h3>Alert Warning Colors</h3>
+        <div class="color-grid" id="warning-colors"></div>
+    </div>
+
+    <div class="section">
+        <h3>Alert Info Colors</h3>
+        <div class="color-grid" id="info-colors"></div>
+    </div>
+
+    <script>
+        // Cache for CSS variable references (light and dark mode)
+        let cssVariableReferences = { light: null, dark: null };
+        const semanticSwatches = new Map(); // Store swatches by variable name for updates
+
+        // Detect current color scheme
+        function getCurrentColorScheme() {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        // Extract content between matching braces
+        function extractBracedContent(text, startIndex) {
+            let depth = 0;
+            let start = -1;
+            let end = -1;
+            
+            for (let i = startIndex; i < text.length; i++) {
+                if (text[i] === '{') {
+                    if (start === -1) start = i + 1;
+                    depth++;
+                } else if (text[i] === '}') {
+                    depth--;
+                    if (depth === 0 && start !== -1) {
+                        end = i;
+                        break;
+                    }
+                }
+            }
+            
+            return start !== -1 && end !== -1 ? text.substring(start, end) : '';
+        }
+
+        // Fetch and parse CSS to extract variable references for both light and dark mode
+        async function loadCSSReferences() {
+            if (cssVariableReferences.light && cssVariableReferences.dark) {
+                return cssVariableReferences;
+            }
+            
+            try {
+                const response = await fetch('colors.css');
+                const cssText = await response.text();
+                
+                // Parse light mode (default :root section)
+                const lightRootIndex = cssText.indexOf(':root');
+                if (lightRootIndex !== -1) {
+                    const lightModeCSS = extractBracedContent(cssText, lightRootIndex);
+                    cssVariableReferences.light = {};
+                    
+                    const regex = /(--color-[^:]+):\s*var\(([^)]+)\)/g;
+                    let match;
+                    while ((match = regex.exec(lightModeCSS)) !== null) {
+                        const semanticVar = match[1].trim();
+                        const referencedVar = match[2].trim();
+                        cssVariableReferences.light[semanticVar] = referencedVar;
+                    }
+                }
+                
+                // Parse dark mode (@media prefers-color-scheme: dark section)
+                const darkMediaIndex = cssText.indexOf('@media (prefers-color-scheme: dark)');
+                if (darkMediaIndex !== -1) {
+                    const darkMediaContent = extractBracedContent(cssText, darkMediaIndex);
+                    const darkRootIndex = darkMediaContent.indexOf(':root');
+                    if (darkRootIndex !== -1) {
+                        const darkModeCSS = extractBracedContent(darkMediaContent, darkRootIndex);
+                        cssVariableReferences.dark = {};
+                        
+                        const regex = /(--color-[^:]+):\s*var\(([^)]+)\)/g;
+                        let match;
+                        while ((match = regex.exec(darkModeCSS)) !== null) {
+                            const semanticVar = match[1].trim();
+                            const referencedVar = match[2].trim();
+                            cssVariableReferences.dark[semanticVar] = referencedVar;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading CSS references:', error);
+                cssVariableReferences.light = {};
+                cssVariableReferences.dark = {};
+            }
+            
+            return cssVariableReferences;
+        }
+
+        // Get reference for a variable based on current color scheme
+        function getReferenceForVariable(varName) {
+            const scheme = getCurrentColorScheme();
+            const references = cssVariableReferences[scheme];
+            return references && references[varName] ? references[varName] : null;
+        }
+
+        // Helper function to create a color swatch
+        function createSwatch(varName, displayName, referencedVar = null, isSemantic = false) {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            
+            const preview = document.createElement('div');
+            preview.className = 'color-preview';
+            
+            const fill = document.createElement('div');
+            fill.className = 'color-fill';
+            fill.style.backgroundColor = `var(${varName})`;
+            preview.appendChild(fill);
+            
+            const info = document.createElement('div');
+            info.className = 'color-info';
+            
+            const name = document.createElement('div');
+            name.className = 'color-name';
+            name.textContent = displayName;
+            
+            const value = document.createElement('div');
+            value.className = 'color-value';
+            const computedStyle = getComputedStyle(document.documentElement);
+            const colorValue = computedStyle.getPropertyValue(varName).trim();
+            value.textContent = colorValue || 'N/A';
+            
+            info.appendChild(name);
+            info.appendChild(value);
+            
+            // Add referenced variable if provided (for semantic colors)
+            if (referencedVar !== null) {
+                const reference = document.createElement('div');
+                reference.className = 'color-reference';
+                reference.textContent = `→ ${referencedVar}`;
+                reference.dataset.varName = varName; // Store for updates
+                info.appendChild(reference);
+            }
+            
+            swatch.appendChild(preview);
+            swatch.appendChild(info);
+            
+            // Store semantic swatches for dynamic updates
+            if (isSemantic) {
+                semanticSwatches.set(varName, { swatch, referenceElement: referencedVar !== null ? info.querySelector('.color-reference') : null });
+            }
+            
+            return swatch;
+        }
+
+        // Update semantic color references and hex values when color scheme changes
+        function updateSemanticReferences() {
+            const computedStyle = getComputedStyle(document.documentElement);
+            
+            semanticSwatches.forEach(({ swatch, referenceElement }, varName) => {
+                // Update hex value
+                const valueElement = swatch.querySelector('.color-value');
+                if (valueElement) {
+                    const colorValue = computedStyle.getPropertyValue(varName).trim();
+                    valueElement.textContent = colorValue || 'N/A';
+                }
+                
+                // Update referenced variable
+                if (referenceElement) {
+                    const newReference = getReferenceForVariable(varName);
+                    if (newReference) {
+                        referenceElement.textContent = `→ ${newReference}`;
+                    } else {
+                        referenceElement.textContent = '';
+                    }
+                }
+            });
+        }
+
+        // Numbered scales
+        const numberedScales = {
+            'primary-scale': [
+                '--color-primary-20', '--color-primary-50', '--color-primary-100', '--color-primary-150',
+                '--color-primary-200', '--color-primary-250', '--color-primary-300', '--color-primary-350',
+                '--color-primary-400', '--color-primary-450', '--color-primary-500', '--color-primary-550',
+                '--color-primary-600', '--color-primary-650', '--color-primary-700', '--color-primary-750',
+                '--color-primary-800', '--color-primary-850', '--color-primary-900', '--color-primary-950',
+                '--color-primary-1000', '--color-primary-1050', '--color-primary-1100', '--color-primary-1150',
+                '--color-primary-1200', '--color-primary-1250', '--color-primary-1300', '--color-primary-1350',
+                '--color-primary-1400'
+            ],
+            'neutral-scale': [
+                '--color-neutral-00', '--color-neutral-20', '--color-neutral-50', '--color-neutral-100',
+                '--color-neutral-150', '--color-neutral-200', '--color-neutral-250', '--color-neutral-300',
+                '--color-neutral-350', '--color-neutral-400', '--color-neutral-450', '--color-neutral-500',
+                '--color-neutral-550', '--color-neutral-600', '--color-neutral-650', '--color-neutral-700',
+                '--color-neutral-750', '--color-neutral-800', '--color-neutral-850', '--color-neutral-900',
+                '--color-neutral-950', '--color-neutral-1000', '--color-neutral-1050', '--color-neutral-1100',
+                '--color-neutral-1150', '--color-neutral-1200', '--color-neutral-1250', '--color-neutral-1300',
+                '--color-neutral-1350', '--color-neutral-1400', '--color-neutral-1450', '--color-neutral-1500',
+                '--color-neutral-1600'
+            ],
+            'green-scale': [
+                '--color-accent-green-20', '--color-accent-green-50', '--color-accent-green-100',
+                '--color-accent-green-200', '--color-accent-green-300', '--color-accent-green-400',
+                '--color-accent-green-500', '--color-accent-green-600', '--color-accent-green-700',
+                '--color-accent-green-800', '--color-accent-green-900', '--color-accent-green-1000'
+            ],
+            'sky-blue-scale': [
+                '--color-accent-sky-blue-20', '--color-accent-sky-blue-50', '--color-accent-sky-blue-100',
+                '--color-accent-sky-blue-200', '--color-accent-sky-blue-300', '--color-accent-sky-blue-400',
+                '--color-accent-sky-blue-500', '--color-accent-sky-blue-600', '--color-accent-sky-blue-700',
+                '--color-accent-sky-blue-800', '--color-accent-sky-blue-900', '--color-accent-sky-blue-1000',
+                '--color-accent-sky-blue-1100', '--color-accent-sky-blue-1200'
+            ],
+            'yellow-scale': [
+                '--color-accent-yellow-20', '--color-accent-yellow-50', '--color-accent-yellow-100',
+                '--color-accent-yellow-200', '--color-accent-yellow-300', '--color-accent-yellow-400',
+                '--color-accent-yellow-500', '--color-accent-yellow-600', '--color-accent-yellow-700',
+                '--color-accent-yellow-800', '--color-accent-yellow-900', '--color-accent-yellow-1000'
+            ],
+            'orange-scale': [
+                '--color-accent-orange-20', '--color-accent-orange-50', '--color-accent-orange-100',
+                '--color-accent-orange-200', '--color-accent-orange-300', '--color-accent-orange-400',
+                '--color-accent-orange-500', '--color-accent-orange-600', '--color-accent-orange-700',
+                '--color-accent-orange-800', '--color-accent-orange-900', '--color-accent-orange-1000'
+            ],
+            'red-scale': [
+                '--color-accent-red-20', '--color-accent-red-50', '--color-accent-red-100',
+                '--color-accent-red-200', '--color-accent-red-300', '--color-accent-red-400',
+                '--color-accent-red-500', '--color-accent-red-600', '--color-accent-red-700',
+                '--color-accent-red-800', '--color-accent-red-900', '--color-accent-red-1000'
+            ]
+        };
+
+        // Semantic colors
+        const semanticColors = {
+            'primary-semantic': [
+                '--color-primary-default', '--color-primary-lightest', '--color-primary-lighter',
+                '--color-primary-light', '--color-primary-medium-light', '--color-primary-medium',
+                '--color-primary-medium-dark', '--color-primary-dark', '--color-primary-darker',
+                '--color-primary-darkest'
+            ],
+            'background-colors': [
+                '--color-bg-main-default', '--color-bg-main-light', '--color-bg-main-medium',
+                '--color-bg-main-strong', '--color-bg-main-dark', '--color-bg-main-darker',
+                '--color-bg-main-top', '--color-bg-main-black'
+            ],
+            'text-colors': [
+                '--color-text-body-default', '--color-text-body-medium', '--color-text-body-light',
+                '--color-text-body-strong', '--color-text-body-strongest'
+            ],
+            'icon-colors': [
+                '--color-icon-default', '--color-icon-medium', '--color-icon-strong', '--color-icon-primary'
+            ],
+            'stroke-colors': [
+                '--color-stroke-default', '--color-stroke-lighter', '--color-stroke-light',
+                '--color-stroke-medium', '--color-stroke-strong', '--color-stroke-stronger',
+                '--color-stroke-primary', '--color-stroke-primary-light', '--color-stroke-primary-medium',
+                '--color-stroke-primary-dark', '--color-stroke-background'
+            ],
+            'success-colors': [
+                '--color-alert-success-default', '--color-alert-success-lighter', '--color-alert-success-light',
+                '--color-alert-success-medium', '--color-alert-success-medium-dark', '--color-alert-success-dark'
+            ],
+            'error-colors': [
+                '--color-alert-error-default', '--color-alert-error-lighter', '--color-alert-error-light',
+                '--color-alert-error-medium', '--color-alert-error-medium-dark', '--color-alert-error-dark'
+            ],
+            'warning-colors': [
+                '--color-alert-warning-default', '--color-alert-warning-lighter', '--color-alert-warning-light',
+                '--color-alert-warning-medium', '--color-alert-warning-medium-dark', '--color-alert-warning-dark'
+            ],
+            'info-colors': [
+                '--color-alert-info-default', '--color-alert-info-lighter', '--color-alert-info-light',
+                '--color-alert-info-medium', '--color-alert-info-medium-dark', '--color-alert-info-dark'
+            ]
+        };
+
+        // Render numbered scales
+        Object.entries(numberedScales).forEach(([containerId, vars]) => {
+            const container = document.getElementById(containerId);
+            vars.forEach(varName => {
+                const displayName = varName.replace('--color-', '').replace(/-/g, ' ');
+                container.appendChild(createSwatch(varName, displayName));
+            });
+        });
+
+        // Render semantic colors with references
+        async function renderSemanticColors() {
+            await loadCSSReferences();
+            
+            Object.entries(semanticColors).forEach(([containerId, vars]) => {
+                const container = document.getElementById(containerId);
+                vars.forEach(varName => {
+                    const displayName = varName.replace('--color-', '').replace(/-/g, ' ');
+                    const referencedVar = getReferenceForVariable(varName);
+                    container.appendChild(createSwatch(varName, displayName, referencedVar, true));
+                });
+            });
+        }
+
+        // Initialize and listen for color scheme changes
+        renderSemanticColors();
+        
+        // Listen for color scheme changes
+        const colorSchemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        colorSchemeMediaQuery.addEventListener('change', () => {
+            updateSemanticReferences();
+        });
+    </script>
+</body>
+</html>
