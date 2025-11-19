@@ -149,7 +149,7 @@ export function initFib({ activity, state, postResults }) {
     menu.className = 'fib-dropdown';
     menu.setAttribute('role', 'listbox');
     menu.style.position = 'absolute';
-    menu.style.minWidth = Math.max(rect.width, 120) + 'px';
+    menu.style.minWidth = Math.max(rect.width, 220) + 'px';
 
     const docX = rect.left + window.scrollX;
     const docY = rect.bottom + window.scrollY + 4;

@@ -1,52 +1,69 @@
 __Type__
 
-Multiple Choice
+Fill In The Blanks
 
 __Summary__
 
-0/2 correct
+1/5 correct
 
 __Responses__
 
-1. **Question 1**
-   - Selected Answer: C
-   - Correct Answer: B
+1. **Blank 1**
+   - Selected Answer: That sounds tough. Do you want to talk more about it?
+   - Correct Answer: That sounds tough. Do you want to talk more about it?
+   - Result: ✓ Correct
+
+2. **Blank 2**
+   - Selected Answer: Thanks for helping me with that report! I really appreciated it.
+   - Correct Answer: I hadn’t thought of it that way. Can you tell me more?
    - Result: ✗ Incorrect
 
-2. **Question 2**
+3. **Blank 3**
+   - Selected Answer: I hadn’t thought of it that way. Can you tell me more?
+   - Correct Answer: You seem a bit quiet today. Is everything okay?
+   - Result: ✗ Incorrect
+
+4. **Blank 4**
    - Selected Answer: No answer selected
-   - Correct Answer: A, C
+   - Correct Answer: Thanks for helping me with that report! I really appreciated it.
    - Result: ✗ Incorrect
 
-__Practice Question__
+5. **Blank 5**
+   - Selected Answer: No answer selected
+   - Correct Answer: How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?
+   - Result: ✗ Incorrect
 
-Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
+__Markdown With Blanks__
 
-B. Her actual brand doesn't match her identity
-A. Her brand identity is wrong
-C. Her brand image is too positive
-D. She needs a better logo
+Match each teammate's situation with the most empathetic response.
+
+
+
+> **Situation 1:** A teammate says they're feeling stressed and overwhelmed.  
+> **Best Response:** [[blank:That sounds tough. Do you want to talk more about it?]]
+
+
+> **Situation 2:** A teammate suggests a new way to do something that you hadn't considered.  
+> **Best Response:** [[blank:I hadn’t thought of it that way. Can you tell me more?]]
+
+
+> **Situation 3:** You notice a teammate seems quieter than usual.  
+> **Best Response:** [[blank:You seem a bit quiet today. Is everything okay?]]
+
+
+> **Situation 4:** A teammate helps you finish a report on time.  
+> **Best Response:** [[blank:Thanks for helping me with that report! I really appreciated it.]]
+
+
+> **Situation 5:** You want to check in after a teammate mentioned an important event.  
+> **Best Response:** [[blank:How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?]]
 
 __Suggested Answers__
 
-- B - Correct
-- A
-- C
-- D
-
-__Practice Question__
-
-Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
-
-D. He needs a new logo
-A. His actual brand doesn't match his intended identity
-B. He needs to improve his communication skills
-C. His brand image is inconsistent with his identity
-
-__Suggested Answers__
-
-- D
-- A - Correct
-- B
-- C - Correct
+- How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?
+- That sounds tough. Do you want to talk more about it?
+- Thanks for helping me with that report! I really appreciated it.
+- I hadn’t thought of it that way. Can you tell me more?
+- You seem a bit quiet today. Is everything okay?
+- That sounds tough—do you want to talk more about it?
 

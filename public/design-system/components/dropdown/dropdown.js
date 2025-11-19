@@ -49,7 +49,7 @@ class Dropdown {
     toggleContent.className = 'dropdown-toggle-content';
     
     const toggleLabel = document.createElement('span');
-    toggleLabel.className = 'dropdown-toggle-label';
+    toggleLabel.className = 'dropdown-toggle-label body-small';
     toggleLabel.textContent = this.getSelectedLabel() || this.config.placeholder;
     
     const toggleIcon = document.createElement('span');
@@ -130,7 +130,7 @@ class Dropdown {
     
     // Label
     const label = document.createElement('span');
-    label.className = 'dropdown-menu-item-label';
+    label.className = 'dropdown-menu-item-label body-small';
     label.textContent = item.label;
     itemContent.appendChild(label);
     

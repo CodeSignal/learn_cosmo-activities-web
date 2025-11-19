@@ -4,36 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Component Tests - Dropdown</title>
-  <link rel="stylesheet" href="/bespoke.css" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/design-system/colors/colors.css">
+  <link rel="stylesheet" href="/design-system/spacing/spacing.css">
+  <link rel="stylesheet" href="/design-system/typography/typography.css">
   <link rel="stylesheet" href="dropdown.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --test-bg: #f4f5f9;
-      --test-section-bg: #ffffff;
-      --test-section-shadow: rgba(0, 0, 0, 0.1);
-      --test-heading-color: #182139;
-      --test-subheading-color: #2d3855;
-      --test-label-color: #495573;
-      --test-output-bg: #f6f6f6;
-      --test-output-text: #2d3855;
-      --test-output-strong: #182139;
+      --test-bg: var(--color-bg-main-light);
+      --test-section-bg: var(--color-bg-main-top);
+      --test-section-shadow: rgba(0, 0, 0, 0.1); /* No direct variable */
+      --test-heading-color: var(--color-text-body-strong);
+      --test-subheading-color: var(--color-text-body-default);
+      --test-label-color: var(--color-text-body-medium);
+      --test-output-bg: var(--color-bg-main-default);
+      --test-output-text: var(--color-text-body-default);
+      --test-output-strong: var(--color-text-body-strong);
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --test-bg: #1a1f2e;
-        --test-section-bg: #2d3855;
+        --test-bg: var(--color-bg-main-default);
+        --test-section-bg: var(--color-bg-main-light);
         --test-section-shadow: rgba(0, 0, 0, 0.3);
-        --test-heading-color: #ffffff;
-        --test-subheading-color: #c1c7d7;
-        --test-label-color: #c1c7d7;
-        --test-output-bg: rgba(193, 199, 215, 0.1);
-        --test-output-text: #c1c7d7;
-        --test-output-strong: #ffffff;
+        --test-heading-color: var(--color-text-body-strong);
+        --test-subheading-color: var(--color-text-body-default);
+        --test-label-color: var(--color-text-body-default);
+        --test-output-bg: var(--color-bg-main-default);
+        --test-output-text: var(--color-text-body-default);
+        --test-output-strong: var(--color-text-body-strong);
       }
     }
 
@@ -115,7 +116,7 @@
     }
   </style>
 </head>
-<body class="bespoke">
+<body>
   <div class="test-container">
     <h1 style="margin-bottom: 32px; font-size: 32px; font-weight: 700; color: var(--test-heading-color);">
       Component Tests - Dropdown

@@ -12,8 +12,13 @@
   --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
   --Colors-Shadow-Medium-Soft: rgba(76, 90, 123, 0.08);
   --Colors-Menu-Tab-Link-Hover: var(--color-text-body-default);
+  --Colors-Menu-Option-Background-Hover: var(--color-bg-main-default);
 
   --Menu-Item-Height: 40px;
+  --Menu-Item-Padding-Horizontal: 12px;
+  --Menu-Item-Roundness: 8px;
+  --Menu-Item-Font-Size: 16px;
+  --Menu-Item-Line-Height: 24px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -34,12 +39,8 @@
 /* FIB Container */
 .fib { 
   display: grid; 
-  gap: 0;
   background: var(--color-bg-main-default);
-  border-radius: 6px 6px 0 0;
-  padding: var(--bespoke-space-xl);
-  padding-left: var(--bespoke-space-xl);
-  padding-right: var(--bespoke-space-xl);
+  padding: var(--UI-Spacing-spacing-mxl);
 }
 
 .fib-header {
@@ -54,8 +55,6 @@
 }
 
 .fib-heading {
-  /* Typography from .heading-small class */
-  /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .heading-small */
   flex: 1 0 0;
   color: var(--color-text-body-strong);
   --webkit-font-smoothing: antialiased;
@@ -83,8 +82,6 @@
 }
 
 .fib-clear-all {
-  /* Typography from .body-xxsmall class */
-  /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-xxsmall */
   display: flex;
   gap: 6px;
   align-items: center;
@@ -116,30 +113,10 @@
   vertical-align: middle;
 }
 
-/* Prompt extends bespoke card styling */
-.fib-prompt {
-  background: var(--bespoke-canvas);
-  border: 1px solid var(--bespoke-stroke);
-  border-radius: var(--bespoke-radius-lg);
-  padding: var(--bespoke-space-lg) var(--bespoke-space-xl);
-  font-size: var(--bespoke-font-size-base);
-  line-height: var(--bespoke-line-height-relaxed);
-  font-weight: var(--bespoke-font-weight-medium);
-  text-align: center;
-}
-
-/* Content extends bespoke card styling */
 .fib-content { 
-  /* Typography from .body-xxlarge class */
-  /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-xxlarge */
   background: transparent; 
   border: none; 
-  border-radius: 0; 
-  padding: 0;
-  padding-left: 0;
-  padding-right: 0;
-  margin-top: 0;
-  color: #2d3855;
+  color: var(--color-text-body-default);
   width: 670px;
 }
 
@@ -152,7 +129,7 @@
 .blank { 
   display: inline-flex;
   width: 96px;
-  padding: 0 var(--UI-Spacing-spacing-xs) 0 var(--UI-Spacing-spacing-s);
+  padding: 0 var(--UI-Spacing-spacing-s) 0 var(--UI-Spacing-spacing-s);
   align-items: center;
   gap: 10px;
   margin: 0 0.125rem;
@@ -190,63 +167,26 @@
   background-color: var(--Colors-Learn-Practice-Blank-Slot-Hover);
 }
 
-.blank.current { 
-  outline: 2px solid var(--bespoke-accent); 
-  outline-offset: 2px; 
-  background: var(--bespoke-canvas);
-  border-color: var(--bespoke-accent);
-  border-style: solid;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-.blank .chip { 
-  cursor: pointer;
-  margin: 0;
-  padding: 0.125rem 0rem;
-  border: none; 
-  background: transparent;
-  color: var(--bespoke-accent);
-  border-radius: var(--bespoke-radius-sm); 
-  box-shadow: none;
-  display: inline-block;
-  width: auto;
-  height: auto;
-  font-weight: var(--bespoke-font-weight-medium); 
-  font-size: inherit;
-  line-height: inherit;
-  min-width: 0;
-  white-space: nowrap;
-}
-
-/* Custom Dropdown for FIB */
 .fib-dropdown {
   position: absolute;
-  z-index: var(--bespoke-z-popover);
-  background: var(--bespoke-box);
-  box-shadow: var(--bespoke-shadow-lg);
-  padding: 12px;
-  color: var(--bespoke-fg);
+  z-index: 600;
+  padding: var(--UI-Spacing-spacing-mxs);
 
   width: max-content;
-  min-width: 120px;
+  min-width: 220px;
   max-width: min(600px, calc(100vw - 40px));
+  
+  display: flex;
+  flex-direction: column;
+
   border-radius: var(--UI-Radius-radius-s);
   border: 1px solid var(--Colors-Dropdown-Panel-Stroke);
   background: var(--Colors-Dropdown-Panel);
   box-shadow: 0 12px 38px 0 var(--Colors-Shadow-Float);
-  
-  /* Use flexbox column to ensure proper sizing */
-  display: flex;
-  flex-direction: column;
 }
 
 .fib-option {
-  border-radius: var(--bespoke-radius-md);
+  border-radius: var(--UI-Radius-radius-xs);
   cursor: pointer;
   user-select: none;
 
@@ -265,10 +205,8 @@
   font-size: var(--Menu-Item-Font-Size);
   font-style: normal;
   font-weight: 400;
-  line-height: var(--Menu-Item-Line-Height); /* 150% */
+  line-height: var(--Menu-Item-Line-Height);
   letter-spacing: -0.24px;
-  
-  width: 100%;
 }
 
 .fib-option:hover {
@@ -280,13 +218,3 @@
 .fib-option-hover-measure {
   font-weight: 500;
 }
-
-.fib-option.selected {
-  background: var(--bespoke-secondary-bg);
-  font-weight: var(--bespoke-font-weight-semibold);
-}
-
-.fib-option.clear {
-  color: var(--bespoke-danger);
-}
-

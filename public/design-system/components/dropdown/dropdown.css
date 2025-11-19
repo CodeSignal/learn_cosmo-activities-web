@@ -5,62 +5,58 @@
 
 :root {
   /* Colors - Light Mode */
-  --Colors-Dropdown-Toggle-Text: #495573;
-  --Colors-Text-Body-Strong: #182139;
-  /* --Colors-Text-Body-Default: #2d3855; */
-  --Colors-Dropdown-Icon: #808AA5;
-  --Colors-Dropdown-Icon-Hover: #8B94AB;
-  --Colors-Dropdown-Icon-Active: #377DFF;
-  --Colors-Primary-Medium: #377DFF;
-  --Colors-Dropdown-Panel: #FFFFFF;
-  --Colors-Dropdown-Panel-Stroke: #E2E5EE;
-  --Colors-Dropdown-Toggle: #FFFFFF;
-  --Colors-Dropdown-Toggle-Background: #FFFFFF;
-  --Colors-Dropdown-Toggle-Stroke: #E2E5EE;
-  --Colors-Dropdown-Toggle-Hover: #FFFFFF;
-  --Colors-Dropdown-Toggle-Hover-Border: #CBD5E1;
-  --Colors-Dropdown-Panel-Stroke-Hover: #CBD5E1;
+  --Colors-Dropdown-Toggle-Text: var(--color-text-body-medium);
+  --Colors-Text-Body-Strong: var(--color-text-body-strong);
+  --Colors-Dropdown-Icon: var(--color-neutral-800);
+  --Colors-Dropdown-Icon-Hover: var(--color-icon-medium);
+  --Colors-Dropdown-Icon-Active: var(--color-icon-primary);
+  --Colors-Primary-Medium: var(--color-primary-medium);
+  --Colors-Dropdown-Panel: var(--color-bg-main-top);
+  --Colors-Dropdown-Panel-Stroke: var(--color-stroke-default);
+  --Colors-Dropdown-Toggle: var(--color-bg-main-top);
+  --Colors-Dropdown-Toggle-Background: var(--color-bg-main-top);
+  --Colors-Dropdown-Toggle-Stroke: var(--color-stroke-default);
+  --Colors-Dropdown-Toggle-Hover: var(--color-bg-main-top);
+  --Colors-Dropdown-Toggle-Hover-Border: var(--color-stroke-medium);
+  --Colors-Dropdown-Panel-Stroke-Hover: var(--color-stroke-medium);
   --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
   --Colors-Shadow-Medium-Soft: rgba(22, 44, 96, 0.12);
-  --Colors-Menu-Option-Hover: #f6f6f6;
-  --Colors-Menu-Option-Background: #FFFFFF;
-  --Colors-Menu-Option-Background-Selected: #ECF2FF;
-  --Colors-Menu-Tab-Active: #FFFFFF;
+  --Colors-Menu-Option-Hover: var(--color-neutral-20);
+  --Colors-Menu-Option-Background: var(--color-bg-main-top);
+  --Colors-Menu-Option-Background-Selected: var(--color-primary-lightest);
+  --Colors-Menu-Tab-Active: var(--color-bg-main-top);
   
   /* Spacing */
-  --UI-Spacing-spacing-none: 0;
-  --UI-Spacing-spacing-s: 8px;
-  --Menu-Item-Padding-Horizontal: 12px;
+  --Menu-Item-Padding-Horizontal: var(--UI-Spacing-spacing-mxs);
   
   /* Radius */
-  --UI-Radius-radius-s: 8px;
-  --Menu-Item-Roundness: 8px;
+  --Menu-Item-Roundness: var(--UI-Radius-radius-s);
 }
 
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
   :root {
     /* Colors - Dark Mode */
-    --Colors-Dropdown-Toggle-Text: #C1C7D7;
-    --Colors-Text-Body-Strong: #FFFFFF;
-    /* --Colors-Text-Body-Default: #C1C7D7; */
-    --Colors-Dropdown-Icon-Hover: #8B94AB;
-    --Colors-Dropdown-Icon-Active: #377DFF;
-    --Colors-Primary-Medium: #377DFF;
-    --Colors-Dropdown-Panel: #414D6B;
-    --Colors-Dropdown-Panel-Stroke: #37425F;
-    --Colors-Dropdown-Toggle: #414D6B;
-    --Colors-Dropdown-Toggle-Background: #414D6B;
-    --Colors-Dropdown-Toggle-Stroke: #37425F;
-    --Colors-Dropdown-Toggle-Hover: #495573;
+    --Colors-Dropdown-Toggle-Text: var(--color-text-body-default);
+    --Colors-Text-Body-Strong: var(--color-text-body-strong);
+    --Colors-Dropdown-Icon-Hover: var(--color-icon-medium);
+    --Colors-Dropdown-Icon-Active: var(--color-icon-primary);
+    --Colors-Primary-Medium: var(--color-primary-medium);
+    --Colors-Dropdown-Panel: var(--color-bg-main-medium);
+    --Colors-Dropdown-Panel-Stroke: rgba(45, 56, 85, 0.00);
+    --Colors-Dropdown-Toggle: var(--color-neutral-1200);
+    --Colors-Dropdown-Toggle-Background: var(--color-bg-main-medium);
+    --Colors-Dropdown-Toggle-Stroke: rgba(45, 56, 85, 0.00);
+    --Colors-Dropdown-Toggle-Hover: var(--color-neutral-1050);
     --Colors-Dropdown-Toggle-Hover-Border: rgba(193, 199, 215, 0.35);
-    --Colors-Dropdown-Panel-Stroke-Hover: #37425F;
+    --Colors-Dropdown-Panel-Stroke-Hover: var(--color-stroke-strong);
     --Colors-Shadow-Float: rgba(13, 21, 40, 0.3);
     --Colors-Shadow-Medium-Soft: rgba(13, 21, 40, 0.4);
     --Colors-Menu-Option-Hover: rgba(193, 199, 215, 0.1);
-    --Colors-Menu-Option-Background: #414D6B;
-    --Colors-Menu-Option-Background-Selected: #414D6B;
-    --Colors-Menu-Tab-Active: #FFFFFF;
+    --Colors-Menu-Option-Background: var(--color-bg-main-medium);
+    --Colors-Menu-Option-Background-Selected: var(--color-bg-main-medium);
+    --Colors-Menu-Tab-Active: var(--color-text-body-strong);
+    --Colors-Menu-Option-Background-Selected: var(--color-neutral-1150);
   }
 }
 
@@ -78,7 +74,7 @@
 /* Toggle Button */
 .dropdown-toggle {
   width: 100%;
-  height: 40px;
+  height: var(--UI-Input-sm);
   background: var(--Colors-Dropdown-Toggle) !important;
   border: 1px solid var(--Colors-Dropdown-Toggle-Stroke) !important;
   border-radius: var(--UI-Radius-radius-s) !important;
@@ -101,7 +97,7 @@
 }
 
 .dropdown-toggle:focus-visible {
-  outline: 2px solid #377dff;
+  outline: 2px solid var(--color-primary-medium);
   outline-offset: 2px;
 }
 
@@ -109,23 +105,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--UI-Spacing-spacing-mxs);
   height: 100%;
-  padding: 12px 12px 12px 16px;
+  padding: var(--UI-Spacing-spacing-mxs) var(--UI-Spacing-spacing-mxs) var(--UI-Spacing-spacing-mxs) var(--UI-Spacing-spacing-ms);
   box-sizing: border-box;
 }
 
 .dropdown-toggle-label {
   flex: 1;
   text-align: left;
-  font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
-  font-size: 16px; /* Fonts/Body Default/md */
-  font-weight: 500; /* Medium */
-  font-style: normal;
-  line-height: 145%;
-  letter-spacing: -0.24px; /* -1.5% of 16px font-size */
+  font-weight: 500;
   vertical-align: middle;
-  color: var(--Colors-Dropdown-Toggle-Text, #495573);
+  color: var(--Colors-Dropdown-Toggle-Text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -148,8 +139,8 @@
 .dropdown-toggle-icon {
   display: block;
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: var(--UI-Spacing-spacing-ml);
+  height: var(--UI-Spacing-spacing-ml);
   position: relative;
 }
 
@@ -167,11 +158,11 @@
 }
 
 .dropdown-toggle:hover .dropdown-toggle-icon svg path {
-  stroke: var(--Colors-Dropdown-Icon-Hover, #8B94AB);
+  stroke: var(--Colors-Dropdown-Icon-Hover);
 }
 
 .dropdown-container.open .dropdown-toggle-icon svg path {
-  stroke: var(--Colors-Dropdown-Icon-Active, #377DFF);
+  stroke: var(--Colors-Dropdown-Icon-Active);
 }
 
 /* Dropdown Menu Panel */
@@ -182,8 +173,8 @@
   width: 240px;
   height: auto;
   max-height: 284px;
-  background: var(--Colors-Dropdown-Panel, #FFFFFF);
-  border: 1px solid var(--Colors-Dropdown-Panel-Stroke, #E2E5EE);
+  background: var(--Colors-Dropdown-Panel);
+  border: 1px solid var(--Colors-Dropdown-Panel-Stroke);
   border-radius: var(--UI-Radius-radius-s);
   box-shadow: 0px 12px 38px 0px var(--Colors-Shadow-Float);
   z-index: 1000;
@@ -204,8 +195,8 @@
 .dropdown-menu-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px;
+  gap: var(--UI-Spacing-spacing-xxs);
+  padding: var(--UI-Spacing-spacing-mxs);
   overflow-y: visible;
 }
 
@@ -219,7 +210,7 @@
   flex-shrink: 0 !important;
   padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal) !important;
   gap: var(--UI-Spacing-spacing-s);
-  background: var(--Colors-Dropdown-Panel, #414D6B) !important;
+  background: var(--Colors-Dropdown-Panel) !important;
   border: none !important;
   border-radius: var(--Menu-Item-Roundness) !important;
   cursor: pointer;
@@ -241,11 +232,11 @@
 }
 
 .dropdown-menu-item:hover:not(.selected) {
-  background: var(--Colors-Menu-Option-Hover, rgba(193, 199, 215, 0.1)) !important;
+  background: var(--Colors-Menu-Option-Hover) !important;
 }
 
 .dropdown-menu-item:focus {
-  outline: 2px solid #377dff;
+  outline: 2px solid var(--color-primary-medium);
   outline-offset: -2px;
 }
 
@@ -256,18 +247,19 @@
   padding: var(--UI-Spacing-spacing-none) var(--Menu-Item-Padding-Horizontal) !important;
   gap: var(--UI-Spacing-spacing-s);
   opacity: 1;
-  background: var(--Colors-Menu-Option-Background-Selected, #ECF2FF) !important;
+  background: var(--Colors-Menu-Option-Background-Selected) !important;
   font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
   font-style: normal;
   font-size: 16px;
   line-height: 24px;
   letter-spacing: -0.24px;
-  color: var(--Colors-Text-Body-Strong, #FFFFFF) !important;
+  color: var(--Colors-Text-Body-Strong) !important;
 }
 
 .dropdown-menu-item.selected .dropdown-menu-item-label {
-  color: var(--Colors-Text-Body-Strong, #FFFFFF) !important;
+  color: var(--Colors-Text-Body-Strong) !important;
+  font-weight: 500;
 }
 
 .dropdown-menu-item-content {
