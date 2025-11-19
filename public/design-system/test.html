@@ -120,21 +120,62 @@
     </div>
 
     <script>
-        // Simple script to handle active state
+        // Script to handle active state and URL state management
         const links = document.querySelectorAll('.nav-links a');
+        const iframe = document.querySelector('iframe[name="content-frame"]');
         
+        // Function to set active link based on href
+        function setActiveLink(href) {
+            links.forEach(l => {
+                l.classList.toggle('active', l.getAttribute('href') === href);
+            });
+        }
+        
+        // Function to load content based on URL parameter
+        function loadContentFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const page = params.get('page');
+            
+            if (page) {
+                iframe.src = page;
+                setActiveLink(page);
+            } else {
+                // Default to colors/test.html if no page param
+                const defaultPage = 'colors/test.html';
+                iframe.src = defaultPage;
+                setActiveLink(defaultPage);
+                
+                // Update URL to reflect default
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('page', defaultPage);
+                window.history.replaceState({ path: newUrl.href }, '', newUrl.href);
+            }
+        }
+
+        // Initial load
+        loadContentFromUrl();
+
+        // Handle link clicks
         links.forEach(link => {
             link.addEventListener('click', (e) => {
-                // Remove active class from all links
-                links.forEach(l => l.classList.remove('active'));
-                // Add active class to clicked link
-                e.target.classList.add('active');
+                // Let the default action (loading iframe) happen? 
+                // No, we want to update URL too.
+                e.preventDefault();
+                
+                const href = link.getAttribute('href');
+                iframe.src = href;
+                setActiveLink(href);
+                
+                // Update URL state
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('page', href);
+                window.history.pushState({ path: newUrl.href }, '', newUrl.href);
             });
-            
-            // Set active class based on initial iframe src
-            if (link.getAttribute('href') === 'colors/test.html') {
-                link.classList.add('active');
-            }
+        });
+        
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', () => {
+            loadContentFromUrl();
         });
     </script>
 </body>

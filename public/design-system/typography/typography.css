@@ -1,34 +1,39 @@
 @font-face {
     font-family: 'Founders Grotesk';
-    src: url('/fonts/FoundersGrotesk-Light.woff2') format('woff2');
+    src: url('/design-system/fonts/FoundersGrotesk-Light.woff2') format('woff2'),
+         url('/fonts/FoundersGrotesk-Light.woff2') format('woff2');
     font-weight: 300;
     font-style: normal;
 }
   
 @font-face {
     font-family: 'Founders Grotesk';
-    src: url('/fonts/FoundersGrotesk-Light-Italic.woff2') format('woff2');
+    src: url('/design-system/fonts/FoundersGrotesk-Light-Italic.woff2') format('woff2'),
+         url('/fonts/FoundersGrotesk-Light-Italic.woff2') format('woff2');
     font-weight: 300;
     font-style: italic;
 }
   
 @font-face {
     font-family: 'Founders Grotesk';
-    src: url('/fonts/FoundersGrotesk-Medium.woff2') format('woff2');
+    src: url('/design-system/fonts/FoundersGrotesk-Medium.woff2') format('woff2'),
+         url('/fonts/FoundersGrotesk-Medium.woff2') format('woff2');
     font-weight: 500;
     font-style: normal;
 }
   
 @font-face {
     font-family: 'JetBrains Mono';
-    src: url('/fonts/JetBrainsMono-MediumItalic.woff2') format('woff2');
+    src: url('/design-system/fonts/JetBrainsMono-MediumItalic.woff2') format('woff2'),
+         url('/fonts/JetBrainsMono-MediumItalic.woff2') format('woff2');
     font-weight: 500;
     font-style: italic;
 }
 
 @font-face {
     font-family: 'Founders Grotesk';
-    src: url('/fonts/FoundersGrotesk-Medium-Italic.woff2') format('woff2');
+    src: url('/design-system/fonts/FoundersGrotesk-Medium-Italic.woff2') format('woff2'),
+         url('/fonts/FoundersGrotesk-Medium-Italic.woff2') format('woff2');
     font-weight: 500;
     font-style: italic;
   }
