@@ -1,0 +1,254 @@
+/* ===== BUTTON COMPONENT ===== */
+
+:root {
+    /* Button Variables */
+    --Button-Height-Default: 48px;
+    
+    /* Primary Button Colors (Light Mode) */
+    --Button-Primary-Background-Default: var(--color-primary-default);
+    --Button-Primary-Background-Hover: var(--color-primary-medium-dark);
+    --Button-Primary-Background-Active: var(--color-primary-dark);
+    --Button-Primary-Background-Disabled: var(--color-bg-main-black);
+    
+    --Button-Primary-Text-Default: var(--color-neutral-00);
+    --Button-Primary-Text-Disabled: var(--color-neutral-400);
+
+    --Colors-Shadow-Focus-Button: rgba(92, 148, 255, 0.20);
+    --Colors-Buttons-Primary-Hover: var(--color-primary-medium-dark);
+    --Colors-Buttons-Primary-Stroke-Focus: var(--color-primary-dark);
+    --Colors-Buttons-Secondary-Default: var(--color-primary-default);
+    --Colors-Buttons-Secondary-Default-Text: var(--color-primary-default);
+    --Colors-Buttons-Secondary-Hover: var(--color-primary-medium-dark);
+    --Colors-Buttons-Secondary-Hover-Text: var(--color-primary-medium-dark);
+    --Colors-Buttons-Secondary-Pressed: var(--color-primary-dark);
+    --Colors-Buttons-Secondary-Pressed-Text: var(--color-primary-dark);
+    --Colors-Buttons-Tertiary-Default: var(--color-neutral-300);
+    --Colors-Buttons-Tertiary-Default-Background: var(--color-neutral-00);
+    --Colors-Buttons-Tertiary-Default-Text: var(--color-neutral-1000);
+    --Colors-Buttons-Tertiary-Hover: var(--color-neutral-600);
+    --Colors-Buttons-Tertiary-Hover-Text: var(--color-neutral-1200);
+    --Colors-Buttons-Tertiary-Hover-Background: var(--color-neutral-00);
+    --Colors-Buttons-Tertiary-Pressed: var(--color-neutral-750);
+    --Colors-Buttons-Tertiary-Pressed-Text: var(--color-neutral-1200);
+    --Colors-Button-Danger-Default: var(--color-accent-red-600);
+    --Colors-Buttons-Primary-Default-Text: var(--color-neutral-00);
+    --Colors-Buttons-Danger-Hover: var(--color-accent-red-700);
+    --Colors-Buttons-Danger-Stroke-Focus: var(--color-accent-red-800);
+    --Colors-Shadow-Focus-Button-Danger: rgba(184, 6, 44, 0.12);
+    --Colors-Buttons-Danger-Pressed: var(--color-accent-red-800);
+    --Colors-Buttons-Success-Default: var(--color-accent-green-600);
+    --Colors-Buttons-Success-Hover: var(--color-accent-green-700);
+    --Colors-Buttons-Success-Stroke-Focus: var(--color-accent-green-800);
+    --Colors-Shadow-Focus-Button-Success: rgba(25, 158, 89, 0.14);
+    --Colors-Buttons-Success-Pressed: var(--color-accent-green-800);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --Colors-Buttons-Secondary-Default: var(--color-primary-medium);
+        --Colors-Buttons-Secondary-Default-Text: var(--color-primary-medium);
+        --Colors-Buttons-Secondary-Hover: var(--color-primary-medium-light);
+        --Colors-Buttons-Secondary-Hover-Text: var(--color-primary-medium-light);
+        --Colors-Buttons-Secondary-Pressed: var(--color-primary-650);
+        --Colors-Buttons-Secondary-Pressed-Text: var(--color-primary-650);
+        --Colors-Buttons-Tertiary-Default-Background: var(--color-neutral-1200-alpha-25);
+        --Colors-Buttons-Tertiary-Default-Text: var(--color-neutral-500);
+        --Colors-Buttons-Tertiary-Hover: var(--color-neutral-1100);
+        --Colors-Buttons-Tertiary-Hover-Text: var(--color-neutral-300);
+        --Colors-Buttons-Tertiary-Hover-Background: var(--color-neutral-1050-alpha-25);
+        --Colors-Buttons-Tertiary-Pressed: var(--color-neutral-1000);
+        --Colors-Buttons-Tertiary-Pressed-Text: var(--color-neutral-300);
+    }
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--Button-Height-Default);
+    padding: 0 var(--UI-Spacing-spacing-ml);
+    gap: var(--UI-Spacing-spacing-s);
+
+    border-radius: var(--UI-Radius-radius-xs);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    box-sizing: border-box;
+    white-space: nowrap;
+    
+    /* Typography - typically buttons match label style or specific body style */
+    font-family: var(--body-family);
+    font-size: var(--Fonts-Body-Default-lg);
+    font-style: normal;
+    font-weight: 500;
+    line-height: 140%;
+    letter-spacing: -0.17px;
+}
+
+.button:disabled,
+.button.disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.24;
+}
+
+/* Primary Button Variant */
+.button-primary {
+    background-color: var(--Button-Primary-Background-Default);
+    color: var(--Button-Primary-Text-Default);
+}
+
+.button-primary:hover,
+.button-primary.hover {
+    background-color: var(--Button-Primary-Background-Hover);
+}
+
+.button-primary:active,
+.button-primary.active {
+    background-color: var(--Button-Primary-Background-Active);
+}
+
+.button-primary:focus
+.button-primary.focus {
+    border: 1px solid var(--Colors-Buttons-Primary-Stroke-Focus);
+    background: var(--Colors-Buttons-Primary-Hover);
+    box-shadow: 0 0 0 4px var(--Colors-Shadow-Focus-Button);
+}
+
+.button-secondary {
+    background-color: transparent;
+    border: 1.5px solid var(--Colors-Buttons-Secondary-Default);
+    color: var(--Colors-Buttons-Secondary-Default-Text);
+}
+
+.button-secondary:hover,
+.button-secondary.hover {
+    border: 1.5px solid var(--Colors-Buttons-Secondary-Hover);
+    color: var(--Colors-Buttons-Secondary-Hover-Text);
+}
+
+.button-secondary:focus,
+.button-secondary.focus {
+    border: 1.5px solid var(--Colors-Buttons-Secondary-Hover);
+    color: var(--Colors-Buttons-Secondary-Hover-Text);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.25);
+}
+
+.button-secondary:active,
+.button-secondary.active {
+    border: 1.5px solid var(--Colors-Buttons-Secondary-Pressed);
+    color: var(--Colors-Buttons-Secondary-Pressed-Text);
+}
+
+.button-secondary:disabled,
+.button-secondary.disabled {
+    opacity: 0.3;
+}
+
+.button-tertiary {
+    border: 1.5px solid var(--Colors-Buttons-Tertiary-Default);
+    background: var(--Colors-Buttons-Tertiary-Default-Background);
+    color: var(--Colors-Buttons-Tertiary-Default-Text);
+}
+
+.button-tertiary:hover,
+.button-tertiary.hover {
+    border: 1.5px solid var(--Colors-Buttons-Tertiary-Hover);
+    background: var(--Colors-Buttons-Tertiary-Hover-Background);
+    color: var(--Colors-Buttons-Tertiary-Hover-Text);
+}
+
+.button-tertiary:focus,
+.button-tertiary.focus {
+    border: 1.5px solid var(--Colors-Buttons-Tertiary-Hover);
+    background: var(--Colors-Buttons-Tertiary-Hover-Background);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.25);
+    color: var(--Colors-Buttons-Tertiary-Hover-Text);
+}
+
+.button-tertiary:active,
+.button-tertiary.active {
+    border: 1.5px solid var(--Colors-Buttons-Tertiary-Pressed);
+    color: var(--Colors-Buttons-Tertiary-Pressed-Text);
+}
+
+.button-tertiary:disabled,
+.button-tertiary.disabled {
+    opacity: 0.3;
+}
+
+.button-danger {
+    background-color: var(--Colors-Button-Danger-Default);
+    color: var(--Colors-Buttons-Primary-Default-Text);
+}
+
+.button-danger:hover,
+.button-danger.hover {
+    background: var(--Colors-Buttons-Danger-Hover);
+}
+
+.button-danger:focus,
+.button-danger.focus {
+    border: 1px solid var(--Colors-Buttons-Danger-Stroke-Focus);
+    background: var(--Colors-Buttons-Danger-Hover);
+    box-shadow: 0 0 0 4px var(--Colors-Shadow-Focus-Button-Danger);
+}
+
+.button-danger:active,
+.button-danger.active {
+    background: var(--Colors-Buttons-Danger-Pressed);
+}
+
+.button-success {
+    background: var(--Colors-Buttons-Success-Default);
+    color: var(--Colors-Buttons-Primary-Default-Text);
+}
+
+.button-success:hover,
+.button-success.hover {
+    background: var(--Colors-Buttons-Success-Hover);
+}
+
+.button-success:focus,
+.button-success.focus {
+    border: 1px solid var(--Colors-Buttons-Success-Stroke-Focus);
+    background: var(--Colors-Buttons-Success-Hover);
+    box-shadow: 0 0 0 4px var(--Colors-Shadow-Focus-Button-Success);
+}
+
+.button-success:active,
+.button-success.active {
+    background: var(--Colors-Buttons-Success-Pressed);
+}
+
+.button-xsmall {
+    height: var(--UI-Input-xs);
+    padding: 0 var(--UI-Spacing-spacing-mxs);
+    gap: var(--UI-Spacing-spacing-s);
+    flex-shrink: 0;
+
+    font-size: var(--Fonts-Body-Default-xs);
+    line-height: 135%;
+    letter-spacing: -0.14px;
+}
+
+.button-small {
+    height: var(--UI-Input-sm);
+    padding: 0 var(--UI-Spacing-spacing-ms);
+    gap: var(--UI-Spacing-spacing-s);
+
+    font-size: var(--Fonts-Body-Default-sm);
+    line-height: 135%;
+    letter-spacing: -0.15px;
+}
+
+.button-large {
+    height: var(--UI-Input-lg);
+    padding: 0 var(--UI-Spacing-spacing-mxl);
+    gap: var(--UI-Spacing-spacing-s);
+
+    font-size: var(--Fonts-Body-Default-xl);
+    line-height: 140%;
+    letter-spacing: -0.19px;
+}

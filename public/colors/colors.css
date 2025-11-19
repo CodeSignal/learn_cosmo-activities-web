@@ -74,6 +74,28 @@
   --color-neutral-1500: #060C1C;
   --color-neutral-1600: #040813;
 
+  /* Neutrals with Alpha */
+  --color-neutral-1000-alpha-25: rgba(82, 93, 123, 0.25);
+  --color-neutral-1000-alpha-50: rgba(82, 93, 123, 0.50);
+  --color-neutral-1050-alpha-25: rgba(73, 85, 115, 0.25);
+  --color-neutral-1050-alpha-50: rgba(73, 85, 115, 0.50);
+  --color-neutral-1100-alpha-25: rgba(65, 77, 103, 0.25);
+  --color-neutral-1100-alpha-50: rgba(65, 77, 103, 0.50);
+  --color-neutral-1150-alpha-25: rgba(57, 69, 99, 0.25);
+  --color-neutral-1150-alpha-50: rgba(57, 69, 99, 0.50);
+  --color-neutral-1200-alpha-25: rgba(45, 56, 85, 0.25);
+  --color-neutral-1200-alpha-50: rgba(45, 56, 85, 0.50);
+  --color-neutral-1250-alpha-25: rgba(38, 49, 76, 0.25);
+  --color-neutral-1250-alpha-50: rgba(38, 49, 76, 0.50);
+  --color-neutral-1300-alpha-25: rgba(30, 41, 67, 0.25);
+  --color-neutral-1300-alpha-50: rgba(30, 41, 67, 0.50);
+  --color-neutral-1350-alpha-25: rgba(24, 33, 57, 0.25);
+  --color-neutral-1350-alpha-50: rgba(24, 33, 57, 0.50);
+  --color-neutral-1400-alpha-25: rgba(17, 25, 46, 0.25);
+  --color-neutral-1400-alpha-50: rgba(17, 25, 46, 0.50);
+  --color-neutral-1450-alpha-25: rgba(10, 17, 34, 0.25);
+  --color-neutral-1450-alpha-50: rgba(10, 17, 34, 0.50);
+
   /* Success (Green) Numbered Scale */
   --color-accent-green-20: #E5F8F0;
   --color-accent-green-50: #D3F5E6;
