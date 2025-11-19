@@ -1,30 +1,28 @@
 __Type__
 
-Fill In The Blanks
+Swipe Left or Right
 
-__Markdown With Blanks__
+__Practice Question__
 
-Match each teammate's situation with the most empathetic response.
+Let's test your understanding of adaptive vs. traditional management. Swipe each statement left if it represents adaptive leadership, or right if it represents traditional management.
 
-> **Situation 1:** A teammate says they're feeling stressed and overwhelmed.  
-> **Best Response:** [[blank:That sounds tough. Do you want to talk more about it?]]
+__Labels__
 
-> **Situation 2:** A teammate suggests a new way to do something that you hadn't considered.  
-> **Best Response:** [[blank:I hadn’t thought of it that way. Can you tell me more?]]
+- Left Label: Adaptive Leadership
+- Right Label: Traditional Mgmt
 
-> **Situation 3:** You notice a teammate seems quieter than usual.  
-> **Best Response:** [[blank:You seem a bit quiet today. Is everything okay?]]
+__Left Label Items__
 
-> **Situation 4:** A teammate helps you finish a report on time.  
-> **Best Response:** [[blank:Thanks for helping me with that report! I really appreciated it.]]
+- Adjusting communication style based on employee personality
+- Giving more project autonomy to experienced team members
+- Using different motivation strategies for different people
+- Adapting feedback delivery to individual preferences
 
-> **Situation 5:** You want to check in after a teammate mentioned an important event.  
-> **Best Response:** [[blank:How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?]]
+__Right Label Items__
 
-__Suggested Answers__
+- Using the same management approach with everyone
+- Expecting all employees to adapt to your style
+- Following rigid company policies regardless of situation
+- Treating all team members exactly the same way
 
-- That sounds tough—do you want to talk more about it?
-- I hadn’t thought of it that way. Can you tell me more?
-- You seem a bit quiet today. Is everything okay?
-- Thanks for helping me with that report! I really appreciated it.
-- How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?
+

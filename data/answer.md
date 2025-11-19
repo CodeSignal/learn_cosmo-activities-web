@@ -4,14 +4,14 @@ Fill In The Blanks
 
 __Summary__
 
-1/5 correct
+0/5 correct
 
 __Responses__
 
 1. **Blank 1**
-   - Selected Answer: That sounds tough. Do you want to talk more about it?
+   - Selected Answer: No answer selected
    - Correct Answer: That sounds tough. Do you want to talk more about it?
-   - Result: ✓ Correct
+   - Result: ✗ Incorrect
 
 2. **Blank 2**
    - Selected Answer: Thanks for helping me with that report! I really appreciated it.

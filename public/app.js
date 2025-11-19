@@ -68,7 +68,8 @@ import { initMcq } from './modules/mcq.js';
     } else if (/^sort into boxes$/i.test(activity.type)) {
       currentActivity = initSort({ 
         items: state.items, 
-        labels: activity.labels, 
+        labels: activity.labels,
+        question: activity.question,
         state, 
         postResults 
       });
@@ -86,6 +87,7 @@ import { initMcq } from './modules/mcq.js';
       currentActivity = initSwipe({ 
         items: state.items, 
         labels: activity.labels || { left: 'Left', right: 'Right' },
+        question: activity.question,
         state, 
         postResults 
       });
