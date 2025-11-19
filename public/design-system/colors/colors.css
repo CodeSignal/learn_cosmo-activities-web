@@ -9,299 +9,300 @@
   /* These are the base definitions - all other colors reference these */
 
   /* Primary Numbered Scale */
-  --color-primary-20: #ECF2FF;
-  --color-primary-50: #E2ECFF;
-  --color-primary-100: #D2E2FF;
-  --color-primary-150: #C1D7FF;
-  --color-primary-200: #B2CDFF;
-  --color-primary-250: #A0C1FF;
-  --color-primary-300: #90B7FF;
-  --color-primary-350: #81ADFF;
-  --color-primary-400: #72A3FF;
-  --color-primary-450: #679CFF;
-  --color-primary-500: #5C94FF;
-  --color-primary-550: #4888FF;
-  --color-primary-600: #377DFF;
-  --color-primary-650: #2470FF;
-  --color-primary-700: #1062FB;
-  --color-primary-750: #0959EE;
-  --color-primary-800: #0B53DA;
-  --color-primary-850: #0A4CC8;
-  --color-primary-900: #0945B5;
-  --color-primary-950: #083EA3;
-  --color-primary-1000: #063690;
-  --color-primary-1050: #102E7E;
-  --color-primary-1100: #063690;
-  --color-primary-1150: #102E7E;
-  --color-primary-1200: #071B48;
-  --color-primary-1250: #051436;
-  --color-primary-1300: #030D23;
-  --color-primary-1350: #010712;
-  --color-primary-1400: #000000;
+  --Colors-Base-Primary-20: #ECF2FF;
+  --Colors-Base-Primary-50: #E2ECFF;
+  --Colors-Base-Primary-100: #D2E2FF;
+  --Colors-Base-Primary-150: #C1D7FF;
+  --Colors-Base-Primary-200: #B2CDFF;
+  --Colors-Base-Primary-250: #A0C1FF;
+  --Colors-Base-Primary-300: #90B7FF;
+  --Colors-Base-Primary-350: #81ADFF;
+  --Colors-Base-Primary-400: #72A3FF;
+  --Colors-Base-Primary-450: #679CFF;
+  --Colors-Base-Primary-500: #5C94FF;
+  --Colors-Base-Primary-550: #4888FF;
+  --Colors-Base-Primary-600: #377DFF;
+  --Colors-Base-Primary-650: #2470FF;
+  --Colors-Base-Primary-700: #1062FB;
+  --Colors-Base-Primary-750: #0959EE;
+  --Colors-Base-Primary-800: #0B53DA;
+  --Colors-Base-Primary-850: #0A4CC8;
+  --Colors-Base-Primary-900: #0945B5;
+  --Colors-Base-Primary-950: #083EA3;
+  --Colors-Base-Primary-1000: #063690;
+  --Colors-Base-Primary-1050: #102E7E;
+  --Colors-Base-Primary-1100: #063690;
+  --Colors-Base-Primary-1150: #102E7E;
+  --Colors-Base-Primary-1200: #071B48;
+  --Colors-Base-Primary-1250: #051436;
+  --Colors-Base-Primary-1300: #030D23;
+  --Colors-Base-Primary-1350: #010712;
+  --Colors-Base-Primary-1400: #000000;
 
   /* Neutral Numbered Scale */
-  --color-neutral-00: #FFFFFF;
-  --color-neutral-20: #F4F5F9;
-  --color-neutral-50: #F4F5F9;
-  --color-neutral-100: #EDEFF5;
-  --color-neutral-150: #E7EAF2;
-  --color-neutral-200: #E2E5EE;
-  --color-neutral-250: #DDE0EA;
-  --color-neutral-300: #D7DAE6;
-  --color-neutral-350: #CED2DF;
-  --color-neutral-400: #C8CDDB;
-  --color-neutral-450: #C1C7D7;
-  --color-neutral-500: #BBC1D1;
-  --color-neutral-550: #B4BBCD;
-  --color-neutral-600: #ACB4C7;
-  --color-neutral-650: #A3ABBE;
-  --color-neutral-700: #979FB4;
-  --color-neutral-750: #8B94AB;
-  --color-neutral-800: #808AA5;
-  --color-neutral-850: #75809E;
-  --color-neutral-900: #66718F;
-  --color-neutral-950: #5B6684;
-  --color-neutral-1000: #515C7A;
-  --color-neutral-1050: #495573;
-  --color-neutral-1100: #414D6B;
-  --color-neutral-1150: #394563;  
-  --color-neutral-1200: #2D3855;
-  --color-neutral-1250: #26314C;  
-  --color-neutral-1300: #1D2740;  
-  --color-neutral-1350: #182139;
-  --color-neutral-1400: #11192E;  
-  --color-neutral-1450: #0A1122;
-  --color-neutral-1500: #060C1C;
-  --color-neutral-1600: #040813;
+  --Colors-Base-Neutral-00: #FFFFFF;
+  --Colors-Base-Neutral-20: #F4F5F9;
+  --Colors-Base-Neutral-50: #F4F5F9;
+  --Colors-Base-Neutral-100: #EDEFF5;
+  --Colors-Base-Neutral-150: #E7EAF2;
+  --Colors-Base-Neutral-200: #E2E5EE;
+  --Colors-Base-Neutral-250: #DDE0EA;
+  --Colors-Base-Neutral-300: #D7DAE6;
+  --Colors-Base-Neutral-350: #CED2DF;
+  --Colors-Base-Neutral-400: #C8CDDB;
+  --Colors-Base-Neutral-450: #C1C7D7;
+  --Colors-Base-Neutral-500: #BBC1D1;
+  --Colors-Base-Neutral-550: #B4BBCD;
+  --Colors-Base-Neutral-600: #ACB4C7;
+  --Colors-Base-Neutral-650: #A3ABBE;
+  --Colors-Base-Neutral-700: #979FB4;
+  --Colors-Base-Neutral-750: #8B94AB;
+  --Colors-Base-Neutral-800: #808AA5;
+  --Colors-Base-Neutral-850: #75809E;
+  --Colors-Base-Neutral-900: #66718F;
+  --Colors-Base-Neutral-950: #5B6684;
+  --Colors-Base-Neutral-1000: #515C7A;
+  --Colors-Base-Neutral-1050: #495573;
+  --Colors-Base-Neutral-1100: #414D6B;
+  --Colors-Base-Neutral-1150: #394563;  
+  --Colors-Base-Neutral-1200: #2D3855;
+  --Colors-Base-Neutral-1250: #26314C;  
+  --Colors-Base-Neutral-1300: #1D2740;  
+  --Colors-Base-Neutral-1350: #182139;
+  --Colors-Base-Neutral-1400: #11192E;  
+  --Colors-Base-Neutral-1450: #0A1122;
+  --Colors-Base-Neutral-1500: #060C1C;
+  --Colors-Base-Neutral-1600: #040813;
 
   /* Neutrals with Alpha */
-  --color-neutral-1000-alpha-25: rgba(82, 93, 123, 0.25);
-  --color-neutral-1000-alpha-50: rgba(82, 93, 123, 0.50);
-  --color-neutral-1050-alpha-25: rgba(73, 85, 115, 0.25);
-  --color-neutral-1050-alpha-50: rgba(73, 85, 115, 0.50);
-  --color-neutral-1100-alpha-25: rgba(65, 77, 103, 0.25);
-  --color-neutral-1100-alpha-50: rgba(65, 77, 103, 0.50);
-  --color-neutral-1150-alpha-25: rgba(57, 69, 99, 0.25);
-  --color-neutral-1150-alpha-50: rgba(57, 69, 99, 0.50);
-  --color-neutral-1200-alpha-25: rgba(45, 56, 85, 0.25);
-  --color-neutral-1200-alpha-50: rgba(45, 56, 85, 0.50);
-  --color-neutral-1250-alpha-25: rgba(38, 49, 76, 0.25);
-  --color-neutral-1250-alpha-50: rgba(38, 49, 76, 0.50);
-  --color-neutral-1300-alpha-25: rgba(30, 41, 67, 0.25);
-  --color-neutral-1300-alpha-50: rgba(30, 41, 67, 0.50);
-  --color-neutral-1350-alpha-25: rgba(24, 33, 57, 0.25);
-  --color-neutral-1350-alpha-50: rgba(24, 33, 57, 0.50);
-  --color-neutral-1400-alpha-25: rgba(17, 25, 46, 0.25);
-  --color-neutral-1400-alpha-50: rgba(17, 25, 46, 0.50);
-  --color-neutral-1450-alpha-25: rgba(10, 17, 34, 0.25);
-  --color-neutral-1450-alpha-50: rgba(10, 17, 34, 0.50);
+  --Colors-Base-Neutral-Alphas-1000-25: rgba(82, 93, 123, 0.25);
+  --Colors-Base-Neutral-Alphas-1000-50: rgba(82, 93, 123, 0.50);
+  --Colors-Base-Neutral-Alphas-1050-25: rgba(73, 85, 115, 0.25);
+  --Colors-Base-Neutral-Alphas-1050-50: rgba(73, 85, 115, 0.50);
+  --Colors-Base-Neutral-Alphas-1100-25: rgba(65, 77, 103, 0.25);
+  --Colors-Base-Neutral-Alphas-1100-50: rgba(65, 77, 103, 0.50);
+  --Colors-Base-Neutral-Alphas-1150-25: rgba(57, 69, 99, 0.25);
+  --Colors-Base-Neutral-Alphas-1150-50: rgba(57, 69, 99, 0.50);
+  --Colors-Base-Neutral-Alphas-1200-25: rgba(45, 56, 85, 0.25);
+  --Colors-Base-Neutral-Alphas-1200-50: rgba(45, 56, 85, 0.50);
+  --Colors-Base-Neutral-Alphas-1250-25: rgba(38, 49, 76, 0.25);
+  --Colors-Base-Neutral-Alphas-1250-50: rgba(38, 49, 76, 0.50);
+  --Colors-Base-Neutral-Alphas-1300-25: rgba(30, 41, 67, 0.25);
+  --Colors-Base-Neutral-Alphas-1300-50: rgba(30, 41, 67, 0.50);
+  --Colors-Base-Neutral-Alphas-1350-25: rgba(24, 33, 57, 0.25);
+  --Colors-Base-Neutral-Alphas-1350-50: rgba(24, 33, 57, 0.50);
+  --Colors-Base-Neutral-Alphas-1400-25: rgba(17, 25, 46, 0.25);
+  --Colors-Base-Neutral-Alphas-1400-50: rgba(17, 25, 46, 0.50);
+  --Colors-Base-Neutral-Alphas-1450-25: rgba(10, 17, 34, 0.25);
+  --Colors-Base-Neutral-Alphas-1450-50: rgba(10, 17, 34, 0.50);
 
   /* Success (Green) Numbered Scale */
-  --color-accent-green-20: #E5F8F0;
-  --color-accent-green-50: #D3F5E6;
-  --color-accent-green-100: #A6ECCD;
-  --color-accent-green-200: #7AE2B4;
-  --color-accent-green-300: #4DD99B;
-  --color-accent-green-400: #21CF82;
-  --color-accent-green-500: #1EC173;
-  --color-accent-green-600: #1BB267;
-  --color-accent-green-700: #199E59;
-  --color-accent-green-800: #168242;
-  --color-accent-green-900: #267345;
-  --color-accent-green-1000: #0E562B;
+  --Colors-Base-Accent-Green-20: #E5F8F0;
+  --Colors-Base-Accent-Green-50: #D3F5E6;
+  --Colors-Base-Accent-Green-100: #A6ECCD;
+  --Colors-Base-Accent-Green-200: #7AE2B4;
+  --Colors-Base-Accent-Green-300: #4DD99B;
+  --Colors-Base-Accent-Green-400: #21CF82;
+  --Colors-Base-Accent-Green-500: #1EC173;
+  --Colors-Base-Accent-Green-600: #1BB267;
+  --Colors-Base-Accent-Green-700: #199E59;
+  --Colors-Base-Accent-Green-800: #168242;
+  --Colors-Base-Accent-Green-900: #267345;
+  --Colors-Base-Accent-Green-1000: #0E562B;
 
   /* Info (Blue) Numbered Scale */
-  --color-accent-sky-blue-20: #ECFAFF;
-  --color-accent-sky-blue-50: #D8F4FF;
-  --color-accent-sky-blue-100: #C1EDFF;
-  --color-accent-sky-blue-200: #A2E5FF;
-  --color-accent-sky-blue-300: #83DCFF;
-  --color-accent-sky-blue-400: #64D3FF;
-  --color-accent-sky-blue-500: #3EC8FF;
-  --color-accent-sky-blue-600: #0EB6F9;
-  --color-accent-sky-blue-700: #00A1E9;
-  --color-accent-sky-blue-800: #0090D1;
-  --color-accent-sky-blue-900: #006D9E;
-  --color-accent-sky-blue-1000: #005276;
-  --color-accent-sky-blue-1100: #00435F;
-  --color-accent-sky-blue-1200: #00364D;
+  --Colors-Base-Accent-Sky-Blue-20: #ECFAFF;
+  --Colors-Base-Accent-Sky-Blue-50: #D8F4FF;
+  --Colors-Base-Accent-Sky-Blue-100: #C1EDFF;
+  --Colors-Base-Accent-Sky-Blue-200: #A2E5FF;
+  --Colors-Base-Accent-Sky-Blue-300: #83DCFF;
+  --Colors-Base-Accent-Sky-Blue-400: #64D3FF;
+  --Colors-Base-Accent-Sky-Blue-500: #3EC8FF;
+  --Colors-Base-Accent-Sky-Blue-600: #0EB6F9;
+  --Colors-Base-Accent-Sky-Blue-700: #00A1E9;
+  --Colors-Base-Accent-Sky-Blue-800: #0090D1;
+  --Colors-Base-Accent-Sky-Blue-900: #006D9E;
+  --Colors-Base-Accent-Sky-Blue-1000: #005276;
+  --Colors-Base-Accent-Sky-Blue-1100: #00435F;
+  --Colors-Base-Accent-Sky-Blue-1200: #00364D;
 
   /* Warning (Yellow) Numbered Scale */
-  --color-accent-yellow-20: #FDF8E8;
-  --color-accent-yellow-50: #FFF3CC;
-  --color-accent-yellow-100: #FFE899;
-  --color-accent-yellow-200: #FFDC66;
-  --color-accent-yellow-300: #FFD133;
-  --color-accent-yellow-400: #FFC500;
-  --color-accent-yellow-500: #FFB600;
-  --color-accent-yellow-600: #FFAA00;
-  --color-accent-yellow-700: #F99300;
-  --color-accent-yellow-800: #F37D00;
-  --color-accent-yellow-900: #B85F00;
-  --color-accent-yellow-1000: #804104;
+  --Colors-Base-Accent-Yellow-20: #FDF8E8;
+  --Colors-Base-Accent-Yellow-50: #FFF3CC;
+  --Colors-Base-Accent-Yellow-100: #FFE899;
+  --Colors-Base-Accent-Yellow-200: #FFDC66;
+  --Colors-Base-Accent-Yellow-300: #FFD133;
+  --Colors-Base-Accent-Yellow-400: #FFC500;
+  --Colors-Base-Accent-Yellow-500: #FFB600;
+  --Colors-Base-Accent-Yellow-600: #FFAA00;
+  --Colors-Base-Accent-Yellow-700: #F99300;
+  --Colors-Base-Accent-Yellow-800: #F37D00;
+  --Colors-Base-Accent-Yellow-900: #B85F00;
+  --Colors-Base-Accent-Yellow-1000: #804104;
 
   /* Warning (Orange) Numbered Scale */
-  --color-accent-orange-20: #FFEEE6;
-  --color-accent-orange-50: #FFD9C7;
-  --color-accent-orange-100: #FFC7AD;
-  --color-accent-orange-200: #FFAA84;
-  --color-accent-orange-300: #FF8E5B;
-  --color-accent-orange-400: #FF7232;
-  --color-accent-orange-500: #F9560E;
-  --color-accent-orange-600: #ED4A0A;
-  --color-accent-orange-700: #E53600;
-  --color-accent-orange-800: #D32D00;
-  --color-accent-orange-900: #C02900;
-  --color-accent-orange-1000: #A72400;
+  --Colors-Base-Accent-Orange-20: #FFEEE6;
+  --Colors-Base-Accent-Orange-50: #FFD9C7;
+  --Colors-Base-Accent-Orange-100: #FFC7AD;
+  --Colors-Base-Accent-Orange-200: #FFAA84;
+  --Colors-Base-Accent-Orange-300: #FF8E5B;
+  --Colors-Base-Accent-Orange-400: #FF7232;
+  --Colors-Base-Accent-Orange-500: #F9560E;
+  --Colors-Base-Accent-Orange-600: #ED4A0A;
+  --Colors-Base-Accent-Orange-700: #E53600;
+  --Colors-Base-Accent-Orange-800: #D32D00;
+  --Colors-Base-Accent-Orange-900: #C02900;
+  --Colors-Base-Accent-Orange-1000: #A72400;
 
   /* Error (Red) Numbered Scale */
-  --color-accent-red-20: #FFE9EC;
-  --color-accent-red-50: #FFD8DD;
-  --color-accent-red-100: #FFA9B4;
-  --color-accent-red-200: #FF5F78;
-  --color-accent-red-300: #FF3254;
-  --color-accent-red-400: #E6193F;
-  --color-accent-red-500: #D8133E;
-  --color-accent-red-600: #C6093A;
-  --color-accent-red-700: #B8062C;
-  --color-accent-red-800: #8C0020;
-  --color-accent-red-900: #7C001C;
-  --color-accent-red-1000: #610016;
+  --Colors-Base-Accent-Red-20: #FFE9EC;
+  --Colors-Base-Accent-Red-50: #FFD8DD;
+  --Colors-Base-Accent-Red-100: #FFA9B4;
+  --Colors-Base-Accent-Red-200: #FF5F78;
+  --Colors-Base-Accent-Red-300: #FF3254;
+  --Colors-Base-Accent-Red-400: #E6193F;
+  --Colors-Base-Accent-Red-500: #D8133E;
+  --Colors-Base-Accent-Red-600: #C6093A;
+  --Colors-Base-Accent-Red-700: #B8062C;
+  --Colors-Base-Accent-Red-800: #8C0020;
+  --Colors-Base-Accent-Red-900: #7C001C;
+  --Colors-Base-Accent-Red-1000: #610016;
 
 
   /* ===== SEMANTIC COLOR NAMES ===== */
   /* These reference the numbered scales above */
 
   /* Primary Colors - Semantic Names */
-  --color-primary-default: var(--color-primary-700);
-  --color-primary-lightest: var(--color-primary-100);
-  --color-primary-lighter: var(--color-primary-200);
-  --color-primary-light: var(--color-primary-350);
-  --color-primary-medium-light: var(--color-primary-500);
-  --color-primary-medium: var(--color-primary-600);
-  --color-primary-medium-dark: var(--color-primary-800);
-  --color-primary-dark: var(--color-primary-900);
-  --color-primary-darker: var(--color-primary-1000);
-  --color-primary-darkest: var(--color-primary-1150);
+  --Colors-Primary-Default: var(--Colors-Base-Primary-700);
+  --Colors-Primary-Lightest: var(--Colors-Base-Primary-100);
+  --Colors-Primary-Lighter: var(--Colors-Base-Primary-200);
+  --Colors-Primary-Light: var(--Colors-Base-Primary-350);
+  --Colors-Primary-Medium-Light: var(--Colors-Base-Primary-500);
+  --Colors-Primary-Medium: var(--Colors-Base-Primary-600);
+  --Colors-Primary-Medium-Dark: var(--Colors-Base-Primary-800);
+  --Colors-Primary-Dark: var(--Colors-Base-Primary-900);
+  --Colors-Primary-Darker: var(--Colors-Base-Primary-1000);
+  --Colors-Primary-Darkest: var(--Colors-Base-Primary-1150);
 
   /* Background Colors */
-  --color-bg-main-default: var(--color-neutral-50);
-  --color-bg-main-light: var(--color-neutral-100);
-  --color-bg-main-medium: var(--color-neutral-150);
-  --color-bg-main-strong: var(--color-neutral-200);
-  --color-bg-main-dark: var(--color-neutral-1000);
-  --color-bg-main-darker: var(--color-neutral-1100);
-  --color-bg-main-top: var(--color-neutral-00);
-  --color-bg-main-black: var(--color-primary-1400);
+  --Colors-Backgrounds-Main-Default: var(--Colors-Base-Neutral-50);
+  --Colors-Backgrounds-Main-Light: var(--Colors-Base-Neutral-100);
+  --Colors-Backgrounds-Main-Medium: var(--Colors-Base-Neutral-150);
+  --Colors-Backgrounds-Main-Strong: var(--Colors-Base-Neutral-200);
+  --Colors-Backgrounds-Main-Dark: var(--Colors-Base-Neutral-1000);
+  --Colors-Backgrounds-Main-Darker: var(--Colors-Base-Neutral-1100);
+  --Colors-Backgrounds-Main-Top: var(--Colors-Base-Neutral-00);
+  --Colors-Backgrounds-Main-Black: var(--Colors-Base-Primary-1400);
 
   /* Text Colors */
-  --color-text-body-default: var(--color-neutral-1200);
-  --color-text-body-medium: var(--color-neutral-1050);
-  --color-text-body-light: var(--color-neutral-900);
-  --color-text-body-strong: var(--color-neutral-1350);
-  --color-text-body-strongest: var(--color-neutral-1450); 
+  --Colors-Text-Body-White: var(--Colors-Base-Neutral-00);
+  --Colors-Text-Body-Default: var(--Colors-Base-Neutral-1200);
+  --Colors-Text-Body-Medium: var(--Colors-Base-Neutral-1050);
+  --Colors-Text-Body-Light: var(--Colors-Base-Neutral-900);
+  --Colors-Text-Body-Strong: var(--Colors-Base-Neutral-1350);
+  --Colors-Text-Body-Strongest: var(--Colors-Base-Neutral-1450); 
 
   /* Icon Colors - Semantic Names */  
-  --color-icon-default: var(--color-neutral-600);
-  --color-icon-medium: var(--color-neutral-850);
-  --color-icon-strong: var(--color-neutral-1300);
-  --color-icon-primary: var(--color-primary-600);
+  --Colors-Icon-Default: var(--Colors-Base-Neutral-600);
+  --Colors-Icon-Medium: var(--Colors-Base-Neutral-850);
+  --Colors-Icon-Strong: var(--Colors-Base-Neutral-1300);
+  --Colors-Icon-Primary: var(--Colors-Base-Primary-600);
     
   /* Stroke Colors */
-  --color-stroke-default: var(--color-neutral-200);
-  --color-stroke-lighter: var(--color-neutral-100);
-  --color-stroke-light: var(--color-neutral-150);
-  --color-stroke-medium: var(--color-neutral-300);
-  --color-stroke-strong: var(--color-neutral-400);
-  --color-stroke-stronger: var(--color-neutral-550);
-  --color-stroke-primary: var(--color-primary-600);
-  --color-stroke-primary-light: var(--color-primary-350);
-  --color-stroke-primary-medium: var(--color-primary-500);
-  --color-stroke-primary-dark: var(--color-primary-800);
-  --color-stroke-background: var(--color-neutral-20);
+  --Colors-Stroke-Default: var(--Colors-Base-Neutral-200);
+  --Colors-Stroke-Lighter: var(--Colors-Base-Neutral-100);
+  --Colors-Stroke-Light: var(--Colors-Base-Neutral-150);
+  --Colors-Stroke-Medium: var(--Colors-Base-Neutral-300);
+  --Colors-Stroke-Strong: var(--Colors-Base-Neutral-400);
+  --Colors-Stroke-Stronger: var(--Colors-Base-Neutral-550);
+  --Colors-Stroke-Primary: var(--Colors-Base-Primary-600);
+  --Colors-Stroke-Primary-Light: var(--Colors-Base-Primary-350);
+  --Colors-Stroke-Primary-Medium: var(--Colors-Base-Primary-500);
+  --Colors-Stroke-Primary-Dark: var(--Colors-Base-Primary-800);
+  --Colors-Stroke-Background: var(--Colors-Base-Neutral-20);
 
   /* Success (Green) Colors - Semantic Names */
-  --color-alert-success-default: var(--color-accent-green-600);
-  --color-alert-success-lighter: var(--color-accent-green-50);
-  --color-alert-success-light: var(--color-accent-green-100);
-  --color-alert-success-medium: var(--color-accent-green-300);
-  --color-alert-success-medium-dark: var(--color-accent-green-700);
-  --color-alert-success-dark: var(--color-accent-green-900);
+  --Colors-Alert-Success-Default: var(--Colors-Base-Accent-Green-600);
+  --Colors-Alert-Success-Lighter: var(--Colors-Base-Accent-Green-50);
+  --Colors-Alert-Success-Light: var(--Colors-Base-Accent-Green-100);
+  --Colors-Alert-Success-Medium: var(--Colors-Base-Accent-Green-300);
+  --Colors-Alert-Success-Medium-Dark: var(--Colors-Base-Accent-Green-700);
+  --Colors-Alert-Success-Dark: var(--Colors-Base-Accent-Green-900);
 
   /* Error/Danger Colors - Semantic Names */
-  --color-alert-error-default: var(--color-accent-red-600);
-  --color-alert-error-lighter: var(--color-accent-red-50);
-  --color-alert-error-light: var(--color-accent-red-100);
-  --color-alert-error-medium: var(--color-accent-red-300);
-  --color-alert-error-medium-dark: var(--color-accent-red-700);
-  --color-alert-error-dark: var(--color-accent-red-900);
+  --Colors-Alert-Error-Default: var(--Colors-Base-Accent-Red-600);
+  --Colors-Alert-Error-Lighter: var(--Colors-Base-Accent-Red-50);
+  --Colors-Alert-Error-Light: var(--Colors-Base-Accent-Red-100);
+  --Colors-Alert-Error-Medium: var(--Colors-Base-Accent-Red-300);
+  --Colors-Alert-Error-Medium-Dark: var(--Colors-Base-Accent-Red-700);
+  --Colors-Alert-Error-Dark: var(--Colors-Base-Accent-Red-900);
 
   /* Warning Colors - Semantic Names */
-  --color-alert-warning-default: var(--color-accent-orange-600);
-  --color-alert-warning-lighter: var(--color-accent-orange-50);
-  --color-alert-warning-light: var(--color-accent-orange-100);
-  --color-alert-warning-medium: var(--color-accent-orange-300);
-  --color-alert-warning-medium-dark: var(--color-accent-orange-700);
-  --color-alert-warning-dark: var(--color-accent-orange-900);
+  --Colors-Alert-Warning-Default: var(--Colors-Base-Accent-Orange-600);
+  --Colors-Alert-Warning-Lighter: var(--Colors-Base-Accent-Orange-50);
+  --Colors-Alert-Warning-Light: var(--Colors-Base-Accent-Orange-100);
+  --Colors-Alert-Warning-Medium: var(--Colors-Base-Accent-Orange-300);
+  --Colors-Alert-Warning-Medium-Dark: var(--Colors-Base-Accent-Orange-700);
+  --Colors-Alert-Warning-Dark: var(--Colors-Base-Accent-Orange-900);
 
   /* Info Colors - Semantic Names */
-  --color-alert-info-default: var(--color-accent-sky-blue-600);
-  --color-alert-info-lighter: var(--color-accent-sky-blue-50);
-  --color-alert-info-light: var(--color-accent-sky-blue-100);
-  --color-alert-info-medium: var(--color-accent-sky-blue-300);
-  --color-alert-info-medium-dark: var(--color-accent-sky-blue-700);
-  --color-alert-info-dark: var(--color-accent-sky-blue-900);
+  --Colors-Alert-Info-Default: var(--Colors-Base-Accent-Sky-Blue-600);
+  --Colors-Alert-Info-Lighter: var(--Colors-Base-Accent-Sky-Blue-50);
+  --Colors-Alert-Info-Light: var(--Colors-Base-Accent-Sky-Blue-100);
+  --Colors-Alert-Info-Medium: var(--Colors-Base-Accent-Sky-Blue-300);
+  --Colors-Alert-Info-Medium-Dark: var(--Colors-Base-Accent-Sky-Blue-700);
+  --Colors-Alert-Info-Dark: var(--Colors-Base-Accent-Sky-Blue-900);
 }
 
 /* ===== DARK MODE ===== */
 @media (prefers-color-scheme: dark) {
   :root {
     /* Primary Colors - Semantic Names (ElevatedDark Mode) */
-    --color-primary-default: var(--color-primary-700);
-    --color-primary-lightest: var(--color-primary-400);   
-    --color-primary-lighter: var(--color-primary-450);    
-    --color-primary-light: var(--color-primary-450);      
-    --color-primary-medium-light: var(--color-primary-500);
-    --color-primary-medium: var(--color-primary-600);
-    --color-primary-medium-dark: var(--color-primary-800);
-    --color-primary-dark: var(--color-primary-900);
-    --color-primary-darker: var(--color-primary-1000);
-    --color-primary-darkest: var(--color-primary-1050);
+    --Colors-Primary-Default: var(--Colors-Base-Primary-700);
+    --Colors-Primary-Lightest: var(--Colors-Base-Primary-400);   
+    --Colors-Primary-Lighter: var(--Colors-Base-Primary-450);    
+    --Colors-Primary-Light: var(--Colors-Base-Primary-450);      
+    --Colors-Primary-Medium-Light: var(--Colors-Base-Primary-500);
+    --Colors-Primary-Medium: var(--Colors-Base-Primary-600);
+    --Colors-Primary-Medium-Dark: var(--Colors-Base-Primary-800);
+    --Colors-Primary-Dark: var(--Colors-Base-Primary-900);
+    --Colors-Primary-Darker: var(--Colors-Base-Primary-1000);
+    --Colors-Primary-Darkest: var(--Colors-Base-Primary-1050);
 
     /* Background Colors - Semantic Names (Elevated Dark Mode) */
-    --color-bg-main-default: var(--color-neutral-1300);
-    --color-bg-main-light: var(--color-neutral-1250);      
-    --color-bg-main-medium: var(--color-neutral-1200);     
-    --color-bg-main-strong: var(--color-neutral-1150);     
-    --color-bg-main-dark: var(--color-neutral-1350);       
-    --color-bg-main-darker: var(--color-neutral-1400);     
-    --color-bg-main-top: var(--color-neutral-1300);
-    --color-bg-main-black: var(--color-neutral-200);
+    --Colors-Backgrounds-Main-Default: var(--Colors-Base-Neutral-1300);
+    --Colors-Backgrounds-Main-Light: var(--Colors-Base-Neutral-1250);      
+    --Colors-Backgrounds-Main-Medium: var(--Colors-Base-Neutral-1200);     
+    --Colors-Backgrounds-Main-Strong: var(--Colors-Base-Neutral-1150);     
+    --Colors-Backgrounds-Main-Dark: var(--Colors-Base-Neutral-1350);       
+    --Colors-Backgrounds-Main-Darker: var(--Colors-Base-Neutral-1400);     
+    --Colors-Backgrounds-Main-Top: var(--Colors-Base-Neutral-1300);
+    --Colors-Backgrounds-Main-Black: var(--Colors-Base-Neutral-200);
 
     /* Text Colors - Semantic Names (Elevated Dark Mode) */
-    --color-text-body-default: var(--color-neutral-450);
-    --color-text-body-medium: var(--color-neutral-650);
-    --color-text-body-light: var(--color-neutral-750);
-    --color-text-body-strong: var(--color-neutral-00);
-    --color-text-body-strongest: var(--color-neutral-00);
+    --Colors-Text-Body-Default: var(--Colors-Base-Neutral-450);
+    --Colors-Text-Body-Medium: var(--Colors-Base-Neutral-650);
+    --Colors-Text-Body-Light: var(--Colors-Base-Neutral-750);
+    --Colors-Text-Body-Strong: var(--Colors-Base-Neutral-00);
+    --Colors-Text-Body-Strongest: var(--Colors-Base-Neutral-00);
     
     /* Icon Colors - Semantic Names (Elevated Dark Mode) */  
-    --color-icon-default: var(--color-neutral-850);
-    --color-icon-medium: var(--color-neutral-750);
-    --color-icon-strong: var(--color-neutral-00);
-    --color-icon-primary: var(--color-primary-700);
+    --Colors-Icon-Default: var(--Colors-Base-Neutral-850);
+    --Colors-Icon-Medium: var(--Colors-Base-Neutral-750);
+    --Colors-Icon-Strong: var(--Colors-Base-Neutral-00);
+    --Colors-Icon-Primary: var(--Colors-Base-Primary-700);
 
     /* Stroke Colors */
-    --color-stroke-default: var(--color-neutral-200);
-    --color-stroke-lighter: var(--color-neutral-100);
-    --color-stroke-light: var(--color-neutral-150);
-    --color-stroke-medium: var(--color-neutral-300);
-    --color-stroke-strong: var(--color-neutral-400);
-    --color-stroke-stronger: var(--color-neutral-550);
-    --color-stroke-primary: var(--color-primary-600);
-    --color-stroke-primary-light: var(--color-primary-350);
-    --color-stroke-primary-medium: var(--color-primary-500);
-    --color-stroke-primary-dark: var(--color-primary-800);
-    --color-stroke-background: var(--color-neutral-20);
+    --Colors-Stroke-Default: var(--Colors-Base-Neutral-200);
+    --Colors-Stroke-Lighter: var(--Colors-Base-Neutral-100);
+    --Colors-Stroke-Light: var(--Colors-Base-Neutral-150);
+    --Colors-Stroke-Medium: var(--Colors-Base-Neutral-300);
+    --Colors-Stroke-Strong: var(--Colors-Base-Neutral-400);
+    --Colors-Stroke-Stronger: var(--Colors-Base-Neutral-550);
+    --Colors-Stroke-Primary: var(--Colors-Base-Primary-600);
+    --Colors-Stroke-Primary-Light: var(--Colors-Base-Primary-350);
+    --Colors-Stroke-Primary-Medium: var(--Colors-Base-Primary-500);
+    --Colors-Stroke-Primary-Dark: var(--Colors-Base-Primary-800);
+    --Colors-Stroke-Background: var(--Colors-Base-Neutral-20);
   }
 }

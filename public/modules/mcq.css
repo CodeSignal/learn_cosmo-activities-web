@@ -2,24 +2,24 @@
 
 /* MCQ-specific CSS Variables */
 :root {
-  --Colors-Learn-Practice-Card: var(--color-bg-main-top);
-  --Colors-Learn-Practice-Card-Border-Hover: var(--color-stroke-primary-medium);
-  --Colors-Input-Background-Default: var(--color-bg-main-top);
-  --Colors-Input-Background-Checked: var(--color-bg-main-top);
-  --Colors-Input-Border-Default: var(--color-stroke-default);
-  --Colors-Input-Border-Hover: var(--color-stroke-strong);
-  --Colors-MCQ-Checkmark-Stroke: var(--color-text-body-strong);
+  --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Stroke-Primary-Medium);
+  --Colors-Input-Background-Default: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Input-Background-Checked: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Input-Border-Default: var(--Colors-Stroke-Default);
+  --Colors-Input-Border-Hover: var(--Colors-Stroke-Strong);
+  --Colors-MCQ-Checkmark-Stroke: var(--Colors-Text-Body-Strong);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --Colors-Learn-Practice-Card: var(--color-bg-main-light);
-    --Colors-Learn-Practice-Card-Border-Hover: var(--color-neutral-1100);
-    --Colors-Input-Border-Default: var(--color-bg-main-light);
+    --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Light);
+    --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Base-Neutral-1100);
+    --Colors-Input-Border-Default: var(--Colors-Backgrounds-Main-Light);
     --Colors-Input-Background-Default: rgba(17, 25, 46, 0.50);
     --Colors-Input-Background-Checked: rgba(17, 25, 46, 0.50);
-    --Colors-Input-Border-Hover: var(--color-bg-main-strong);
-    --Colors-MCQ-Checkmark-Stroke: var(--color-icon-strong);
+    --Colors-Input-Border-Hover: var(--Colors-Backgrounds-Main-Strong);
+    --Colors-MCQ-Checkmark-Stroke: var(--Colors-Icon-Strong);
   }
 }
 
@@ -56,7 +56,7 @@
 .mcq-question-text {
   /* Typography from .body-xxlarge class */
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-xlarge */
-  color: var(--color-text-body-default);
+  color: var(--Colors-Text-Body-Default);
   margin-bottom: var(--UI-Spacing-spacing-xs, 8px);
 }
 
@@ -72,7 +72,7 @@
 .mcq-legend {
   /* Typography from .heading-small class */
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .heading-small */
-  color: var(--color-text-body-strong);
+  color: var(--Colors-Text-Body-Strong);
   margin-bottom: var(--UI-Spacing-spacing-xs, 8px);
   padding: 0;
 }
@@ -87,7 +87,7 @@
   border-radius: var(--UI-Radius-radius-ml);
   background: var(--Colors-Learn-Practice-Card);
   border: 2px solid transparent;
-  color: var(--color-text-body-default);
+  color: var(--Colors-Text-Body-Default);
   font-family: "Work Sans", sans-serif;
   font-size: var(--Fonts-Body-Default-lg);
   font-style: normal;
@@ -223,7 +223,7 @@
 .mcq-option-text {
   /* Typography from .body-large class */
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-large */
-  color: var(--color-text-body-default);
+  color: var(--Colors-Text-Body-Default);
   white-space: pre-wrap;
 }
 

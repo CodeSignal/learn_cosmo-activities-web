@@ -5,26 +5,24 @@
 
 :root {
   /* Colors - Light Mode */
-  --Colors-Dropdown-Toggle-Text: var(--color-text-body-medium);
-  --Colors-Text-Body-Strong: var(--color-text-body-strong);
-  --Colors-Dropdown-Icon: var(--color-neutral-800);
-  --Colors-Dropdown-Icon-Hover: var(--color-icon-medium);
-  --Colors-Dropdown-Icon-Active: var(--color-icon-primary);
-  --Colors-Primary-Medium: var(--color-primary-medium);
-  --Colors-Dropdown-Panel: var(--color-bg-main-top);
-  --Colors-Dropdown-Panel-Stroke: var(--color-stroke-default);
-  --Colors-Dropdown-Toggle: var(--color-bg-main-top);
-  --Colors-Dropdown-Toggle-Background: var(--color-bg-main-top);
-  --Colors-Dropdown-Toggle-Stroke: var(--color-stroke-default);
-  --Colors-Dropdown-Toggle-Hover: var(--color-bg-main-top);
-  --Colors-Dropdown-Toggle-Hover-Border: var(--color-stroke-medium);
-  --Colors-Dropdown-Panel-Stroke-Hover: var(--color-stroke-medium);
+  --Colors-Dropdown-Toggle-Text: var(--Colors-Text-Body-Medium);
+  --Colors-Dropdown-Icon: var(--Colors-Base-Neutral-800);
+  --Colors-Dropdown-Icon-Hover: var(--Colors-Icon-Medium);
+  --Colors-Dropdown-Icon-Active: var(--Colors-Icon-Primary);
+  --Colors-Dropdown-Panel: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Dropdown-Panel-Stroke: var(--Colors-Stroke-Default);
+  --Colors-Dropdown-Toggle: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Dropdown-Toggle-Background: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Dropdown-Toggle-Stroke: var(--Colors-Stroke-Default);
+  --Colors-Dropdown-Toggle-Hover: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Dropdown-Toggle-Hover-Border: var(--Colors-Stroke-Medium);
+  --Colors-Dropdown-Panel-Stroke-Hover: var(--Colors-Stroke-Medium);
   --Colors-Shadow-Float: rgba(22, 44, 96, 0.12);
   --Colors-Shadow-Medium-Soft: rgba(22, 44, 96, 0.12);
-  --Colors-Menu-Option-Hover: var(--color-neutral-20);
-  --Colors-Menu-Option-Background: var(--color-bg-main-top);
-  --Colors-Menu-Option-Background-Selected: var(--color-primary-lightest);
-  --Colors-Menu-Tab-Active: var(--color-bg-main-top);
+  --Colors-Menu-Option-Hover: var(--Colors-Base-Neutral-20);
+  --Colors-Menu-Option-Background: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Menu-Option-Background-Selected: var(--Colors-Primary-Lightest);
+  --Colors-Menu-Tab-Active: var(--Colors-Backgrounds-Main-Top);
   
   /* Spacing */
   --Menu-Item-Padding-Horizontal: var(--UI-Spacing-spacing-mxs);
@@ -37,26 +35,23 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Colors - Dark Mode */
-    --Colors-Dropdown-Toggle-Text: var(--color-text-body-default);
-    --Colors-Text-Body-Strong: var(--color-text-body-strong);
-    --Colors-Dropdown-Icon-Hover: var(--color-icon-medium);
-    --Colors-Dropdown-Icon-Active: var(--color-icon-primary);
-    --Colors-Primary-Medium: var(--color-primary-medium);
-    --Colors-Dropdown-Panel: var(--color-bg-main-medium);
+    --Colors-Dropdown-Toggle-Text: var(--Colors-Text-Body-Default);
+    --Colors-Dropdown-Icon-Hover: var(--Colors-Icon-Medium);
+    --Colors-Dropdown-Icon-Active: var(--Colors-Icon-Primary);
+    --Colors-Dropdown-Panel: var(--Colors-Backgrounds-Main-Medium);
     --Colors-Dropdown-Panel-Stroke: rgba(45, 56, 85, 0.00);
-    --Colors-Dropdown-Toggle: var(--color-neutral-1200);
-    --Colors-Dropdown-Toggle-Background: var(--color-bg-main-medium);
+    --Colors-Dropdown-Toggle: var(--Colors-Base-Neutral-1200);
+    --Colors-Dropdown-Toggle-Background: var(--Colors-Backgrounds-Main-Medium);
     --Colors-Dropdown-Toggle-Stroke: rgba(45, 56, 85, 0.00);
-    --Colors-Dropdown-Toggle-Hover: var(--color-neutral-1050);
+    --Colors-Dropdown-Toggle-Hover: var(--Colors-Base-Neutral-1050);
     --Colors-Dropdown-Toggle-Hover-Border: rgba(193, 199, 215, 0.35);
-    --Colors-Dropdown-Panel-Stroke-Hover: var(--color-stroke-strong);
+    --Colors-Dropdown-Panel-Stroke-Hover: var(--Colors-Stroke-Strong);
     --Colors-Shadow-Float: rgba(13, 21, 40, 0.3);
     --Colors-Shadow-Medium-Soft: rgba(13, 21, 40, 0.4);
     --Colors-Menu-Option-Hover: rgba(193, 199, 215, 0.1);
-    --Colors-Menu-Option-Background: var(--color-bg-main-medium);
-    --Colors-Menu-Option-Background-Selected: var(--color-bg-main-medium);
-    --Colors-Menu-Tab-Active: var(--color-text-body-strong);
-    --Colors-Menu-Option-Background-Selected: var(--color-neutral-1150);
+    --Colors-Menu-Option-Background: var(--Colors-Backgrounds-Main-Medium);
+    --Colors-Menu-Option-Background-Selected: var(--Colors-Base-Neutral-1050);
+    --Colors-Menu-Tab-Active: var(--Colors-Text-Body-Strong);
   }
 }
 
@@ -97,7 +92,7 @@
 }
 
 .dropdown-toggle:focus-visible {
-  outline: 2px solid var(--color-primary-medium);
+  outline: 2px solid var(--Colors-Primary-Medium);
   outline-offset: 2px;
 }
 
@@ -219,7 +214,7 @@
   font-weight: 400;
   line-height: 24px;
   letter-spacing: -0.24px;
-  color: var(--color-text-body-default);
+  color: var(--Colors-Text-Body-Default);
   text-align: left;
   transition: background-color 0.15s ease;
   box-sizing: border-box;
@@ -236,7 +231,7 @@
 }
 
 .dropdown-menu-item:focus {
-  outline: 2px solid var(--color-primary-medium);
+  outline: 2px solid var(--Colors-Primary-Medium);
   outline-offset: -2px;
 }
 

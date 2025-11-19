@@ -14,8 +14,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: var(--color-bg-main-default);
-            color: var(--color-text-body-default);
+            background: var(--Colors-Backgrounds-Main-Default);
+            color: var(--Colors-Text-Body-Default);
             padding: 2rem;
             line-height: 1.6;
         }
@@ -23,7 +23,7 @@
         h1 {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
-            color: var(--color-text-body-strongest);
+            color: var(--Colors-Text-Body-Strongest);
         }
 
         h2 {
@@ -31,20 +31,20 @@
             margin-top: 3rem;
             margin-bottom: 1.5rem;
             padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--color-stroke-default);
-            color: var(--color-text-body-strong);
+            border-bottom: 2px solid var(--Colors-Stroke-Default);
+            color: var(--Colors-Text-Body-Strong);
         }
 
         h3 {
             font-size: 1.25rem;
             margin-top: 2rem;
             margin-bottom: 1rem;
-            color: var(--color-text-body-strong);
+            color: var(--Colors-Text-Body-Strong);
         }
 
         .intro {
             margin-bottom: 2rem;
-            color: var(--color-text-body-medium);
+            color: var(--Colors-Text-Body-Medium);
         }
 
         .color-grid {
@@ -55,8 +55,8 @@
         }
 
         .color-swatch {
-            background: var(--color-bg-main-top);
-            border: 1px solid var(--color-stroke-default);
+            background: var(--Colors-Backgrounds-Main-Top);
+            border: 1px solid var(--Colors-Stroke-Default);
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -110,15 +110,15 @@
             font-weight: 600;
             font-size: 0.875rem;
             margin-bottom: 0.25rem;
-            color: var(--color-text-body-strong);
+            color: var(--Colors-Text-Body-Strong);
             word-break: break-word;
         }
 
         .color-value {
             font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
             font-size: 0.75rem;
-            color: var(--color-text-body-medium);
-            background: var(--color-bg-main-light);
+            color: var(--Colors-Text-Body-Medium);
+            background: var(--Colors-Backgrounds-Main-Light);
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             display: inline-block;
@@ -128,7 +128,7 @@
         .color-reference {
             font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
             font-size: 0.7rem;
-            color: var(--color-text-body-light);
+            color: var(--Colors-Text-Body-Light);
             font-style: italic;
         }
 
@@ -143,7 +143,7 @@
         .scale-title {
             font-weight: 600;
             margin-bottom: 0.75rem;
-            color: var(--color-text-body-strong);
+            color: var(--Colors-Text-Body-Strong);
         }
     </style>
 </head>
@@ -285,7 +285,7 @@
                     const lightModeCSS = extractBracedContent(cssText, lightRootIndex);
                     cssVariableReferences.light = {};
                     
-                    const regex = /(--color-[^:]+):\s*var\(([^)]+)\)/g;
+                    const regex = /(--Colors[^:]+):\s*var\(([^)]+)\)/g;
                     let match;
                     while ((match = regex.exec(lightModeCSS)) !== null) {
                         const semanticVar = match[1].trim();
@@ -303,7 +303,7 @@
                         const darkModeCSS = extractBracedContent(darkMediaContent, darkRootIndex);
                         cssVariableReferences.dark = {};
                         
-                        const regex = /(--color-[^:]+):\s*var\(([^)]+)\)/g;
+                        const regex = /(--Colors-[^:]+):\s*var\(([^)]+)\)/g;
                         let match;
                         while ((match = regex.exec(darkModeCSS)) !== null) {
                             const semanticVar = match[1].trim();
@@ -404,100 +404,100 @@
         // Numbered scales
         const numberedScales = {
             'primary-scale': [
-                '--color-primary-20', '--color-primary-50', '--color-primary-100', '--color-primary-150',
-                '--color-primary-200', '--color-primary-250', '--color-primary-300', '--color-primary-350',
-                '--color-primary-400', '--color-primary-450', '--color-primary-500', '--color-primary-550',
-                '--color-primary-600', '--color-primary-650', '--color-primary-700', '--color-primary-750',
-                '--color-primary-800', '--color-primary-850', '--color-primary-900', '--color-primary-950',
-                '--color-primary-1000', '--color-primary-1050', '--color-primary-1100', '--color-primary-1150',
-                '--color-primary-1200', '--color-primary-1250', '--color-primary-1300', '--color-primary-1350',
-                '--color-primary-1400'
+                '--Colors-Base-Primary-20', '--Colors-Base-Primary-50', '--Colors-Base-Primary-100', '--Colors-Base-Primary-150',
+                '--Colors-Base-Primary-200', '--Colors-Base-Primary-250', '--Colors-Base-Primary-300', '--Colors-Base-Primary-350',
+                '--Colors-Base-Primary-400', '--Colors-Base-Primary-450', '--Colors-Base-Primary-500', '--Colors-Base-Primary-550',
+                '--Colors-Base-Primary-600', '--Colors-Base-Primary-650', '--Colors-Base-Primary-700', '--Colors-Base-Primary-750',
+                '--Colors-Base-Primary-800', '--Colors-Base-Primary-850', '--Colors-Base-Primary-900', '--Colors-Base-Primary-950',
+                '--Colors-Base-Primary-1000', '--Colors-Base-Primary-1050', '--Colors-Base-Primary-1100', '--Colors-Base-Primary-1150',
+                '--Colors-Base-Primary-1200', '--Colors-Base-Primary-1250', '--Colors-Base-Primary-1300', '--Colors-Base-Primary-1350',
+                '--Colors-Base-Primary-1400'
             ],
             'neutral-scale': [
-                '--color-neutral-00', '--color-neutral-20', '--color-neutral-50', '--color-neutral-100',
-                '--color-neutral-150', '--color-neutral-200', '--color-neutral-250', '--color-neutral-300',
-                '--color-neutral-350', '--color-neutral-400', '--color-neutral-450', '--color-neutral-500',
-                '--color-neutral-550', '--color-neutral-600', '--color-neutral-650', '--color-neutral-700',
-                '--color-neutral-750', '--color-neutral-800', '--color-neutral-850', '--color-neutral-900',
-                '--color-neutral-950', '--color-neutral-1000', '--color-neutral-1050', '--color-neutral-1100',
-                '--color-neutral-1150', '--color-neutral-1200', '--color-neutral-1250', '--color-neutral-1300',
-                '--color-neutral-1350', '--color-neutral-1400', '--color-neutral-1450', '--color-neutral-1500',
-                '--color-neutral-1600'
+                '--Colors-Base-Neutral-00', '--Colors-Base-Neutral-20', '--Colors-Base-Neutral-50', '--Colors-Base-Neutral-100',
+                '--Colors-Base-Neutral-150', '--Colors-Base-Neutral-200', '--Colors-Base-Neutral-250', '--Colors-Base-Neutral-300',
+                '--Colors-Base-Neutral-350', '--Colors-Base-Neutral-400', '--Colors-Base-Neutral-450', '--Colors-Base-Neutral-500',
+                '--Colors-Base-Neutral-550', '--Colors-Base-Neutral-600', '--Colors-Base-Neutral-650', '--Colors-Base-Neutral-700',
+                '--Colors-Base-Neutral-750', '--Colors-Base-Neutral-800', '--Colors-Base-Neutral-850', '--Colors-Base-Neutral-900',
+                '--Colors-Base-Neutral-950', '--Colors-Base-Neutral-1000', '--Colors-Base-Neutral-1050', '--Colors-Base-Neutral-1100',
+                '--Colors-Base-Neutral-1150', '--Colors-Base-Neutral-1200', '--Colors-Base-Neutral-1250', '--Colors-Base-Neutral-1300',
+                '--Colors-Base-Neutral-1350', '--Colors-Base-Neutral-1400', '--Colors-Base-Neutral-1450', '--Colors-Base-Neutral-1500',
+                '--Colors-Base-Neutral-1600'
             ],
             'green-scale': [
-                '--color-accent-green-20', '--color-accent-green-50', '--color-accent-green-100',
-                '--color-accent-green-200', '--color-accent-green-300', '--color-accent-green-400',
-                '--color-accent-green-500', '--color-accent-green-600', '--color-accent-green-700',
-                '--color-accent-green-800', '--color-accent-green-900', '--color-accent-green-1000'
+                '--Colors-Base-Accent-Green-20', '--Colors-Base-Accent-Green-50', '--Colors-Base-Accent-Green-100',
+                '--Colors-Base-Accent-Green-200', '--Colors-Base-Accent-Green-300', '--Colors-Base-Accent-Green-400',
+                '--Colors-Base-Accent-Green-500', '--Colors-Base-Accent-Green-600', '--Colors-Base-Accent-Green-700',
+                '--Colors-Base-Accent-Green-800', '--Colors-Base-Accent-Green-900', '--Colors-Base-Accent-Green-1000'
             ],
             'sky-blue-scale': [
-                '--color-accent-sky-blue-20', '--color-accent-sky-blue-50', '--color-accent-sky-blue-100',
-                '--color-accent-sky-blue-200', '--color-accent-sky-blue-300', '--color-accent-sky-blue-400',
-                '--color-accent-sky-blue-500', '--color-accent-sky-blue-600', '--color-accent-sky-blue-700',
-                '--color-accent-sky-blue-800', '--color-accent-sky-blue-900', '--color-accent-sky-blue-1000',
-                '--color-accent-sky-blue-1100', '--color-accent-sky-blue-1200'
+                '--Colors-Base-Accent-Sky-Blue-20', '--Colors-Base-Accent-Sky-Blue-50', '--Colors-Base-Accent-Sky-Blue-100',
+                '--Colors-Base-Accent-Sky-Blue-200', '--Colors-Base-Accent-Sky-Blue-300', '--Colors-Base-Accent-Sky-Blue-400',
+                '--Colors-Base-Accent-Sky-Blue-500', '--Colors-Base-Accent-Sky-Blue-600', '--Colors-Base-Accent-Sky-Blue-700',
+                '--Colors-Base-Accent-Sky-Blue-800', '--Colors-Base-Accent-Sky-Blue-900', '--Colors-Base-Accent-Sky-Blue-1000',
+                '--Colors-Base-Accent-Sky-Blue-1100', '--Colors-Base-Accent-Sky-Blue-1200'
             ],
             'yellow-scale': [
-                '--color-accent-yellow-20', '--color-accent-yellow-50', '--color-accent-yellow-100',
-                '--color-accent-yellow-200', '--color-accent-yellow-300', '--color-accent-yellow-400',
-                '--color-accent-yellow-500', '--color-accent-yellow-600', '--color-accent-yellow-700',
-                '--color-accent-yellow-800', '--color-accent-yellow-900', '--color-accent-yellow-1000'
+                '--Colors-Base-Accent-Yellow-20', '--Colors-Base-Accent-Yellow-50', '--Colors-Base-Accent-Yellow-100',
+                '--Colors-Base-Accent-Yellow-200', '--Colors-Base-Accent-Yellow-300', '--Colors-Base-Accent-Yellow-400',
+                '--Colors-Base-Accent-Yellow-500', '--Colors-Base-Accent-Yellow-600', '--Colors-Base-Accent-Yellow-700',
+                '--Colors-Base-Accent-Yellow-800', '--Colors-Base-Accent-Yellow-900', '--Colors-Base-Accent-Yellow-1000'
             ],
             'orange-scale': [
-                '--color-accent-orange-20', '--color-accent-orange-50', '--color-accent-orange-100',
-                '--color-accent-orange-200', '--color-accent-orange-300', '--color-accent-orange-400',
-                '--color-accent-orange-500', '--color-accent-orange-600', '--color-accent-orange-700',
-                '--color-accent-orange-800', '--color-accent-orange-900', '--color-accent-orange-1000'
+                '--Colors-Base-Accent-Orange-20', '--Colors-Base-Accent-Orange-50', '--Colors-Base-Accent-Orange-100',
+                '--Colors-Base-Accent-Orange-200', '--Colors-Base-Accent-Orange-300', '--Colors-Base-Accent-Orange-400',
+                '--Colors-Base-Accent-Orange-500', '--Colors-Base-Accent-Orange-600', '--Colors-Base-Accent-Orange-700',
+                '--Colors-Base-Accent-Orange-800', '--Colors-Base-Accent-Orange-900', '--Colors-Base-Accent-Orange-1000'
             ],
             'red-scale': [
-                '--color-accent-red-20', '--color-accent-red-50', '--color-accent-red-100',
-                '--color-accent-red-200', '--color-accent-red-300', '--color-accent-red-400',
-                '--color-accent-red-500', '--color-accent-red-600', '--color-accent-red-700',
-                '--color-accent-red-800', '--color-accent-red-900', '--color-accent-red-1000'
+                '--Colors-Base-Accent-Red-20', '--Colors-Base-Accent-Red-50', '--Colors-Base-Accent-Red-100',
+                '--Colors-Base-Accent-Red-200', '--Colors-Base-Accent-Red-300', '--Colors-Base-Accent-Red-400',
+                '--Colors-Base-Accent-Red-500', '--Colors-Base-Accent-Red-600', '--Colors-Base-Accent-Red-700',
+                '--Colors-Base-Accent-Red-800', '--Colors-Base-Accent-Red-900', '--Colors-Base-Accent-Red-1000'
             ]
         };
 
         // Semantic colors
         const semanticColors = {
             'primary-semantic': [
-                '--color-primary-default', '--color-primary-lightest', '--color-primary-lighter',
-                '--color-primary-light', '--color-primary-medium-light', '--color-primary-medium',
-                '--color-primary-medium-dark', '--color-primary-dark', '--color-primary-darker',
-                '--color-primary-darkest'
+                '--Colors-Base-Primary-default', '--Colors-Base-Primary-lightest', '--Colors-Base-Primary-lighter',
+                '--Colors-Base-Primary-light', '--Colors-Base-Primary-medium-light', '--Colors-Base-Primary-medium',
+                '--Colors-Base-Primary-medium-dark', '--Colors-Base-Primary-dark', '--Colors-Base-Primary-darker',
+                '--Colors-Base-Primary-darkest'
             ],
             'background-colors': [
-                '--color-bg-main-default', '--color-bg-main-light', '--color-bg-main-medium',
-                '--color-bg-main-strong', '--color-bg-main-dark', '--color-bg-main-darker',
-                '--color-bg-main-top', '--color-bg-main-black'
+                '--Colors-Backgrounds-Main-Default', '--Colors-Backgrounds-Main-Light', '--Colors-Backgrounds-Main-Medium',
+                '--Colors-Backgrounds-Main-Strong', '--Colors-Backgrounds-Main-Dark', '--Colors-Backgrounds-Main-Darker',
+                '--Colors-Backgrounds-Main-Top', '--Colors-Backgrounds-Main-Black'
             ],
             'text-colors': [
-                '--color-text-body-default', '--color-text-body-medium', '--color-text-body-light',
-                '--color-text-body-strong', '--color-text-body-strongest'
+                '--Colors-Text-Body-Default', '--Colors-Text-Body-Medium', '--Colors-Text-Body-Light',
+                '--Colors-Text-Body-Strong', '--Colors-Text-Body-Strongest'
             ],
             'icon-colors': [
-                '--color-icon-default', '--color-icon-medium', '--color-icon-strong', '--color-icon-primary'
+                '--Colors-Icon-Default', '--Colors-Icon-Medium', '--Colors-Icon-Strong', '--Colors-Icon-Primary'
             ],
             'stroke-colors': [
-                '--color-stroke-default', '--color-stroke-lighter', '--color-stroke-light',
-                '--color-stroke-medium', '--color-stroke-strong', '--color-stroke-stronger',
-                '--color-stroke-primary', '--color-stroke-primary-light', '--color-stroke-primary-medium',
-                '--color-stroke-primary-dark', '--color-stroke-background'
+                '--Colors-Stroke-Default', '--Colors-Stroke-Lighter', '--Colors-Stroke-Light',
+                '--Colors-Stroke-Medium', '--Colors-Stroke-Strong', '--Colors-Stroke-Stronger',
+                '--Colors-Stroke-Primary', '--Colors-Stroke-Primary-Light', '--Colors-Stroke-Primary-Medium',
+                '--Colors-Stroke-Primary-Dark', '--Colors-Stroke-Background'
             ],
             'success-colors': [
-                '--color-alert-success-default', '--color-alert-success-lighter', '--color-alert-success-light',
-                '--color-alert-success-medium', '--color-alert-success-medium-dark', '--color-alert-success-dark'
+                '--Colors-Alert-Success-Default', '--Colors-Alert-Success-Lighter', '--Colors-Alert-Success-Light',
+                '--Colors-Alert-Success-Medium', '--Colors-Alert-Success-Medium-Dark', '--Colors-Alert-Success-Dark'
             ],
             'error-colors': [
-                '--color-alert-error-default', '--color-alert-error-lighter', '--color-alert-error-light',
-                '--color-alert-error-medium', '--color-alert-error-medium-dark', '--color-alert-error-dark'
+                '--Colors-Alert-Error-Default', '--Colors-Alert-Error-Lighter', '--Colors-Alert-Error-Light',
+                '--Colors-Alert-Error-Medium', '--Colors-Alert-Error-Medium-Dark', '--Colors-Alert-Error-Dark'
             ],
             'warning-colors': [
-                '--color-alert-warning-default', '--color-alert-warning-lighter', '--color-alert-warning-light',
-                '--color-alert-warning-medium', '--color-alert-warning-medium-dark', '--color-alert-warning-dark'
+                '--Colors-Alert-Warning-Default', '--Colors-Alert-Warning-Lighter', '--Colors-Alert-Warning-Light',
+                '--Colors-Alert-Warning-Medium', '--Colors-Alert-Warning-Medium-Dark', '--Colors-Alert-Warning-Dark'
             ],
             'info-colors': [
-                '--color-alert-info-default', '--color-alert-info-lighter', '--color-alert-info-light',
-                '--color-alert-info-medium', '--color-alert-info-medium-dark', '--color-alert-info-dark'
+                '--Colors-Alert-Info-Default', '--Colors-Alert-Info-Lighter', '--Colors-Alert-Info-Light',
+                '--Colors-Alert-Info-Medium', '--Colors-Alert-Info-Medium-Dark', '--Colors-Alert-Info-Dark'
             ]
         };
 
@@ -505,7 +505,7 @@
         Object.entries(numberedScales).forEach(([containerId, vars]) => {
             const container = document.getElementById(containerId);
             vars.forEach(varName => {
-                const displayName = varName.replace('--color-', '').replace(/-/g, ' ');
+                const displayName = varName.replace('--Colors-', '').replace(/-/g, ' ');
                 container.appendChild(createSwatch(varName, displayName));
             });
         });
@@ -517,7 +517,7 @@
             Object.entries(semanticColors).forEach(([containerId, vars]) => {
                 const container = document.getElementById(containerId);
                 vars.forEach(varName => {
-                    const displayName = varName.replace('--color-', '').replace(/-/g, ' ');
+                    const displayName = varName.replace('--Colors-', '').replace(/-/g, ' ');
                     const referencedVar = getReferenceForVariable(varName);
                     container.appendChild(createSwatch(varName, displayName, referencedVar, true));
                 });

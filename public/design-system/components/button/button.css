@@ -2,62 +2,57 @@
 
 :root {
     /* Button Variables */
-    --Button-Height-Default: 48px;
+    --Button-Height-Default: var(--UI-Input-md);
     
-    /* Primary Button Colors (Light Mode) */
-    --Button-Primary-Background-Default: var(--color-primary-default);
-    --Button-Primary-Background-Hover: var(--color-primary-medium-dark);
-    --Button-Primary-Background-Active: var(--color-primary-dark);
-    --Button-Primary-Background-Disabled: var(--color-bg-main-black);
-    
-    --Button-Primary-Text-Default: var(--color-neutral-00);
-    --Button-Primary-Text-Disabled: var(--color-neutral-400);
-
     --Colors-Shadow-Focus-Button: rgba(92, 148, 255, 0.20);
-    --Colors-Buttons-Primary-Hover: var(--color-primary-medium-dark);
-    --Colors-Buttons-Primary-Stroke-Focus: var(--color-primary-dark);
-    --Colors-Buttons-Secondary-Default: var(--color-primary-default);
-    --Colors-Buttons-Secondary-Default-Text: var(--color-primary-default);
-    --Colors-Buttons-Secondary-Hover: var(--color-primary-medium-dark);
-    --Colors-Buttons-Secondary-Hover-Text: var(--color-primary-medium-dark);
-    --Colors-Buttons-Secondary-Pressed: var(--color-primary-dark);
-    --Colors-Buttons-Secondary-Pressed-Text: var(--color-primary-dark);
-    --Colors-Buttons-Tertiary-Default: var(--color-neutral-300);
-    --Colors-Buttons-Tertiary-Default-Background: var(--color-neutral-00);
-    --Colors-Buttons-Tertiary-Default-Text: var(--color-neutral-1000);
-    --Colors-Buttons-Tertiary-Hover: var(--color-neutral-600);
-    --Colors-Buttons-Tertiary-Hover-Text: var(--color-neutral-1200);
-    --Colors-Buttons-Tertiary-Hover-Background: var(--color-neutral-00);
-    --Colors-Buttons-Tertiary-Pressed: var(--color-neutral-750);
-    --Colors-Buttons-Tertiary-Pressed-Text: var(--color-neutral-1200);
-    --Colors-Button-Danger-Default: var(--color-accent-red-600);
-    --Colors-Buttons-Primary-Default-Text: var(--color-neutral-00);
-    --Colors-Buttons-Danger-Hover: var(--color-accent-red-700);
-    --Colors-Buttons-Danger-Stroke-Focus: var(--color-accent-red-800);
+
+    --Colors-Buttons-Primary-Default: var(--Colors-Base-Primary-700);
+    --Colors-Buttons-Primary-Default-Text: var(--Colors-Text-Body-White);
+    --Colors-Buttons-Primary-Hover: var(--Colors-Base-Primary-700);
+    --Colors-Buttons-Primary-Pressed: var(--Colors-Base-Primary-900);
+    --Colors-Buttons-Primary-Stroke-Focus: var(--Colors-Base-Primary-900);
+    --Colors-Buttons-Secondary-Default: var(--Colors-Base-Primary-700);
+    --Colors-Buttons-Secondary-Default-Text: var(--Colors-Base-Primary-700);
+    --Colors-Buttons-Secondary-Hover: var(--Colors-Base-Primary-800);
+    --Colors-Buttons-Secondary-Hover-Text: var(--Colors-Base-Primary-800);
+    --Colors-Buttons-Secondary-Pressed: var(--Colors-Base-Primary-900);
+    --Colors-Buttons-Secondary-Pressed-Text: var(--Colors-Base-Primary-900);
+    --Colors-Buttons-Tertiary-Default: var(--Colors-Base-Neutral-300);
+    --Colors-Buttons-Tertiary-Default-Background: var(--Colors-Base-Neutral-00);
+    --Colors-Buttons-Tertiary-Default-Text: var(--Colors-Base-Neutral-1000);
+    --Colors-Buttons-Tertiary-Hover: var(--Colors-Base-Neutral-600);
+    --Colors-Buttons-Tertiary-Hover-Text: var(--Colors-Base-Neutral-1200);
+    --Colors-Buttons-Tertiary-Hover-Background: var(--Colors-Base-Neutral-00);
+    --Colors-Buttons-Tertiary-Pressed: var(--Colors-Base-Neutral-750);
+    --Colors-Buttons-Tertiary-Pressed-Text: var(--Colors-Base-Neutral-1200);
+    --Colors-Button-Danger-Default: var(--Colors-Base-Accent-Red-600);
+    --Colors-Buttons-Primary-Default-Text: var(--Colors-Base-Neutral-00);
+    --Colors-Buttons-Danger-Hover: var(--Colors-Base-Accent-Red-700);
+    --Colors-Buttons-Danger-Stroke-Focus: var(--Colors-Base-Accent-Red-800);
     --Colors-Shadow-Focus-Button-Danger: rgba(184, 6, 44, 0.12);
-    --Colors-Buttons-Danger-Pressed: var(--color-accent-red-800);
-    --Colors-Buttons-Success-Default: var(--color-accent-green-600);
-    --Colors-Buttons-Success-Hover: var(--color-accent-green-700);
-    --Colors-Buttons-Success-Stroke-Focus: var(--color-accent-green-800);
+    --Colors-Buttons-Danger-Pressed: var(--Colors-Base-Accent-Red-800);
+    --Colors-Buttons-Success-Default: var(--Colors-Base-Accent-Green-600);
+    --Colors-Buttons-Success-Hover: var(--Colors-Base-Accent-Green-700);
+    --Colors-Buttons-Success-Stroke-Focus: var(--Colors-Base-Accent-Green-800);
     --Colors-Shadow-Focus-Button-Success: rgba(25, 158, 89, 0.14);
-    --Colors-Buttons-Success-Pressed: var(--color-accent-green-800);
+    --Colors-Buttons-Success-Pressed: var(--Colors-Base-Accent-Green-800);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --Colors-Buttons-Secondary-Default: var(--color-primary-medium);
-        --Colors-Buttons-Secondary-Default-Text: var(--color-primary-medium);
-        --Colors-Buttons-Secondary-Hover: var(--color-primary-medium-light);
-        --Colors-Buttons-Secondary-Hover-Text: var(--color-primary-medium-light);
-        --Colors-Buttons-Secondary-Pressed: var(--color-primary-650);
-        --Colors-Buttons-Secondary-Pressed-Text: var(--color-primary-650);
-        --Colors-Buttons-Tertiary-Default-Background: var(--color-neutral-1200-alpha-25);
-        --Colors-Buttons-Tertiary-Default-Text: var(--color-neutral-500);
-        --Colors-Buttons-Tertiary-Hover: var(--color-neutral-1100);
-        --Colors-Buttons-Tertiary-Hover-Text: var(--color-neutral-300);
-        --Colors-Buttons-Tertiary-Hover-Background: var(--color-neutral-1050-alpha-25);
-        --Colors-Buttons-Tertiary-Pressed: var(--color-neutral-1000);
-        --Colors-Buttons-Tertiary-Pressed-Text: var(--color-neutral-300);
+        --Colors-Buttons-Secondary-Default: var(--Colors-Base-Primary-600);
+        --Colors-Buttons-Secondary-Default-Text: var(--Colors-Base-Primary-600);
+        --Colors-Buttons-Secondary-Hover: var(--Colors-Base-Primary-500);
+        --Colors-Buttons-Secondary-Hover-Text: var(--Colors-Base-Primary-500);
+        --Colors-Buttons-Secondary-Pressed: var(--Colors-Base-Primary-650);
+        --Colors-Buttons-Secondary-Pressed-Text: var(--Colors-Base-Primary-650);
+        --Colors-Buttons-Tertiary-Default-Background: var(--Colors-Base-Neutral-Alphas-1200-25);
+        --Colors-Buttons-Tertiary-Default-Text: var(--Colors-Base-Neutral-500);
+        --Colors-Buttons-Tertiary-Hover: var(--Colors-Base-Neutral-1100);
+        --Colors-Buttons-Tertiary-Hover-Text: var(--Colors-Base-Neutral-300);
+        --Colors-Buttons-Tertiary-Hover-Background: var(--Colors-Base-Neutral-Alphas-1050-25);
+        --Colors-Buttons-Tertiary-Pressed: var(--Colors-Base-Neutral-1000);
+        --Colors-Buttons-Tertiary-Pressed-Text: var(--Colors-Base-Neutral-300);
     }
 }
 
@@ -95,18 +90,18 @@
 
 /* Primary Button Variant */
 .button-primary {
-    background-color: var(--Button-Primary-Background-Default);
-    color: var(--Button-Primary-Text-Default);
+    background-color: var(--Colors-Buttons-Primary-Default);
+    color: var(--Colors-Buttons-Primary-Default-Text);
 }
 
 .button-primary:hover,
 .button-primary.hover {
-    background-color: var(--Button-Primary-Background-Hover);
+    background-color: var(--Colors-Buttons-Primary-Hover);
 }
 
 .button-primary:active,
 .button-primary.active {
-    background-color: var(--Button-Primary-Background-Active);
+    background-color: var(--Colors-Buttons-Primary-Pressed);
 }
 
 .button-primary:focus

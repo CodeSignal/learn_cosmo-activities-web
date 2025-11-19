@@ -13,28 +13,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --test-bg: var(--color-bg-main-light);
-      --test-section-bg: var(--color-bg-main-top);
+      --test-bg: var(--Colors-Backgrounds-Main-Light);
+      --test-section-bg: var(--Colors-Backgrounds-Main-Top);
       --test-section-shadow: rgba(0, 0, 0, 0.1); /* No direct variable */
-      --test-heading-color: var(--color-text-body-strong);
-      --test-subheading-color: var(--color-text-body-default);
-      --test-label-color: var(--color-text-body-medium);
-      --test-output-bg: var(--color-bg-main-default);
-      --test-output-text: var(--color-text-body-default);
-      --test-output-strong: var(--color-text-body-strong);
+      --test-subheading-color: var(--Colors-Text-Body-Default);
+      --test-label-color: var(--Colors-Text-Body-Medium);
+      --test-output-bg: var(--Colors-Backgrounds-Main-Default);
+      --test-output-text: var(--Colors-Text-Body-Default);
+      --test-output-strong: var(--Colors-Text-Body-Strong);
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --test-bg: var(--color-bg-main-default);
-        --test-section-bg: var(--color-bg-main-light);
+        --test-bg: var(--Colors-Backgrounds-Main-Default);
+        --test-section-bg: var(--Colors-Backgrounds-Main-Light);
         --test-section-shadow: rgba(0, 0, 0, 0.3);
-        --test-heading-color: var(--color-text-body-strong);
-        --test-subheading-color: var(--color-text-body-default);
-        --test-label-color: var(--color-text-body-default);
-        --test-output-bg: var(--color-bg-main-default);
-        --test-output-text: var(--color-text-body-default);
-        --test-output-strong: var(--color-text-body-strong);
+        --test-subheading-color: var(--Colors-Text-Body-Default);
+        --test-label-color: var(--Colors-Text-Body-Default);
+        --test-output-bg: var(--Colors-Backgrounds-Main-Default);
+        --test-output-text: var(--Colors-Text-Body-Default);
+        --test-output-strong: var(--Colors-Text-Body-Strong);
       }
     }
 
@@ -42,7 +40,7 @@
       background: var(--test-bg);
       padding: 40px 20px;
       font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
-      color: var(--test-heading-color);
+      color: var(--Colors-Text-Body-Strong);
       transition: background-color 0.2s ease, color 0.2s ease;
     }
 
@@ -64,7 +62,7 @@
       margin: 0 0 24px 0;
       font-size: 24px;
       font-weight: 600;
-      color: var(--test-heading-color);
+      color: var(---Colors-Text-Body-Strong);
       letter-spacing: -0.24px;
     }
 
@@ -118,7 +116,7 @@
 </head>
 <body>
   <div class="test-container">
-    <h1 style="margin-bottom: 32px; font-size: 32px; font-weight: 700; color: var(--test-heading-color);">
+    <h1 style="margin-bottom: 32px; font-size: 32px; font-weight: 700; color: var(--Colors-Text-Body-Strong);">
       Component Tests - Dropdown
     </h1>
 
