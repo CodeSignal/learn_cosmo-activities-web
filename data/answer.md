@@ -9,7 +9,7 @@ __Summary__
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: C
+   - Selected Answer: D
    - Correct Answer: B
    - Result: ✗ Incorrect
 

@@ -1,0 +1,3 @@
+[submodule "public/design-system"]
+	path = public/design-system
+	url = https://github.com/CodeSignal/learn_bespoke-design-system.git
