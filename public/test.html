@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System Test Bed</title>
+    <link rel="stylesheet" href="colors/colors.css">
+    <link rel="stylesheet" href="typography/typography.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            font-family: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+            color: var(--color-text-body-default);
+            background: var(--color-bg-main-default);
+        }
+        
+        .test-bed-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            height: 100%;
+        }
+        
+        .sidebar {
+            background: var(--color-bg-main-default);
+            border-right: 1px solid var(--color-stroke-default);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .sidebar h1 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--color-text-body-strongest);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--color-stroke-default);
+        }
+        
+        .nav-section {
+            margin-bottom: 20px;
+        }
+        
+        .nav-header {
+            font-weight: 600;
+            color: var(--color-text-body-medium);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+        }
+        
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-links li {
+            margin-bottom: 4px;
+        }
+        
+        .nav-links a {
+            display: block;
+            padding: 8px 12px;
+            color: var(--color-text-body-default);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-links a:hover {
+            background-color: var(--color-bg-main-medium);
+            color: var(--color-text-body-strong);
+        }
+        
+        .nav-links a.active {
+            background-color: var(--color-primary-100);
+            color: var(--color-primary-700);
+            font-weight: 500;
+        }
+        
+        .content-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-bed-layout">
+        <aside class="sidebar">
+            <h1>Design System</h1>
+            
+            <div class="nav-section">
+                <div class="nav-header">Foundations</div>
+                <ul class="nav-links">
+                    <li><a href="colors/test.html" target="content-frame">Colors</a></li>
+                    <li><a href="typography/test.html" target="content-frame">Typography</a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-header">Components</div>
+                <ul class="nav-links">
+                    <li><a href="components/button/test.html" target="content-frame">Button</a></li>
+                    <li><a href="components/dropdown/test.html" target="content-frame">Dropdown</a></li>
+                </ul>
+            </div>
+        </aside>
+        
+        <main>
+            <iframe name="content-frame" class="content-frame" src="colors/test.html"></iframe>
+        </main>
+    </div>
+
+    <script>
+        // Simple script to handle active state
+        const links = document.querySelectorAll('.nav-links a');
+        
+        links.forEach(link => {
+            link.addEventListener('click', (e) => {
+                // Remove active class from all links
+                links.forEach(l => l.classList.remove('active'));
+                // Add active class to clicked link
+                e.target.classList.add('active');
+            });
+            
+            // Set active class based on initial iframe src
+            if (link.getAttribute('href') === 'colors/test.html') {
+                link.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>
+
