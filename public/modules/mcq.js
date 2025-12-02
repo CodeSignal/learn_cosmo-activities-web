@@ -55,7 +55,10 @@ export function initMcq({ activity, state, postResults }) {
     // Create options
     question.options.forEach((option, optIdx) => {
       const optionEl = document.createElement('label');
-      optionEl.className = 'mcq-option';
+      // Apply design system classes to the option label
+      optionEl.className = question.isMultiSelect 
+        ? 'mcq-option input-checkbox' 
+        : 'mcq-option input-radio';
       
       const input = document.createElement('input');
       input.type = question.isMultiSelect ? 'checkbox' : 'radio';
@@ -76,19 +79,44 @@ export function initMcq({ activity, state, postResults }) {
       const optionCard = document.createElement('div');
       optionCard.className = 'mcq-option-card';
       
-      // Radio/checkbox wrapper (visual only, input is outside for CSS sibling selector)
-      const inputWrapper = document.createElement('div');
-      inputWrapper.className = 'mcq-input-wrapper';
+      // Use design system checkbox/radio structure
+      if (question.isMultiSelect) {
+        // Checkbox structure: input-checkbox-box with checkmark
+        const checkboxBox = document.createElement('span');
+        checkboxBox.className = 'input-checkbox-box';
+        
+        const checkboxCheckmark = document.createElement('span');
+        checkboxCheckmark.className = 'input-checkbox-checkmark';
+        
+        checkboxBox.appendChild(checkboxCheckmark);
+        
+        // Text wrapper
+        const textWrapper = document.createElement('div');
+        textWrapper.className = 'mcq-option-content';
+        textWrapper.appendChild(optionText);
+        
+        optionCard.appendChild(checkboxBox);
+        optionCard.appendChild(textWrapper);
+      } else {
+        // Radio structure: input-radio-circle with dot
+        const radioCircle = document.createElement('span');
+        radioCircle.className = 'input-radio-circle';
+        
+        const radioDot = document.createElement('span');
+        radioDot.className = 'input-radio-dot';
+        
+        radioCircle.appendChild(radioDot);
+        
+        // Text wrapper
+        const textWrapper = document.createElement('div');
+        textWrapper.className = 'mcq-option-content';
+        textWrapper.appendChild(optionText);
+        
+        optionCard.appendChild(radioCircle);
+        optionCard.appendChild(textWrapper);
+      }
       
-      // Text wrapper
-      const textWrapper = document.createElement('div');
-      textWrapper.className = 'mcq-option-content';
-      textWrapper.appendChild(optionText);
-      
-      optionCard.appendChild(inputWrapper);
-      optionCard.appendChild(textWrapper);
-      
-      // Append input first (hidden, for form behavior), then card (for CSS sibling selector)
+      // Append input first (for CSS sibling selector), then card
       optionEl.appendChild(input);
       optionEl.appendChild(optionCard);
       optionsEl.appendChild(optionEl);

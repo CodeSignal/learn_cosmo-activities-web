@@ -4,22 +4,12 @@
 :root {
   --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Top);
   --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Stroke-Primary-Medium);
-  --Colors-Input-Background-Default: var(--Colors-Backgrounds-Main-Top);
-  --Colors-Input-Background-Checked: var(--Colors-Backgrounds-Main-Top);
-  --Colors-Input-Border-Default: var(--Colors-Stroke-Default);
-  --Colors-Input-Border-Hover: var(--Colors-Stroke-Strong);
-  --Colors-MCQ-Checkmark-Stroke: var(--Colors-Text-Body-Strong);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Light);
     --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Base-Neutral-1100);
-    --Colors-Input-Border-Default: var(--Colors-Backgrounds-Main-Light);
-    --Colors-Input-Background-Default: rgba(17, 25, 46, 0.50);
-    --Colors-Input-Background-Checked: rgba(17, 25, 46, 0.50);
-    --Colors-Input-Border-Hover: var(--Colors-Backgrounds-Main-Strong);
-    --Colors-MCQ-Checkmark-Stroke: var(--Colors-Icon-Strong);
   }
 }
 
@@ -117,99 +107,53 @@
   background: var(--Colors-Learn-Practice-Card);
 }
 
-.mcq-input-wrapper {
+/* Use design system checkbox and radio styles */
+/* The input-checkbox and input-radio classes are imported from design-system/components/input/input.css */
+/* We adapt the selectors to work with the MCQ nested structure */
+
+/* Override design system selectors to work with nested structure */
+.mcq-option.input-checkbox input[type="checkbox"]:checked ~ .mcq-option-card .input-checkbox-box,
+.mcq-option.input-radio input[type="radio"]:checked ~ .mcq-option-card .input-radio-circle {
+  background: var(--Colors-Primary-Default);
+  border-color: var(--Colors-Primary-Default);
+}
+
+.mcq-option.input-checkbox input[type="checkbox"]:checked ~ .mcq-option-card .input-checkbox-checkmark,
+.mcq-option.input-radio input[type="radio"]:checked ~ .mcq-option-card .input-radio-dot {
+  display: block;
+}
+
+.mcq-option.input-checkbox:not(.disabled):hover .input-checkbox-box,
+.mcq-option.input-radio:not(.disabled):hover .input-radio-circle {
+  border-color: var(--Colors-Stroke-Primary);
+}
+
+.mcq-option.input-checkbox input[type="checkbox"]:checked ~ .mcq-option-card .input-checkbox-box:hover,
+.mcq-option.input-radio input[type="radio"]:checked ~ .mcq-option-card .input-radio-circle:hover {
+  border-color: var(--Colors-Primary-Default);
+}
+
+.mcq-option.input-checkbox input[type="checkbox"]:focus ~ .mcq-option-card .input-checkbox-box,
+.mcq-option.input-radio input[type="radio"]:focus ~ .mcq-option-card .input-radio-circle {
+  outline: none;
+  border-color: var(--Colors-Input-Border-Focus);
+}
+
+.mcq-option.input-checkbox input[type="checkbox"]:checked:focus ~ .mcq-option-card .input-checkbox-box,
+.mcq-option.input-radio input[type="radio"]:checked:focus ~ .mcq-option-card .input-radio-circle {
+  border-color: var(--Colors-Primary-Default);
+}
+
+/* Ensure checkbox/radio elements are properly sized and positioned */
+.mcq-option-card .input-checkbox-box,
+.mcq-option-card .input-radio-circle {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.mcq-input-wrapper::before {
-  content: '';
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid var(--Colors-Input-Border-Default);
-  border-radius: 32px;
-  background: var(--Colors-Input-Background-Default);
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-  position: absolute;
-}
-
-.mcq-option input[type="checkbox"] ~ .mcq-option-card .mcq-input-wrapper::before {
-  border-radius: var(--UI-Radius-radius-s, 8px);
-}
-
-.mcq-option:hover .mcq-input-wrapper::before {
-  border: 1.5px solid var(--Colors-Input-Border-Hover);
-  background: var(--Colors-Input-Background-Default);
-}
-
-/* Radio button checked state: thick blue circle with white center */
-.mcq-option input[type="radio"]:checked ~ .mcq-option-card .mcq-input-wrapper::before {
-  border: 10px solid #1062FB;
-  background: #ffffff;
-  width: 14px;
-  height: 14px;
-}
-
-/* Checkbox checked state */
-.mcq-option input[type="checkbox"]:checked ~ .mcq-option-card .mcq-input-wrapper::before {
-  border-color: var(--Colors-Input-Border-Hover);
-  background: var(--Colors-Input-Background-Checked);
-}
-
-.mcq-option input[type="radio"]:checked ~ .mcq-option-card .mcq-input-wrapper::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #ffffff;
-}
-
-/* Checkbox checked state: keep checkmark */
-.mcq-option input[type="checkbox"]:checked ~ .mcq-option-card .mcq-input-wrapper::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 14px;
-  height: 16px;
-  background-image: url("data:image/svg+xml,%3Csvg width='14' height='16' viewBox='0 0 14 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.5 4.5L5.5 10.5L2.5 7.5' stroke='%23182139' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-@media (prefers-color-scheme: dark) {
-  /* Note: CSS variables cannot be used inside data URIs, so we override background-image directly */
-  .mcq-option input[type="checkbox"]:checked ~ .mcq-option-card .mcq-input-wrapper::before {
-    background: var(--Colors-Input-Background-Checked);
-    border-color: var(--Colors-Input-Border-Hover);
-  }
-  
-  .mcq-option input[type="checkbox"]:checked ~ .mcq-option-card .mcq-input-wrapper::after {
-    background-image: url("data:image/svg+xml,%3Csvg width='14' height='16' viewBox='0 0 14 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.5 4.5L5.5 10.5L2.5 7.5' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    z-index: 1;
-  }
-}
-
-.mcq-option input[type="radio"],
-.mcq-option input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
   margin: 0;
-  cursor: pointer;
-  z-index: 1;
+}
+
+.mcq-option .input-checkbox-label,
+.mcq-option .input-radio-label {
+  display: none; /* MCQ options don't use labels, text is in mcq-option-text */
 }
 
 .mcq-option-content {
