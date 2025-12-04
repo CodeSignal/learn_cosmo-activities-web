@@ -149,8 +149,8 @@ export function initMcq({ activity, state, postResults }) {
     
     questionEl.appendChild(optionsEl);
     
-    // Add "Next" button for multi-select questions
-    if (question.isMultiSelect) {
+    // Add "Next" button for multi-select questions (not on last question)
+    if (question.isMultiSelect && qIdx < mcq.questions.length - 1) {
       const nextButtonContainer = document.createElement('div');
       nextButtonContainer.className = 'mcq-next-button-container';
       
@@ -158,8 +158,7 @@ export function initMcq({ activity, state, postResults }) {
       nextButton.className = 'button button-primary mcq-next-button';
       nextButton.textContent = 'Next';
       nextButton.type = 'button';
-      const isLastQuestion = qIdx === mcq.questions.length - 1;
-      // Always visible, but disabled if no answer selected or if it's the last question
+      // Always visible, but disabled if no answer selected
       nextButton.disabled = true; // Initially disabled until answer is selected
       nextButton.setAttribute('aria-label', `Go to next question`);
       
@@ -293,10 +292,8 @@ export function initMcq({ activity, state, postResults }) {
         const nextButton = questionEl.querySelector('.mcq-next-button');
         if (nextButton) {
           const hasSelection = selectedAnswers[questionId].length > 0;
-          const questionIndex = parseInt(questionEl.getAttribute('data-question-index'), 10);
-          const isLastQuestion = questionIndex === mcq.questions.length - 1;
-          // Disable if no answer selected or if it's the last question
-          nextButton.disabled = !hasSelection || isLastQuestion;
+          // Disable if no answer selected
+          nextButton.disabled = !hasSelection;
         }
       }
     } else {

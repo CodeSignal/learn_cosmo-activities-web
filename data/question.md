@@ -65,5 +65,5 @@ __Suggested Answers__
 
 - A  
 - B - Correct  
-- C  
+- C - Correct
 - D

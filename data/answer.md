@@ -9,24 +9,24 @@ __Summary__
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: No answer selected
+   - Selected Answer: D
    - Correct Answer: B, C
    - Result: ✗ Incorrect
 
 2. **Question 2**
-   - Selected Answer: B
+   - Selected Answer: A
    - Correct Answer: A
-   - Result: ✗ Incorrect
+   - Result: ✓ Correct
 
 3. **Question 3**
-   - Selected Answer: C
+   - Selected Answer: D
    - Correct Answer: B
    - Result: ✗ Incorrect
 
 4. **Question 4**
-   - Selected Answer: B
-   - Correct Answer: B
-   - Result: ✓ Correct
+   - Selected Answer: B, D
+   - Correct Answer: B, C
+   - Result: ✗ Incorrect
 
 __Practice Question__
 
@@ -92,5 +92,5 @@ __Suggested Answers__
 - D
 - B - Correct
 - A
-- C
+- C - Correct
 
