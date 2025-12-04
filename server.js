@@ -130,6 +130,17 @@ function parseAnswersFromMarkdown(markdownText) {
         answers[blankIndex] = selectedAnswer;
       }
     }
+  } else if (/^matching$/i.test(type)) {
+    // Parse Matching responses: "Selected Answer: [value]"
+    const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
+    let match;
+    while ((match = responseRegex.exec(responsesText)) !== null) {
+      const itemIndex = parseInt(match[1], 10) - 1; // Convert to 0-indexed
+      const selectedAnswer = match[2].trim();
+      if (selectedAnswer && selectedAnswer !== 'No answer selected') {
+        answers[itemIndex] = selectedAnswer;
+      }
+    }
   }
   
   return { answers, type };
@@ -368,6 +379,102 @@ function buildActivityFromMarkdown(markdownText) {
     return { type, question: null, mcq: { questions } };
   }
 
+  if (/^matching$/i.test(type)) {
+    const matchingTokens = sections.get('Markdown With Blanks') || [];
+    const matchingMarkdown = matchingTokens.map(t => t.raw || t.text || '').join('\n').trim();
+    const suggested = readListItems(sections.get('Suggested Answers'));
+    
+    // Split the content into prompt and matching items
+    const lines = matchingMarkdown.split(/\r?\n/);
+    let promptLines = [];
+    let itemLines = [];
+    let foundBlockquote = false;
+    
+    for (const line of lines) {
+      if (/^\s*>/.test(line)) {
+        foundBlockquote = true;
+        // Remove the '> ' marker and add to items
+        itemLines.push(line.replace(/^\s*>\s?/, ''));
+      } else if (foundBlockquote) {
+        // After finding blockquote, everything goes to items
+        itemLines.push(line);
+      } else {
+        // Before blockquote, everything goes to prompt (unless it's empty)
+        if (line.trim()) {
+          promptLines.push(line);
+        }
+      }
+    }
+    
+    const prompt = promptLines.join('\n').trim();
+    
+    const items = [];
+    let idx = 0;
+    // Parse each blockquote line as a separate item
+    // Each line starting with '>' is a separate card
+    for (const line of lines) {
+      if (/^\s*>/.test(line)) {
+        const itemLine = line.replace(/^\s*>\s?/, '').trim();
+        const blankMatch = itemLine.match(/\[\[blank:([^\]]+)\]\]/i);
+        if (!blankMatch) continue;
+        
+        const answer = String(blankMatch[1]).trim();
+        const textBeforeBlank = itemLine.replace(/\[\[blank:[^\]]+\]\]/gi, '').trim();
+        
+        // Render text without blank to HTML
+        const textHtml = marked.parse(textBeforeBlank);
+        
+        items.push({
+          index: idx++,
+          text: textBeforeBlank,
+          textHtml: textHtml,
+          answer: answer
+        });
+      }
+    }
+    
+    // Build choices preserving duplicates from Suggested Answers, and ensure
+    // at least as many copies of each correct answer as there are blanks.
+    const suggestedTrimmed = suggested.map(s => s.trim()).filter(Boolean);
+    const requiredCounts = new Map();
+    items.forEach(item => {
+      const k = item.answer;
+      requiredCounts.set(k, (requiredCounts.get(k) || 0) + 1);
+    });
+    const suggestedCounts = new Map();
+    suggestedTrimmed.forEach(s => {
+      suggestedCounts.set(s, (suggestedCounts.get(s) || 0) + 1);
+    });
+    const choices = suggestedTrimmed.slice();
+    requiredCounts.forEach((req, k) => {
+      const have = suggestedCounts.get(k) || 0;
+      for (let i = have; i < req; i++) choices.push(k);
+    });
+    
+    // Shuffle choices using deterministic shuffle
+    let s = (markdownText.length || 1337) % 2147483647 || 1337;
+    function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+    
+    // Render markdown to HTML for prompt
+    const promptHtml = prompt ? marked.parse(prompt) : '';
+    
+    return { 
+      type, 
+      question: null, 
+      matching: { 
+        raw: matchingMarkdown,
+        prompt, 
+        promptHtml, 
+        items, 
+        choices 
+      } 
+    };
+  }
+
   const labels = readListItems(sections.get('Labels'));
   if (/^sort into boxes$/i.test(type)) {
     let first = '', second = '';
@@ -548,6 +655,14 @@ const server = http.createServer((req, res) => {
                 markdown += '\n';
               });
             }
+          } else if (/^matching$/i.test(activity.type)) {
+            // For Matching, include the original markdown with blanks
+            markdown += `__Markdown With Blanks__\n\n${activity.matching.raw}\n\n`;
+            markdown += `__Suggested Answers__\n\n`;
+            activity.matching.choices.forEach(choice => {
+              markdown += `- ${choice}\n`;
+            });
+            markdown += '\n';
           } else {
             // For swipe/sort activities, include question and labels
             if (activity.question) {

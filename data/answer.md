@@ -1,96 +1,63 @@
 __Type__
 
-Multiple Choice
+Matching
 
 __Summary__
 
-0/4 correct
+0/5 correct
 
 __Responses__
 
-1. **Question 1**
+1. **Item 1**
    - Selected Answer: No answer selected
-   - Correct Answer: B, C
+   - Correct Answer: Discomfort
    - Result: ✗ Incorrect
 
-2. **Question 2**
-   - Selected Answer: B
-   - Correct Answer: A
-   - Result: ✗ Incorrect
-
-3. **Question 3**
-   - Selected Answer: D
-   - Correct Answer: B
-   - Result: ✗ Incorrect
-
-4. **Question 4**
+2. **Item 2**
    - Selected Answer: No answer selected
-   - Correct Answer: B, C
+   - Correct Answer: Engagement
    - Result: ✗ Incorrect
 
-__Practice Question__
+3. **Item 3**
+   - Selected Answer: No answer selected
+   - Correct Answer: Tension
+   - Result: ✗ Incorrect
 
-Why is it important to include both Wikipedia and web text in a language model's training data?
+4. **Item 4**
+   - Selected Answer: No answer selected
+   - Correct Answer: Frustration
+   - Result: ✗ Incorrect
 
-D. It prevents the model from learning code snippets.
-A. It ensures the model only learns formal writing styles.
-B. It limits the model to factual information only.
-C. It exposes the model to both structured and informal language.
+5. **Item 5**
+   - Selected Answer: No answer selected
+   - Correct Answer: Relief
+   - Result: ✗ Incorrect
 
-__Suggested Answers__
+__Markdown With Blanks__
 
-- D
-- A
-- B - Correct
-- C - Correct
+Match each subtle cue a leader might notice with what it could signal about the team's emotions.
 
-__Practice Question__
 
-Which of the following are common preprocessing steps for text data before training a language model? Select all that apply.
 
-A. Cleaning (removing HTML tags and ads)
-B. Adding random spelling errors
-C. Splitting text at random points
-E. Normalization (standardizing text format)
-D. Deduplication (removing repeated content)
+> **Subtle Cue 1**: Team members are avoiding eye contact and have closed body language. [[blank:Discomfort]]
 
-__Suggested Answers__
 
-- A - Correct
-- B
-- C
-- E
-- D
+> **Subtle Cue 2**: Several people are nodding, smiling, and leaning forward during a discussion. [[blank:Engagement]]
 
-__Practice Question__
 
-What is the main reason for removing duplicate content from a training dataset?
+> **Subtle Cue 3**: Voices are raised and people are talking over each other. [[blank:Tension]]
 
-D. To ensure all documents are the same length
-C. To increase the number of unique special characters
-A. To make the dataset smaller for faster downloads
-B. To prevent the model from overfitting to repeated phrases
+
+> **Subtle Cue 4**: Someone sighs and looks away when a topic comes up. [[blank:Frustration]]
+
+
+> **Subtle Cue 5**: Laughter and relaxed posture spread through the group after a team win. [[blank:Relief]]
 
 __Suggested Answers__
 
-- D
-- C
-- A
-- B - Correct
-
-__Practice Question__
-
-Which of the following is an example of normalization in text preprocessing?
-
-D. Adding HTML tags to mark sections
-B. Converting all text to lowercase
-A. Removing all numbers from the text
-C. Splitting a book into chapters
-
-__Suggested Answers__
-
-- D
-- B - Correct
-- A
-- C - Correct
+- Relief
+- Frustration
+- Engagement
+- Tension
+- Discomfort
 

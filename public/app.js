@@ -2,6 +2,7 @@ import { initSwipe } from './modules/swipe.js';
 import { initSort } from './modules/sort.js';
 import { initFib } from './modules/fib.js';
 import { initMcq } from './modules/mcq.js';
+import { initMatching } from './modules/matching.js';
 
 (() => {
   'use strict';
@@ -84,15 +85,16 @@ import { initMcq } from './modules/mcq.js';
     const currentType = activity.type || '';
     const persistedType = persistedData.type || '';
     
-    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType)) {
-      // Only validate MCQ and FIB for now
+    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType) && !/^matching$/i.test(currentType)) {
+      // Only validate MCQ, FIB, and Matching for now
       return null;
     }
 
     // Type must match exactly
     const typeMatches = 
       (/^multiple choice$/i.test(currentType) && /^multiple choice$/i.test(persistedType)) ||
-      (/^fill in the blanks$/i.test(currentType) && /^fill in the blanks$/i.test(persistedType));
+      (/^fill in the blanks$/i.test(currentType) && /^fill in the blanks$/i.test(persistedType)) ||
+      (/^matching$/i.test(currentType) && /^matching$/i.test(persistedType));
 
     if (!typeMatches) {
       return null;
@@ -143,6 +145,28 @@ import { initMcq } from './modules/mcq.js';
         }
       });
       return validatedAnswers;
+    } else if (/^matching$/i.test(currentType)) {
+      // For Matching: validate that item indices exist
+      if (!activity.matching || !activity.matching.items) {
+        return null;
+      }
+      const validItemIndices = new Set(activity.matching.items.map((item, idx) => idx));
+      const persistedItemIndices = Object.keys(persistedData.answers).map(idx => parseInt(idx, 10));
+      
+      // All persisted item indices must exist in current items
+      const allIndicesValid = persistedItemIndices.every(idx => validItemIndices.has(idx));
+      if (!allIndicesValid) {
+        return null;
+      }
+      
+      // Return only answers for valid item indices
+      const validatedAnswers = {};
+      persistedItemIndices.forEach(idx => {
+        if (validItemIndices.has(idx)) {
+          validatedAnswers[idx] = persistedData.answers[idx];
+        }
+      });
+      return validatedAnswers;
     }
 
     return null;
@@ -170,6 +194,13 @@ import { initMcq } from './modules/mcq.js';
       if (currentActivity && typeof currentActivity.validate === 'function') {
         validationHandler = currentActivity.validate;
       }
+    } else if (/^matching$/i.test(activity.type)) {
+      currentActivity = initMatching({ 
+        activity, 
+        state, 
+        postResults,
+        persistedAnswers
+      });
     } else {
       currentActivity = initSwipe({ 
         items: state.items, 

@@ -1,0 +1,256 @@
+/* ===== MATCHING ACTIVITY STYLES ===== */
+
+/* Matching-specific CSS Variables */
+:root {
+  --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Stroke-Primary-Medium);
+  --Colors-Learn-Practice-Selection-Area-Border: var(--Colors-Stroke-Default);
+  --Colors-Learn-Practice-Selection-Area-Border-Active: var(--Colors-Primary-Default);
+  --Colors-Learn-Practice-Selection-Area-Border-Matched: var(--Colors-Stroke-Default);
+  --Colors-Learn-Practice-Selection-Area-Background: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Learn-Practice-Selection-Area-Placeholder: var(--Colors-Text-Body-Lighter);
+  --Colors-Learn-Practice-Choice-Background-Used: var(--Colors-Backgrounds-Main-Light);
+  --Colors-Learn-Practice-Choice-Label-Used: var(--Colors-Text-Body-Light);
+  --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-100);
+  --Colors-Learn-Practice-Interactive-Choice-Main-Label: var(--Colors-Base-Accent-Sky-Blue-900);
+  --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-200);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Light);
+    --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Base-Neutral-1100);
+    --Colors-Learn-Practice-Selection-Area-Border: var(--Colors-Backgrounds-Main-Light);
+    --Colors-Learn-Practice-Selection-Area-Border-Active: var(--Colors-Primary-Default);
+    --Colors-Learn-Practice-Selection-Area-Border-Matched: var(--Colors-Stroke-Default);
+    --Colors-Learn-Practice-Selection-Area-Background: var(--Colors-Backgrounds-Main-Light);
+    --Colors-Learn-Practice-Selection-Area-Placeholder: var(--Colors-Text-Body-Light);
+    --Colors-Learn-Practice-Choice-Background-Used: var(--Colors-Backgrounds-Main-Medium);
+    --Colors-Learn-Practice-Choice-Label-Used: var(--Colors-Text-Body-Medium);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-700);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Label: var(--Colors-Base-Neutral-00);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-600);
+  }
+}
+
+/* Matching Container */
+.matching {
+  display: flex;
+  flex-direction: column;
+  background: var(--Colors-Backgrounds-Main-Default);
+  padding: var(--UI-Spacing-spacing-mxl);
+  min-height: calc(100vh - 120px);
+  gap: var(--UI-Spacing-spacing-xl, 32px);
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.matching-header {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding-bottom: 16px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+  margin-bottom: 0;
+}
+
+.matching-heading {
+  flex: 1 0 0;
+  color: var(--Colors-Text-Body-Strong);
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.matching-heading p {
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  max-width: 585px;
+}
+
+.matching-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.matching-clear-all {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--Colors-Text-Body-Light);
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.matching-clear-all span {
+  display: inline-block;
+}
+
+.matching-clear-all:hover {
+  opacity: 0.8;
+}
+
+.matching-clear-all svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+}
+
+/* Matching Cards Container - uses horizontal-cards component */
+.matching-cards-container {
+  width: 100%;
+  margin-bottom: var(--UI-Spacing-spacing-xl, 32px);
+}
+
+/* Instructions */
+.matching-instructions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--UI-Spacing-spacing-s, 8px);
+  margin-top: var(--UI-Spacing-spacing-mxs);
+  margin-bottom: var(--UI-Spacing-spacing-none);
+}
+
+.matching-instructions-text {
+  font-family: var(--body-family);
+  font-size: var(--Fonts-Body-Default-xxs, 13px);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.13px;
+  color: var(--Colors-Text-Body-Light);
+  text-align: center;
+  margin: 0;
+}
+
+/* Selection area within horizontal-cards action area */
+.horizontal-cards-card-action .matching-selection-area {
+  width: 100%;
+  margin: 0;
+}
+
+/* When matched, remove the dashed border container styling and make button full width */
+.horizontal-cards-card-action .matching-selection-area.matched {
+  margin: calc(-1 * var(--UI-Spacing-spacing-s, 8px));
+  width: calc(100% + 2 * var(--UI-Spacing-spacing-s, 8px));
+  border-radius: var(--UI-Radius-radius-xs, 6px);
+}
+
+/* Remove dashed border from action container when it contains a matched selection */
+/* Keep padding to maintain vertical position consistency */
+.horizontal-cards-card-action:has(.matching-selection-area.matched) {
+  border: none;
+  background: transparent;
+  /* Keep same padding as empty state to prevent vertical jump */
+  padding: var(--UI-Spacing-spacing-s, 8px);
+}
+
+/* Selection Area */
+.matching-selection-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 36px;
+  padding: var(--UI-Spacing-spacing-s, 8px) var(--UI-Spacing-spacing-ml, 20px);
+  border-radius: var(--UI-Radius-radius-s, 8px);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.matching-selection-area:not(.matched):not(.empty) {
+  border: 1.5px dashed var(--Colors-Learn-Practice-Selection-Area-Border);
+  background: var(--Colors-Learn-Practice-Selection-Area-Background);
+  color: var(--Colors-Text-Body-Default);
+}
+
+.matching-selection-area.empty {
+  /* Uses .body-xxsmall class from design system */
+  color: var(--Colors-Text-Body-Lighter);
+  background: transparent;
+}
+
+.matching-selection-area.matched {
+  /* Uses .button.button-primary.body-large classes from design system */
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background);
+  color: var(--Colors-Learn-Practice-Interactive-Choice-Main-Label);
+  border: none;
+  cursor: pointer;
+  /* Override base padding to use button padding, but maintain same min-height */
+  padding: var(--UI-Spacing-spacing-ms, 16px) var(--UI-Spacing-spacing-xl, 32px);
+  min-height: 48px;
+}
+
+.matching-selection-area.matched:hover {
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover);
+}
+
+.matching-selection-area:hover {
+  border-color: var(--Colors-Learn-Practice-Selection-Area-Border-Active);
+  background: var(--Colors-Backgrounds-Main-Light);
+}
+
+.matching-selection-area:focus {
+  outline: none;
+  border-color: var(--Colors-Learn-Practice-Selection-Area-Border-Active);
+  box-shadow: 0 0 0 4px var(--Colors-Box-Focus-Shadow);
+}
+
+/* Active card styling - when a card is active, highlight its selection area */
+.horizontal-cards-card-active .matching-selection-area {
+  border-color: var(--Colors-Learn-Practice-Selection-Area-Border-Active);
+  border-width: 2px;
+}
+
+/* Answer Choices List */
+.matching-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--UI-Spacing-spacing-mxs, 12px);
+  padding: var(--UI-Spacing-spacing-mxl, 24px);
+  padding-top: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  justify-content: center;
+}
+
+.matching-choice-button {
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background);
+  color: var(--Colors-Learn-Practice-Interactive-Choice-Main-Label);
+
+  position: relative;
+}
+
+.matching-choice-button:hover {
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover);
+}
+
+.matching-choice-button:disabled,
+.matching-choice-button.used {
+  background: var(--Colors-Learn-Practice-Choice-Background-Used);
+  color: var(--Colors-Learn-Practice-Choice-Label-Used);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
