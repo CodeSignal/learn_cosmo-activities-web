@@ -35,6 +35,7 @@ export function initMcq({ activity, state, postResults }) {
     const questionEl = document.createElement('div');
     questionEl.className = 'mcq-question';
     questionEl.setAttribute('data-question-id', question.id);
+    questionEl.setAttribute('data-question-index', qIdx.toString());
     
     // Question legend (Question 1, Question 2, etc.)
     const legend = document.createElement('div');
@@ -126,12 +127,151 @@ export function initMcq({ activity, state, postResults }) {
         // Clear validation when user changes any value
         clearValidation();
         updateSelection(question.id, option.label, input.checked);
+        
+        // For radio questions, center the selected question and auto-scroll after a short delay
+        if (!question.isMultiSelect && input.checked) {
+          const questionEl = elQuestions.querySelector(`[data-question-id="${question.id}"]`);
+          const questionIndex = parseInt(questionEl.getAttribute('data-question-index'), 10);
+          
+          // Center the currently selected question
+          centerQuestion(questionIndex);
+          
+          // Auto-scroll to next question after a brief delay (only if not last question)
+          const isLastQuestion = questionIndex === mcq.questions.length - 1;
+          if (!isLastQuestion) {
+            setTimeout(() => {
+              scrollToNextQuestion(questionIndex);
+            }, 300);
+          }
+        }
       });
     });
     
     questionEl.appendChild(optionsEl);
+    
+    // Add "Next" button for multi-select questions
+    if (question.isMultiSelect) {
+      const nextButtonContainer = document.createElement('div');
+      nextButtonContainer.className = 'mcq-next-button-container';
+      
+      const nextButton = document.createElement('button');
+      nextButton.className = 'button button-primary mcq-next-button';
+      nextButton.textContent = 'Next';
+      nextButton.type = 'button';
+      const isLastQuestion = qIdx === mcq.questions.length - 1;
+      // Always visible, but disabled if no answer selected or if it's the last question
+      nextButton.disabled = true; // Initially disabled until answer is selected
+      nextButton.setAttribute('aria-label', `Go to next question`);
+      
+      // Scroll to next question when button is clicked
+      nextButton.addEventListener('click', () => {
+        const questionIndex = parseInt(questionEl.getAttribute('data-question-index'), 10);
+        scrollToNextQuestion(questionIndex);
+      });
+      
+      nextButtonContainer.appendChild(nextButton);
+      questionEl.appendChild(nextButtonContainer);
+    }
+    
     elQuestions.appendChild(questionEl);
   });
+  
+  function findCenteredQuestionIndex() {
+    const viewportCenter = window.innerHeight / 2 + window.scrollY;
+    let closestQuestionIndex = 0;
+    let minDistance = Infinity;
+    
+    for (let i = 0; i < elQuestions.children.length; i++) {
+      const questionEl = elQuestions.children[i];
+      const rect = questionEl.getBoundingClientRect();
+      const questionCenter = rect.top + rect.height / 2 + window.scrollY;
+      const distance = Math.abs(viewportCenter - questionCenter);
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestQuestionIndex = i;
+      }
+    }
+    
+    return closestQuestionIndex;
+  }
+  
+  function updateQuestionOpacity(centeredQuestionIndex) {
+    for (let i = 0; i < elQuestions.children.length; i++) {
+      const questionEl = elQuestions.children[i];
+      if (i === centeredQuestionIndex) {
+        questionEl.classList.add('mcq-question-centered');
+      } else {
+        questionEl.classList.remove('mcq-question-centered');
+      }
+    }
+  }
+  
+  function updateDynamicPadding(centeredQuestionIndex) {
+    const viewportHeight = window.innerHeight;
+    
+    // Calculate padding based on position
+    const totalQuestions = mcq.questions.length;
+    const isFirstQuestion = centeredQuestionIndex === 0;
+    const isLastQuestion = centeredQuestionIndex === totalQuestions - 1;
+    
+    // Calculate how much padding is needed
+    let topPadding = 0;
+    let bottomPadding = 0;
+    
+    if (isFirstQuestion) {
+      // Need padding at top to center first question
+      const firstQuestionEl = elQuestions.children[0];
+      if (firstQuestionEl) {
+        const rect = firstQuestionEl.getBoundingClientRect();
+        const questionHeight = rect.height;
+        // Reduce padding slightly (multiply by 0.85) for better centering
+        const neededPadding = Math.max(0, (viewportHeight - questionHeight) / 2 * 0.85);
+        topPadding = neededPadding;
+      }
+    }
+    
+    if (isLastQuestion) {
+      // Need padding at bottom to center last question
+      const lastQuestionEl = elQuestions.children[totalQuestions - 1];
+      if (lastQuestionEl) {
+        const rect = lastQuestionEl.getBoundingClientRect();
+        const questionHeight = rect.height;
+        const neededPadding = Math.max(0, (viewportHeight - questionHeight) / 2);
+        bottomPadding = neededPadding;
+      }
+    }
+    
+    // Apply padding dynamically
+    elQuestions.style.paddingTop = `${topPadding}px`;
+    elQuestions.style.paddingBottom = `${bottomPadding}px`;
+  }
+  
+  function centerQuestion(questionIndex) {
+    const questionEl = elQuestions.children[questionIndex];
+    if (questionEl) {
+      updateDynamicPadding(questionIndex);
+      updateQuestionOpacity(questionIndex);
+      questionEl.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'nearest'
+      });
+      // Update opacity and padding again after scroll animation completes
+      setTimeout(() => {
+        const centeredIndex = findCenteredQuestionIndex();
+        updateQuestionOpacity(centeredIndex);
+        updateDynamicPadding(centeredIndex);
+      }, 600);
+    }
+  }
+  
+  function scrollToNextQuestion(currentQuestionIndex) {
+    const nextQuestionIndex = currentQuestionIndex + 1;
+    if (nextQuestionIndex < mcq.questions.length) {
+      centerQuestion(nextQuestionIndex);
+    }
+  }
   
   function updateSelection(questionId, optionLabel, isSelected) {
     const question = mcq.questions.find(q => q.id === questionId);
@@ -146,6 +286,19 @@ export function initMcq({ activity, state, postResults }) {
       } else {
         selectedAnswers[questionId] = selectedAnswers[questionId].filter(l => l !== optionLabel);
       }
+      
+      // Enable/disable next button for multi-select questions based on selection
+      const questionEl = elQuestions.querySelector(`[data-question-id="${questionId}"]`);
+      if (questionEl) {
+        const nextButton = questionEl.querySelector('.mcq-next-button');
+        if (nextButton) {
+          const hasSelection = selectedAnswers[questionId].length > 0;
+          const questionIndex = parseInt(questionEl.getAttribute('data-question-index'), 10);
+          const isLastQuestion = questionIndex === mcq.questions.length - 1;
+          // Disable if no answer selected or if it's the last question
+          nextButton.disabled = !hasSelection || isLastQuestion;
+        }
+      }
     } else {
       // Radio: replace array with single selection
       selectedAnswers[questionId] = isSelected ? [optionLabel] : [];
@@ -158,6 +311,7 @@ export function initMcq({ activity, state, postResults }) {
             radio.checked = false;
           }
         });
+        
       }
     }
     
@@ -226,8 +380,46 @@ export function initMcq({ activity, state, postResults }) {
   // Initialize results
   updateResultsAndPost();
   
+  // Add scroll event listener to update opacity dynamically on manual scroll
+  let scrollTimeout;
+  function handleScroll() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const centeredIndex = findCenteredQuestionIndex();
+      updateQuestionOpacity(centeredIndex);
+      updateDynamicPadding(centeredIndex);
+    }, 50); // Debounce scroll events
+  }
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  window.addEventListener('resize', handleScroll, { passive: true });
+  
+  // Center the first question (or first selected question) on initial load
+  setTimeout(() => {
+    // Check if there's a pre-selected question from state
+    let questionToCenter = -1;
+    for (let i = 0; i < mcq.questions.length; i++) {
+      const q = mcq.questions[i];
+      if (!q.isMultiSelect && selectedAnswers[q.id] && selectedAnswers[q.id].length > 0) {
+        questionToCenter = i;
+        break;
+      }
+    }
+    // If no selected question, center the first one
+    if (questionToCenter === -1) {
+      questionToCenter = 0;
+    }
+    centerQuestion(questionToCenter);
+    // Update opacity and padding after scroll animation completes
+    setTimeout(() => {
+      const centeredIndex = findCenteredQuestionIndex();
+      updateQuestionOpacity(centeredIndex);
+      updateDynamicPadding(centeredIndex);
+    }, 600); // Wait for smooth scroll to complete
+  }, 100);
+  
   return {
     cleanup: () => {
+      window.removeEventListener('scroll', handleScroll);
       elContainer.innerHTML = '';
     },
     validate: validateAnswers

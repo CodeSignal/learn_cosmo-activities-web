@@ -27,13 +27,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--UI-Spacing-spacing-xl, 32px);
+  /* Padding will be added dynamically via JavaScript */
 }
 
 .mcq-question {
   display: flex;
   flex-direction: column;
   gap: var(--UI-Spacing-spacing-ms, 16px);
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, opacity 0.3s ease;
+}
+
+.mcq-question:not(.mcq-question-centered) {
+  opacity: 0.3;
 }
 
 .mcq-question-incorrect {
@@ -173,5 +178,15 @@
 
 .mcq-option-label {
   display: none; /* Option labels (A, B, C) are not shown in the design */
+}
+
+.mcq-next-button-container {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--UI-Spacing-spacing-ms, 16px);
+}
+
+.mcq-next-button {
+  /* Button styles are handled by design system button classes */
 }
 
