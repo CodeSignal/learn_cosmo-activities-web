@@ -93,6 +93,48 @@ function readListItems(sectionTokens) {
   return items;
 }
 
+function parseAnswersFromMarkdown(markdownText) {
+  const tokens = Lexer.lex(markdownText);
+  const sections = parseSectionsFromTokens(tokens);
+  const type = ((sections.get('Type') || []).map(t => t.raw || t.text).join('\n') || '').trim();
+  const responsesSection = sections.get('Responses') || [];
+  
+  // Parse responses to extract selected answers
+  const responsesText = responsesSection.map(t => t.raw || t.text || '').join('\n');
+  const answers = {};
+  
+  if (/^multiple choice$/i.test(type)) {
+    // Parse MCQ responses: "Selected Answer: D" or "Selected Answer: B, D"
+    const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
+    let match;
+    while ((match = responseRegex.exec(responsesText)) !== null) {
+      const questionIndex = parseInt(match[1], 10) - 1; // Convert to 0-indexed
+      const selectedAnswerStr = match[2].trim();
+      // Parse comma-separated answers and trim whitespace
+      const selectedAnswers = selectedAnswerStr
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      if (selectedAnswers.length > 0 && selectedAnswers[0] !== 'No answer selected') {
+        answers[questionIndex] = selectedAnswers;
+      }
+    }
+  } else if (/^fill in the blanks$/i.test(type)) {
+    // Parse FIB responses: "Selected Answer: [value]"
+    const responseRegex = /(\d+)\.\s*\*\*Blank (\d+)\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
+    let match;
+    while ((match = responseRegex.exec(responsesText)) !== null) {
+      const blankIndex = parseInt(match[2], 10) - 1; // Convert to 0-indexed
+      const selectedAnswer = match[3].trim();
+      if (selectedAnswer && selectedAnswer !== 'No answer selected') {
+        answers[blankIndex] = selectedAnswer;
+      }
+    }
+  }
+  
+  return { answers, type };
+}
+
 function buildActivityFromMarkdown(markdownText) {
   const tokens = Lexer.lex(markdownText);
   const sections = parseSectionsFromTokens(tokens);
@@ -389,6 +431,25 @@ const server = http.createServer((req, res) => {
         respondJson(res, 200, activity);
       } catch (e) {
         respondJson(res, 500, { error: 'Failed to parse markdown' });
+      }
+    });
+    return;
+  }
+
+  // API: /api/answers
+  if (pathname === '/api/answers') {
+    const answerFile = path.join(DATA_DIR, 'answer.md');
+    fs.readFile(answerFile, 'utf8', (err, data) => {
+      if (err) {
+        // If file doesn't exist, return empty answers
+        respondJson(res, 200, { answers: null, type: null });
+        return;
+      }
+      try {
+        const { answers, type } = parseAnswersFromMarkdown(data);
+        respondJson(res, 200, { answers, type });
+      } catch (e) {
+        respondJson(res, 500, { error: 'Failed to parse answers' });
       }
     });
     return;

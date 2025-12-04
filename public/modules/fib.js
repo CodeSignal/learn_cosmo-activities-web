@@ -1,4 +1,4 @@
-export function initFib({ activity, state, postResults }) {
+export function initFib({ activity, state, postResults, persistedAnswers = null }) {
   const elContainer = document.getElementById('activity-container');
   const fib = activity.fib;
   
@@ -39,8 +39,13 @@ export function initFib({ activity, state, postResults }) {
     return aIdx - bIdx;
   });
 
-  // Selection state
-  const selectedByBlankIdx = blanks.map(() => '');
+  // Selection state - initialize with persisted answers if available
+  const selectedByBlankIdx = blanks.map((_, idx) => {
+    if (persistedAnswers && persistedAnswers[idx] !== undefined) {
+      return persistedAnswers[idx];
+    }
+    return '';
+  });
   let openDropdown = null; // { container, blank, idx }
   const totalCounts = new Map();
   fib.choices.forEach(c => totalCounts.set(c, (totalCounts.get(c) || 0) + 1));
@@ -219,6 +224,25 @@ export function initFib({ activity, state, postResults }) {
   }
 
   updateBlankDisplays();
+  
+  // Sync state with persisted answers if they exist
+  if (persistedAnswers) {
+    updateResultsAndPost();
+  }
+
+  // Handle "Clear All" button
+  const elClearAll = document.getElementById('restart');
+  if (elClearAll) {
+    elClearAll.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Clear all selections
+      blanks.forEach((_, idx) => {
+        selectedByBlankIdx[idx] = '';
+      });
+      updateBlankDisplays();
+      updateResultsAndPost(); // Persist the cleared state
+    });
+  }
 
   return () => {
     closeMenu();

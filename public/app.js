@@ -62,9 +62,95 @@ import { initMcq } from './modules/mcq.js';
     return await res.json();
   }
 
-  function initActivity(activity) {
+  async function loadAnswers() {
+    try {
+      const url = '/api/answers';
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
+      const data = await res.json();
+      return { answers: data.answers || null, type: data.type || null };
+    } catch (error) {
+      console.error('Error loading answers:', error);
+      return { answers: null, type: null };
+    }
+  }
+
+  function validatePersistedAnswers(activity, persistedData) {
+    if (!persistedData || !persistedData.answers || !persistedData.type) {
+      return null;
+    }
+
+    // Check that types match
+    const currentType = activity.type || '';
+    const persistedType = persistedData.type || '';
+    
+    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType)) {
+      // Only validate MCQ and FIB for now
+      return null;
+    }
+
+    // Type must match exactly
+    const typeMatches = 
+      (/^multiple choice$/i.test(currentType) && /^multiple choice$/i.test(persistedType)) ||
+      (/^fill in the blanks$/i.test(currentType) && /^fill in the blanks$/i.test(persistedType));
+
+    if (!typeMatches) {
+      return null;
+    }
+
+    // Validate structure matches
+    if (/^multiple choice$/i.test(currentType)) {
+      // For MCQ: validate that question IDs exist and match
+      if (!activity.mcq || !activity.mcq.questions) {
+        return null;
+      }
+      const validQuestionIds = new Set(activity.mcq.questions.map(q => q.id));
+      const persistedQuestionIds = Object.keys(persistedData.answers).map(id => parseInt(id, 10));
+      
+      // All persisted question IDs must exist in current questions
+      const allIdsValid = persistedQuestionIds.every(id => validQuestionIds.has(id));
+      if (!allIdsValid) {
+        return null;
+      }
+      
+      // Return only answers for valid question IDs
+      const validatedAnswers = {};
+      persistedQuestionIds.forEach(id => {
+        if (validQuestionIds.has(id)) {
+          validatedAnswers[id] = persistedData.answers[id];
+        }
+      });
+      return validatedAnswers;
+    } else if (/^fill in the blanks$/i.test(currentType)) {
+      // For FIB: validate that blank indices exist
+      if (!activity.fib || !activity.fib.blanks) {
+        return null;
+      }
+      const validBlankIndices = new Set(activity.fib.blanks.map(b => b.index));
+      const persistedBlankIndices = Object.keys(persistedData.answers).map(idx => parseInt(idx, 10));
+      
+      // All persisted blank indices must exist in current blanks
+      const allIndicesValid = persistedBlankIndices.every(idx => validBlankIndices.has(idx));
+      if (!allIndicesValid) {
+        return null;
+      }
+      
+      // Return only answers for valid blank indices
+      const validatedAnswers = {};
+      persistedBlankIndices.forEach(idx => {
+        if (validBlankIndices.has(idx)) {
+          validatedAnswers[idx] = persistedData.answers[idx];
+        }
+      });
+      return validatedAnswers;
+    }
+
+    return null;
+  }
+
+  function initActivity(activity, persistedAnswers = null) {
     if (/^fill in the blanks$/i.test(activity.type)) {
-      currentActivity = initFib({ activity, state, postResults });
+      currentActivity = initFib({ activity, state, postResults, persistedAnswers });
     } else if (/^sort into boxes$/i.test(activity.type)) {
       currentActivity = initSort({ 
         items: state.items, 
@@ -77,7 +163,8 @@ import { initMcq } from './modules/mcq.js';
       currentActivity = initMcq({ 
         activity, 
         state, 
-        postResults
+        postResults,
+        persistedAnswers
       });
       // Store validation function reference
       if (currentActivity && typeof currentActivity.validate === 'function') {
@@ -97,6 +184,10 @@ import { initMcq } from './modules/mcq.js';
   function bindRestart() {
     const elRestart = document.getElementById('restart');
     if (!elRestart) return;
+    // Skip binding for FIB activities - they handle "Clear All" themselves
+    if (currentActivityData && /^fill in the blanks$/i.test(currentActivityData.type)) {
+      return;
+    }
     elRestart.addEventListener('click', async (e) => {
       e.preventDefault();
       reset();
@@ -105,7 +196,8 @@ import { initMcq } from './modules/mcq.js';
       state.items = /^fill in the blanks$/i.test(activity2.type)
         ? new Array(activity2.fib.blanks.length).fill(null)
         : activity2.items;
-      initActivity(activity2);
+      // Don't load persisted answers on restart - start fresh
+      initActivity(activity2, null);
       bindRestart(); // re-bind for the newly rendered DOM
     });
   }
@@ -152,13 +244,19 @@ import { initMcq } from './modules/mcq.js';
 
   async function start() {
     try {
-      const activity = await loadActivityJson();
+      const [activity, persistedData] = await Promise.all([
+        loadActivityJson(),
+        loadAnswers()
+      ]);
       currentActivityData = activity; // Store activity data for results
       state.items = /^fill in the blanks$/i.test(activity.type)
         ? new Array(activity.fib.blanks.length).fill(null)
         : activity.items;
       reset();
-      initActivity(activity);
+      
+      // Validate persisted answers match current activity
+      const validatedAnswers = validatePersistedAnswers(activity, persistedData);
+      initActivity(activity, validatedAnswers);
       bindRestart();
       
       // Connect WebSocket after activity is initialized

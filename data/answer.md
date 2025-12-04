@@ -4,19 +4,19 @@ Multiple Choice
 
 __Summary__
 
-1/4 correct
+0/4 correct
 
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: D
+   - Selected Answer: No answer selected
    - Correct Answer: B, C
    - Result: ✗ Incorrect
 
 2. **Question 2**
-   - Selected Answer: A
+   - Selected Answer: B
    - Correct Answer: A
-   - Result: ✓ Correct
+   - Result: ✗ Incorrect
 
 3. **Question 3**
    - Selected Answer: D
@@ -24,7 +24,7 @@ __Responses__
    - Result: ✗ Incorrect
 
 4. **Question 4**
-   - Selected Answer: B, D
+   - Selected Answer: No answer selected
    - Correct Answer: B, C
    - Result: ✗ Incorrect
 

@@ -1,4 +1,4 @@
-export function initMcq({ activity, state, postResults }) {
+export function initMcq({ activity, state, postResults, persistedAnswers = null }) {
   const elContainer = document.getElementById('activity-container');
   const mcq = activity.mcq;
   
@@ -25,9 +25,15 @@ export function initMcq({ activity, state, postResults }) {
   // Track validation state
   let isValidating = false;
   
-  // Initialize selected answers
+  // Initialize selected answers from persisted answers if available
   mcq.questions.forEach(q => {
-    selectedAnswers[q.id] = [];
+    if (persistedAnswers && persistedAnswers[q.id] !== undefined) {
+      selectedAnswers[q.id] = Array.isArray(persistedAnswers[q.id]) 
+        ? persistedAnswers[q.id] 
+        : [persistedAnswers[q.id]];
+    } else {
+      selectedAnswers[q.id] = [];
+    }
   });
   
   // Render all questions
@@ -117,6 +123,11 @@ export function initMcq({ activity, state, postResults }) {
         optionCard.appendChild(textWrapper);
       }
       
+      // Apply persisted answers if available
+      if (selectedAnswers[question.id] && selectedAnswers[question.id].includes(option.label)) {
+        input.checked = true;
+      }
+      
       // Append input first (for CSS sibling selector), then card
       optionEl.appendChild(input);
       optionEl.appendChild(optionCard);
@@ -158,8 +169,9 @@ export function initMcq({ activity, state, postResults }) {
       nextButton.className = 'button button-primary mcq-next-button';
       nextButton.textContent = 'Next';
       nextButton.type = 'button';
-      // Always visible, but disabled if no answer selected
-      nextButton.disabled = true; // Initially disabled until answer is selected
+      // Enable if persisted answers exist for this question
+      const hasPersistedAnswers = selectedAnswers[question.id] && selectedAnswers[question.id].length > 0;
+      nextButton.disabled = !hasPersistedAnswers;
       nextButton.setAttribute('aria-label', `Go to next question`);
       
       // Scroll to next question when button is clicked
@@ -392,19 +404,22 @@ export function initMcq({ activity, state, postResults }) {
   
   // Center the first question (or first selected question) on initial load
   setTimeout(() => {
-    // Check if there's a pre-selected question from state
-    let questionToCenter = -1;
-    for (let i = 0; i < mcq.questions.length; i++) {
-      const q = mcq.questions[i];
-      if (!q.isMultiSelect && selectedAnswers[q.id] && selectedAnswers[q.id].length > 0) {
-        questionToCenter = i;
-        break;
+    let questionToCenter = 0; // Default to first question
+    
+    // If persisted answers exist, always scroll to the first question
+    if (persistedAnswers) {
+      questionToCenter = 0;
+    } else {
+      // Otherwise, check if there's a pre-selected question from state
+      for (let i = 0; i < mcq.questions.length; i++) {
+        const q = mcq.questions[i];
+        if (!q.isMultiSelect && selectedAnswers[q.id] && selectedAnswers[q.id].length > 0) {
+          questionToCenter = i;
+          break;
+        }
       }
     }
-    // If no selected question, center the first one
-    if (questionToCenter === -1) {
-      questionToCenter = 0;
-    }
+    
     centerQuestion(questionToCenter);
     // Update opacity and padding after scroll animation completes
     setTimeout(() => {
