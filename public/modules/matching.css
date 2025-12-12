@@ -3,7 +3,7 @@
 /* Matching-specific CSS Variables */
 :root {
   --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Top);
-  --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Stroke-Primary-Medium);
+  --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Stroke-Medium);
   --Colors-Learn-Practice-Selection-Area-Border: var(--Colors-Stroke-Default);
   --Colors-Learn-Practice-Selection-Area-Border-Active: var(--Colors-Primary-Default);
   --Colors-Learn-Practice-Selection-Area-Border-Matched: var(--Colors-Stroke-Default);

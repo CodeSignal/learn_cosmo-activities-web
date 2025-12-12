@@ -6,7 +6,7 @@ export function initFib({ activity, state, postResults, persistedAnswers = null 
   elContainer.innerHTML = `
     <div id="fib" class="fib">
       <div class="fib-header">
-        <h2 class="fib-heading heading-small"></h2>
+        <h2 class="fib-heading heading-xsmall"></h2>
         <div class="fib-actions">
           <a id="restart" href="#" class="fib-clear-all body-xxsmall">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -16,7 +16,7 @@ export function initFib({ activity, state, postResults, persistedAnswers = null 
           </a>
         </div>
       </div>
-      <div id="fib-content" class="fib-content body-xxlarge"></div>
+      <div id="fib-content" class="fib-content body-xlarge"></div>
     </div>
   `;
   

@@ -1,25 +1,36 @@
 __Type__
 
-Matching
+Multiple Choice
 
-__Markdown With Blanks__
+__Practice Question__
 
-Match each subtle cue a leader might notice with what it could signal about the team's emotions.
+Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-> **Subtle Cue 1**: Team members are avoiding eye contact and have closed body language. [[blank:Discomfort]]
-
-> **Subtle Cue 2**: Several people are nodding, smiling, and leaning forward during a discussion. [[blank:Engagement]]
-
-> **Subtle Cue 3**: Voices are raised and people are talking over each other. [[blank:Tension]]
-
-> **Subtle Cue 4**: Someone sighs and looks away when a topic comes up. [[blank:Frustration]]
-
-> **Subtle Cue 5**: Laughter and relaxed posture spread through the group after a team win. [[blank:Relief]]
+A. Her brand identity is wrong  
+B. Her actual brand doesn't match her identity  
+C. Her brand image is too positive  
+D. She needs a better logo
 
 __Suggested Answers__
 
-- Discomfort
-- Engagement
-- Tension
-- Frustration
-- Relief
+- A  
+- B - Correct  
+- C  
+- D
+
+__Practice Question__
+
+Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
+
+A. His actual brand doesn't match his intended identity  
+B. He needs to improve his communication skills  
+C. His brand image is inconsistent with his identity  
+D. He needs a new logo
+
+__Suggested Answers__
+
+- A - Correct  
+- B  
+- C - Correct  
+- D
+

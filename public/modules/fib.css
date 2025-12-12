@@ -64,12 +64,12 @@
   min-width: 0;
   position: relative;
   flex-shrink: 0;
+  line-height: 1.35;
 }
 
 .fib-heading p {
   margin: 0;
   padding: 0;
-  line-height: inherit;
   max-width: 585px;
 }
 
@@ -118,12 +118,12 @@
   border: none; 
   color: var(--Colors-Text-Body-Default);
   width: 670px;
+  line-height: 1.82;
 }
 
 .fib-content p { 
   margin-top: 8px;
   color: var(--Colors-Text-Body-Default);
-  line-height: 172%; /* override line-height from .body-xxlarge */
 }
 
 .blank { 

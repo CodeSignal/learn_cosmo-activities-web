@@ -45,13 +45,13 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
     
     // Question legend (Question 1, Question 2, etc.)
     const legend = document.createElement('div');
-    legend.className = 'mcq-legend heading-small';
+    legend.className = 'mcq-legend heading-xsmall';
     legend.textContent = `Question ${qIdx + 1}`;
     questionEl.appendChild(legend);
     
     // Question text
     const questionTextEl = document.createElement('div');
-    questionTextEl.className = 'mcq-question-text body-xxlarge';
+    questionTextEl.className = 'mcq-question-text body-xlarge';
     questionTextEl.textContent = question.text;
     questionEl.appendChild(questionTextEl);
     

@@ -3,7 +3,7 @@
 /* MCQ-specific CSS Variables */
 :root {
   --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Top);
-  --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Stroke-Primary-Medium);
+  --Colors-Learn-Practice-Card-Border-Hover: var(--Colors-Stroke-Medium);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,7 +26,7 @@
 .mcq-questions {
   display: flex;
   flex-direction: column;
-  gap: var(--UI-Spacing-spacing-xl, 32px);
+  gap: 72px
   /* Padding will be added dynamically via JavaScript */
 }
 
@@ -53,12 +53,13 @@
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-xlarge */
   color: var(--Colors-Text-Body-Default);
   margin-bottom: var(--UI-Spacing-spacing-xs, 8px);
+  line-height: 1.82;
 }
 
 .mcq-options {
   display: flex;
   flex-direction: column;
-  gap: var(--UI-Spacing-spacing-xs, 6px);
+  gap: var(--UI-Spacing-spacing-mxs);
   border: none;
   padding: 0;
   margin: 0;
@@ -70,6 +71,7 @@
   color: var(--Colors-Text-Body-Strong);
   margin-bottom: var(--UI-Spacing-spacing-xs, 8px);
   padding: 0;
+  line-height: 1.35;
 }
 
 .mcq-option {
@@ -96,7 +98,7 @@
 
 .mcq-option-card {
   display: flex;
-  gap: var(--UI-Spacing-spacing-xs, 6px);
+  gap: var(--UI-Spacing-spacing-ml);
   align-items: center;
   flex: 1;
 }
@@ -130,7 +132,7 @@
 
 .mcq-option.input-checkbox:not(.disabled):hover .input-checkbox-box,
 .mcq-option.input-radio:not(.disabled):hover .input-radio-circle {
-  border-color: var(--Colors-Stroke-Primary);
+  border-color: var(--Colors-Stroke-Strong);
 }
 
 .mcq-option.input-checkbox input[type="checkbox"]:checked ~ .mcq-option-card .input-checkbox-box:hover,
