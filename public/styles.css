@@ -13,6 +13,10 @@ body {
   background: var(--Colors-Backgrounds-Main-Default);
 }
 
+body:has(.matching) {
+  margin: 0;
+}
+
 /* Main content area */
 .main {
   flex: 1;
@@ -23,6 +27,12 @@ body {
   max-width: 896px;;
   width: 100%;
   margin: 0 auto;
+}
+
+.main:has(.matching) {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* Activity container */
