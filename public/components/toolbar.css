@@ -1,0 +1,59 @@
+/* ===== GLOBAL TOOLBAR STYLES ===== */
+
+.global-toolbar {
+  position: fixed;
+  top: var(--UI-Spacing-spacing-ms, 16px);
+  right: 48px;
+  display: flex;
+  gap: var(--UI-Spacing-spacing-xs, 8px);
+  align-items: center;
+  z-index: 1000;
+  pointer-events: none; /* Allow clicks to pass through container */
+}
+
+.global-toolbar-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--UI-Radius-radius-s, 8px);
+  background: transparent;
+  color: var(--Colors-Text-Body-Default);
+  cursor: pointer;
+  pointer-events: auto; /* Re-enable clicks on buttons */
+  transition: all 0.2s ease;
+}
+
+.global-toolbar-tool:hover:not(:disabled) {
+  background: transparent;
+  opacity: 0.7;
+}
+
+.global-toolbar-tool:active:not(:disabled) {
+  opacity: 0.5;
+}
+
+.global-toolbar-tool:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.global-toolbar-tool .icon {
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+}
+
+@media (prefers-color-scheme: dark) {
+  .global-toolbar-tool {
+    background: transparent;
+  }
+
+  .global-toolbar-tool:hover:not(:disabled) {
+    background: transparent;
+  }
+}

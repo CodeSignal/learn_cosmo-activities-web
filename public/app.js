@@ -3,6 +3,7 @@ import { initSort } from './modules/sort.js';
 import { initFib } from './modules/fib.js';
 import { initMcq } from './modules/mcq.js';
 import { initMatching } from './modules/matching.js';
+import toolbar from './components/toolbar.js';
 
 (() => {
   'use strict';
@@ -45,6 +46,8 @@ import { initMatching } from './modules/matching.js';
     state.index = 0;
     state.results = [];
     validationHandler = null;
+    // Clear toolbar when resetting
+    toolbar.clear();
     if (currentActivity) {
       if (typeof currentActivity === 'function') {
         currentActivity(); // Old cleanup function style

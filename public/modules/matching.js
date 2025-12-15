@@ -1,4 +1,5 @@
 import HorizontalCards from '../design-system/components/horizontal-cards/horizontal-cards.js';
+import toolbar from '../components/toolbar.js';
 
 export function initMatching({ activity, state, postResults, persistedAnswers = null }) {
   const elContainer = document.getElementById('activity-container');
@@ -16,14 +17,6 @@ export function initMatching({ activity, state, postResults, persistedAnswers = 
     <div id="matching" class="matching">
       <div class="matching-header">
         <div class="matching-heading heading-small"></div>
-        <div class="matching-actions">
-          <a id="restart" href="#" class="matching-clear-all body-xxsmall">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 2.5H8M7.5 2.5V8.5C7.5 8.77614 7.27614 9 7 9H3C2.72386 9 2.5 8.77614 2.5 8.5V2.5M3.5 2.5V1.5C3.5 1.22386 3.72386 1 4 1H6C6.27614 1 6.5 1.22386 6.5 1.5V2.5M4 4.5V7.5M6 4.5V7.5" stroke="#acb4c7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Clear all</span>
-          </a>
-        </div>
       </div>
       <div id="matching-cards-container" class="matching-cards-container"></div>
       <div id="matching-instructions" class="matching-instructions">
@@ -362,37 +355,45 @@ export function initMatching({ activity, state, postResults, persistedAnswers = 
     }
   }, 200);
   
-  // Handle "Clear All" button
-  const elClearAll = document.getElementById('restart');
-  if (elClearAll) {
-    elClearAll.addEventListener('click', (e) => {
-      e.preventDefault();
-      // Clear all selections
-      matching.items.forEach((_, idx) => {
-        selectedByItemIdx[idx] = '';
-      });
-      activeCardIndex = null;
-      
-      // Rebuild cards
-      if (horizontalCardsInstance) {
-        horizontalCardsInstance.destroy();
-        initializeCards();
-      }
-      
-      updateChoicesDisplay();
-      updateResultsAndPost();
-      
-      // Scroll back to first card
-      setTimeout(() => {
-        if (horizontalCardsInstance) {
-          horizontalCardsInstance.scrollToIndex(0);
-        }
-      }, 100);
+  // Clear all answers function
+  function clearAllAnswers() {
+    // Clear all selections
+    matching.items.forEach((_, idx) => {
+      selectedByItemIdx[idx] = '';
     });
+    activeCardIndex = null;
+    
+    // Rebuild cards
+    if (horizontalCardsInstance) {
+      horizontalCardsInstance.destroy();
+      initializeCards();
+    }
+    
+    updateChoicesDisplay();
+    updateResultsAndPost();
+    
+    // Scroll back to first card
+    setTimeout(() => {
+      if (horizontalCardsInstance) {
+        horizontalCardsInstance.scrollToIndex(0);
+      }
+    }, 100);
   }
+  
+  // Register "Clear All" tool in global toolbar
+  toolbar.registerTool('matching-clear-all', {
+    icon: 'icon-eraser',
+    title: 'Clear All',
+    onClick: (e) => {
+      e.preventDefault();
+      clearAllAnswers();
+    },
+    enabled: true
+  });
   
   return {
     cleanup: () => {
+      toolbar.unregisterTool('matching-clear-all');
       if (horizontalCardsInstance) {
         horizontalCardsInstance.destroy();
       }

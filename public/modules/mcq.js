@@ -1,3 +1,5 @@
+import toolbar from '../components/toolbar.js';
+
 export function initMcq({ activity, state, postResults, persistedAnswers = null }) {
   const elContainer = document.getElementById('activity-container');
   const mcq = activity.mcq;
@@ -416,6 +418,36 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
   // Initialize results
   updateResultsAndPost();
   
+  // Clear all answers function
+  function clearAllAnswers() {
+    // Clear all selected answers
+    mcq.questions.forEach(q => {
+      selectedAnswers[q.id] = [];
+    });
+    
+    // Uncheck all inputs
+    elQuestions.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
+      input.checked = false;
+    });
+    
+    // Clear validation state
+    clearValidation();
+    
+    // Update results and post
+    updateResultsAndPost();
+  }
+  
+  // Register "Clear All" tool in global toolbar
+  toolbar.registerTool('mcq-clear-all', {
+    icon: 'icon-eraser',
+    title: 'Clear All',
+    onClick: (e) => {
+      e.preventDefault();
+      clearAllAnswers();
+    },
+    enabled: true
+  });
+  
   // Add scroll event listener to update opacity dynamically on manual scroll
   let scrollTimeout;
   function handleScroll() {
@@ -458,6 +490,7 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
   
   return {
     cleanup: () => {
+      toolbar.unregisterTool('mcq-clear-all');
       window.removeEventListener('scroll', handleScroll);
       elContainer.innerHTML = '';
     },
