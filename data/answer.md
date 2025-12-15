@@ -4,17 +4,17 @@ Multiple Choice
 
 __Summary__
 
-0/2 correct
+1/2 correct
 
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: D
+   - Selected Answer: B
    - Correct Answer: B
-   - Result: ✗ Incorrect
+   - Result: ✓ Correct
 
 2. **Question 2**
-   - Selected Answer: A, B, D
+   - Selected Answer: A, D
    - Correct Answer: A, C
    - Result: ✗ Incorrect
 

@@ -42,10 +42,41 @@
 }
 
 .mcq-question-incorrect {
-  border: 2px solid #9C0227;
+  position: relative;
   border-radius: var(--UI-Radius-radius-ml, 16px);
   padding: var(--UI-Spacing-spacing-ms, 16px);
-  background-color: rgba(156, 2, 39, 0.05);
+  padding-left: calc(var(--UI-Spacing-spacing-ms, 16px) + 20px);
+  background-color: var(--Colors-Base-Neutral-50);
+}
+
+.mcq-question-incorrect::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--Colors-Alert-Error-Default);
+}
+
+.mcq-question-error-icon {
+  position: absolute;
+  left: -8px;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--Colors-Alert-Error-Default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mcq-question-error-icon svg {
+  width: 12px;
+  height: 12px;
+  fill: white;
 }
 
 .mcq-question-text {

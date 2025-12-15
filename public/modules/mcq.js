@@ -334,6 +334,30 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
     return sortedA.every((val, idx) => val === sortedB[idx]);
   }
   
+  function addErrorIcon(questionEl) {
+    // Check if icon already exists
+    if (questionEl.querySelector('.mcq-question-error-icon')) {
+      return;
+    }
+    
+    const errorIcon = document.createElement('div');
+    errorIcon.className = 'mcq-question-error-icon';
+    errorIcon.innerHTML = `
+      <svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="2" width="2" height="5" rx="1" fill="white"/>
+        <circle cx="6" cy="9" r="1" fill="white"/>
+      </svg>
+    `;
+    questionEl.appendChild(errorIcon);
+  }
+  
+  function removeErrorIcon(questionEl) {
+    const errorIcon = questionEl.querySelector('.mcq-question-error-icon');
+    if (errorIcon) {
+      errorIcon.remove();
+    }
+  }
+  
   function clearValidation() {
     if (!isValidating) return;
     
@@ -343,6 +367,7 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
       const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
       if (questionEl) {
         questionEl.classList.remove('mcq-question-incorrect');
+        removeErrorIcon(questionEl);
       }
     });
   }
@@ -360,8 +385,10 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
       if (questionEl) {
         if (!isCorrect) {
           questionEl.classList.add('mcq-question-incorrect');
+          addErrorIcon(questionEl);
         } else {
           questionEl.classList.remove('mcq-question-incorrect');
+          removeErrorIcon(questionEl);
         }
       }
     });
