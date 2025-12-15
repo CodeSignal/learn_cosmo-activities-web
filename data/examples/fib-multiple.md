@@ -4,7 +4,7 @@ Fill In The Blanks
 
 __Markdown With Blanks__
 
-Match each example to the correct type of defensiveness sign (physical, verbal, or emotional):
+Fill in the blanks
 
 > **Example 1**: Someone crosses their arms and avoids eye contact during a tough conversation. [[blank:Physical]]
 

@@ -4,7 +4,7 @@ Fill In The Blanks
 
 __Markdown With Blanks__
 
-Match each teammate's situation with the most empathetic response.
+Fill in the blanks
 
 > **Situation 1:** A teammate says they're feeling stressed and overwhelmed.  
 > **Best Response:** [[blank:That sounds tough. Do you want to talk more about it?]]

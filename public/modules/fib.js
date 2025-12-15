@@ -24,9 +24,9 @@ export function initFib({ activity, state, postResults, persistedAnswers = null 
   const elFibHeading = elFib.querySelector('.fib-heading');
   const elFibContent = document.getElementById('fib-content');
 
-  // Set the prompt content as the heading if it exists (already HTML from server)
-  if (elFibHeading && (fib.promptHtml || fib.prompt)) {
-    elFibHeading.innerHTML = fib.promptHtml || fib.prompt;
+  // Set static heading text
+  if (elFibHeading) {
+    elFibHeading.textContent = 'Fill in the blanks';
   }
 
   // Content HTML is provided by server with embedded blank spans
