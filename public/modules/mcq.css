@@ -46,7 +46,6 @@
   border-radius: var(--UI-Radius-radius-ml, 16px);
   padding: var(--UI-Spacing-spacing-ms, 16px);
   padding-left: calc(var(--UI-Spacing-spacing-ms, 16px) + 20px);
-  background-color: var(--Colors-Base-Neutral-50);
 }
 
 .mcq-question-incorrect::before {
