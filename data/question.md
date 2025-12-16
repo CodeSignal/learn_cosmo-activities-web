@@ -4,20 +4,22 @@ Matching
 
 __Markdown With Blanks__
 
-> **Situation 1**: A teammate says they’re feeling stressed and overwhelmed. [[blank:Discomfort]]
+Match each description to the decision-making style it describes.
 
-> **Subtle Cue 2**: Several people are nodding, smiling, and leaning forward during a discussion. [[blank:Engagement]]
+> This type gets energized by bold ideas and breakthrough thinking. They absorb information rapidly and want to see bottom-line results. Visual aids showing competitive advantage are essential when presenting to them. [[blank:Charismatic]]
 
-> **Subtle Cue 3**: Voices are raised and people are talking over each other. [[blank:Tension]]
+> This type enjoys intellectual challenges and takes pride in being methodical and precise. They genuinely enjoy processing comprehensive data and want to understand your methodology as much as your conclusions. [[blank:Thinker]]
 
-> **Subtle Cue 4**: Someone sighs and looks away when a topic comes up. [[blank:Frustration]]
+> This type is suspicious by nature and will aggressively challenge every data point looking for flaws. They are primarily influenced by the credibility of the presenter and need endorsements from people they trust. [[blank:Skeptic]]
 
-> **Subtle Cue 5**: Laughter and relaxed posture spread through the group after a team win. [[blank:Relief]]
+> This type makes decisions based on how similar initiatives have worked in the past. They want proven methods, trusted brands, and case studies from companies they admire rather than breakthrough innovations. [[blank:Follower]]
+
+> This type fears feeling out of control, especially regarding information. They want structured raw data they can personally verify and multiple scenarios to evaluate rather than polished conclusions. [[blank:Controller]]
 
 __Suggested Answers__
 
-- Discomfort
-- Engagement
-- Tension
-- Frustration
-- Relief
+- Charismatic
+- Thinker
+- Skeptic
+- Follower
+- Controller

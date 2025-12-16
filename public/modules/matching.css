@@ -45,35 +45,6 @@
   overflow-x: hidden;
 }
 
-.matching-header {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  padding-bottom: 16px;
-  padding-left: 0;
-  padding-right: 0;
-  padding-top: 0;
-  margin-bottom: 0;
-}
-
-.matching-heading {
-  flex: 1 0 0;
-  color: var(--Colors-Text-Body-Strong);
-  margin: 0;
-  padding: 0;
-  min-height: 0;
-  min-width: 0;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.matching-heading p {
-  margin: 0;
-  padding: 0;
-  line-height: inherit;
-  max-width: 585px;
-}
-
 .matching-actions {
   display: flex;
   gap: 6px;
@@ -142,7 +113,6 @@
 }
 
 .horizontal-cards-card {
-  min-height: 284px !important;
   width: 390px !important;
   min-width: 390px !important;
 }

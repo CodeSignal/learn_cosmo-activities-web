@@ -15,34 +15,14 @@ export function initMatching({ activity, state, postResults, persistedAnswers = 
   // Create the matching container
   elContainer.innerHTML = `
     <div id="matching" class="matching">
-      <div class="matching-header">
-        <div class="matching-heading heading-small"></div>
-      </div>
       <div id="matching-cards-container" class="matching-cards-container"></div>
       <div id="matching-choices" class="matching-choices" role="listbox" aria-label="Answer choices"></div>
     </div>
   `;
   
   const elMatching = document.getElementById('matching');
-  const elMatchingHeader = elMatching.querySelector('.matching-header');
-  const elMatchingHeading = elMatching.querySelector('.matching-heading');
   const elMatchingCardsContainer = document.getElementById('matching-cards-container');
   const elMatchingChoices = document.getElementById('matching-choices');
-  
-  // Set the prompt content as the heading if it exists
-  if (elMatchingHeading && (matching.promptHtml || matching.prompt)) {
-    elMatchingHeading.innerHTML = matching.promptHtml || matching.prompt;
-    // Check if content is actually present after setting
-    const hasContent = elMatchingHeading.textContent.trim().length > 0;
-    if (!hasContent && elMatchingHeader) {
-      elMatchingHeader.style.display = 'none';
-    }
-  } else {
-    // Hide header if no prompt data
-    if (elMatchingHeader) {
-      elMatchingHeader.style.display = 'none';
-    }
-  }
   
   // Selection state - initialize with persisted answers if available
   const selectedByItemIdx = matching.items.map((_, idx) => {
