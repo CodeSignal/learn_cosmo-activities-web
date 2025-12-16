@@ -141,6 +141,17 @@
   margin: 0;
 }
 
+.horizontal-cards-card {
+  min-height: 284px !important;
+  width: 390px !important;
+  min-width: 390px !important;
+}
+
+.horizontal-cards-card-action {
+  min-height: 33px !important;
+  height: 33px !important;
+}
+
 /* Selection area within horizontal-cards action area */
 .horizontal-cards-card-action .matching-selection-area {
   width: 100%;
@@ -169,7 +180,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 36px;
+  min-height: 33px;
   padding: var(--UI-Spacing-spacing-s, 8px) var(--UI-Spacing-spacing-ml, 20px);
   border-radius: var(--UI-Radius-radius-s, 8px);
   cursor: pointer;
@@ -207,7 +218,7 @@
 
 .matching-selection-area:hover {
   border-color: var(--Colors-Learn-Practice-Selection-Area-Border-Active);
-  background: var(--Colors-Backgrounds-Main-Light);
+
 }
 
 .matching-selection-area:focus {

@@ -9,22 +9,22 @@ __Summary__
 __Responses__
 
 1. **Item 1**
-   - Selected Answer: No answer selected
+   - Selected Answer: Tension
    - Correct Answer: Discomfort
    - Result: ✗ Incorrect
 
 2. **Item 2**
-   - Selected Answer: No answer selected
+   - Selected Answer: Frustration
    - Correct Answer: Engagement
    - Result: ✗ Incorrect
 
 3. **Item 3**
-   - Selected Answer: No answer selected
+   - Selected Answer: Engagement
    - Correct Answer: Tension
    - Result: ✗ Incorrect
 
 4. **Item 4**
-   - Selected Answer: No answer selected
+   - Selected Answer: Relief
    - Correct Answer: Frustration
    - Result: ✗ Incorrect
 
@@ -35,11 +35,7 @@ __Responses__
 
 __Markdown With Blanks__
 
-Match each subtle cue a leader might notice with what it could signal about the team's emotions.
-
-
-
-> **Subtle Cue 1**: Team members are avoiding eye contact and have closed body language. [[blank:Discomfort]]
+> **Situation 1**: A teammate says they’re feeling stressed and overwhelmed. [[blank:Discomfort]]
 
 
 > **Subtle Cue 2**: Several people are nodding, smiling, and leaning forward during a discussion. [[blank:Engagement]]
@@ -55,9 +51,9 @@ Match each subtle cue a leader might notice with what it could signal about the 
 
 __Suggested Answers__
 
-- Relief
-- Frustration
-- Engagement
 - Tension
+- Engagement
+- Frustration
+- Relief
 - Discomfort
 

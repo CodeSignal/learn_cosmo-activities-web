@@ -84,7 +84,7 @@ export function initMatching({ activity, state, postResults, persistedAnswers = 
     if (selected) {
       return `<div class="matching-selection-area matched button button-primary body-large" data-item-index="${itemIndex}">${selected}</div>`;
     } else {
-      return `<div class="matching-selection-area empty body-xxsmall" data-item-index="${itemIndex}">Add label</div>`;
+      return `<div class="matching-selection-area empty body-xxsmall" data-item-index="${itemIndex}">Best response</div>`;
     }
   }
   
@@ -276,7 +276,7 @@ export function initMatching({ activity, state, postResults, persistedAnswers = 
         // Add matched state classes (button styling)
         selectionArea.classList.add('matched', 'button', 'button-primary', 'body-large');
       } else {
-        selectionArea.textContent = 'Add label';
+        selectionArea.textContent = 'Best response';
         // Remove matched state classes
         selectionArea.classList.remove('matched', 'button', 'button-primary', 'body-large');
         // Add empty state classes

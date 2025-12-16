@@ -4,9 +4,7 @@ Matching
 
 __Markdown With Blanks__
 
-Match each subtle cue a leader might notice with what it could signal about the team's emotions.
-
-> **Subtle Cue 1**: Team members are avoiding eye contact and have closed body language. [[blank:Discomfort]]
+> **Situation 1**: A teammate says they’re feeling stressed and overwhelmed. [[blank:Discomfort]]
 
 > **Subtle Cue 2**: Several people are nodding, smiling, and leaning forward during a discussion. [[blank:Engagement]]
 
