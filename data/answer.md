@@ -9,27 +9,27 @@ __Summary__
 __Responses__
 
 1. **Item 1**
-   - Selected Answer: Tension
+   - Selected Answer: No answer selected
    - Correct Answer: Discomfort
    - Result: ✗ Incorrect
 
 2. **Item 2**
-   - Selected Answer: Frustration
+   - Selected Answer: No answer selected
    - Correct Answer: Engagement
    - Result: ✗ Incorrect
 
 3. **Item 3**
-   - Selected Answer: Engagement
+   - Selected Answer: No answer selected
    - Correct Answer: Tension
    - Result: ✗ Incorrect
 
 4. **Item 4**
-   - Selected Answer: Relief
+   - Selected Answer: No answer selected
    - Correct Answer: Frustration
    - Result: ✗ Incorrect
 
 5. **Item 5**
-   - Selected Answer: No answer selected
+   - Selected Answer: Frustration
    - Correct Answer: Relief
    - Result: ✗ Incorrect
 
