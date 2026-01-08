@@ -1,63 +1,62 @@
 __Type__
 
-Matching
+Text Input
 
 __Summary__
 
-0/5 correct
+2/4 correct
 
 __Responses__
 
-1. **Item 1**
-   - Selected Answer: No answer selected
-   - Correct Answer: Charismatic
+1. **Question 1**
+   - Selected Answer: paris
+   - Correct Answer: Paris
+   - Result: ✓ Correct
+
+2. **Question 2**
+   - Selected Answer: 3.24
+   - Correct Answer: 3.14
    - Result: ✗ Incorrect
 
-2. **Item 2**
-   - Selected Answer: No answer selected
-   - Correct Answer: Thinker
+3. **Question 3**
+   - Selected Answer: 1 g
+   - Correct Answer: 1 kg
    - Result: ✗ Incorrect
 
-3. **Item 3**
-   - Selected Answer: No answer selected
-   - Correct Answer: Skeptic
-   - Result: ✗ Incorrect
+4. **Question 4**
+   - Selected Answer: do not repeat yourself
+   - Correct Answer: Don't Repeat Yourself
+   - Result: ✓ Correct
 
-4. **Item 4**
-   - Selected Answer: No answer selected
-   - Correct Answer: Follower
-   - Result: ✗ Incorrect
+__Practice Question__
 
-5. **Item 5**
-   - Selected Answer: Frustration
-   - Correct Answer: Controller
-   - Result: ✗ Incorrect
+What is the capital of France? (Accept any case variation)
 
-__Markdown With Blanks__
+__Correct Answers__
 
-Match each description to the decision-making style it describes.
+- Paris [kind: string] [options: caseSensitive=false,fuzzy=false]
 
+__Practice Question__
 
+What is the approximate value of π? (Accept values within 0.1)
 
-> This type gets energized by bold ideas and breakthrough thinking. They absorb information rapidly and want to see bottom-line results. Visual aids showing competitive advantage are essential when presenting to them. [[blank:Charismatic]]
+__Correct Answers__
 
+- 3.14 [kind: numeric] [options: threshold=0.1,precision=2]
 
-> This type enjoys intellectual challenges and takes pride in being methodical and precise. They genuinely enjoy processing comprehensive data and want to understand your methodology as much as your conclusions. [[blank:Thinker]]
+__Practice Question__
 
+How many kilograms are in 1000 grams? (Include unit)
 
-> This type is suspicious by nature and will aggressively challenge every data point looking for flaws. They are primarily influenced by the credibility of the presenter and need endorsements from people they trust. [[blank:Skeptic]]
+__Correct Answers__
 
+- 1 kg [kind: numeric-with-units] [options: threshold=0.01,precision=2,units=kg]
 
-> This type makes decisions based on how similar initiatives have worked in the past. They want proven methods, trusted brands, and case studies from companies they admire rather than breakthrough innovations. [[blank:Follower]]
+__Practice Question__
 
+What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with or without punctuation and extra spaces)
 
-> This type fears feeling out of control, especially regarding information. They want structured raw data they can personally verify and multiple scenarios to evaluate rather than polished conclusions. [[blank:Controller]]
+__Correct Answers__
 
-__Suggested Answers__
-
-- Thinker
-- Follower
-- Skeptic
-- Controller
-- Charismatic
+- Don't Repeat Yourself [kind: string] [options: caseSensitive=false,fuzzy=true]
 

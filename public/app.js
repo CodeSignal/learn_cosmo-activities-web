@@ -3,6 +3,7 @@ import { initSort } from './modules/sort.js';
 import { initFib } from './modules/fib.js';
 import { initMcq } from './modules/mcq.js';
 import { initMatching } from './modules/matching.js';
+import { initTextInput } from './modules/text-input.js';
 import toolbar from './components/toolbar.js';
 
 (() => {
@@ -88,8 +89,8 @@ import toolbar from './components/toolbar.js';
     const currentType = activity.type || '';
     const persistedType = persistedData.type || '';
     
-    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType) && !/^matching$/i.test(currentType)) {
-      // Only validate MCQ, FIB, and Matching for now
+    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType) && !/^matching$/i.test(currentType) && !/^text input$/i.test(currentType)) {
+      // Only validate MCQ, FIB, Matching, and Text Input for now
       return null;
     }
 
@@ -97,7 +98,8 @@ import toolbar from './components/toolbar.js';
     const typeMatches = 
       (/^multiple choice$/i.test(currentType) && /^multiple choice$/i.test(persistedType)) ||
       (/^fill in the blanks$/i.test(currentType) && /^fill in the blanks$/i.test(persistedType)) ||
-      (/^matching$/i.test(currentType) && /^matching$/i.test(persistedType));
+      (/^matching$/i.test(currentType) && /^matching$/i.test(persistedType)) ||
+      (/^text input$/i.test(currentType) && /^text input$/i.test(persistedType));
 
     if (!typeMatches) {
       return null;
@@ -170,6 +172,28 @@ import toolbar from './components/toolbar.js';
         }
       });
       return validatedAnswers;
+    } else if (/^text input$/i.test(currentType)) {
+      // For Text Input: validate that question IDs exist
+      if (!activity.textInput || !activity.textInput.questions) {
+        return null;
+      }
+      const validQuestionIds = new Set(activity.textInput.questions.map(q => q.id));
+      const persistedQuestionIds = Object.keys(persistedData.answers).map(id => parseInt(id, 10));
+      
+      // All persisted question IDs must exist in current questions
+      const allIdsValid = persistedQuestionIds.every(id => validQuestionIds.has(id));
+      if (!allIdsValid) {
+        return null;
+      }
+      
+      // Return only answers for valid question IDs
+      const validatedAnswers = {};
+      persistedQuestionIds.forEach(id => {
+        if (validQuestionIds.has(id)) {
+          validatedAnswers[id] = persistedData.answers[id];
+        }
+      });
+      return validatedAnswers;
     }
 
     return null;
@@ -204,6 +228,17 @@ import toolbar from './components/toolbar.js';
         postResults,
         persistedAnswers
       });
+    } else if (/^text input$/i.test(activity.type)) {
+      currentActivity = initTextInput({ 
+        activity, 
+        state, 
+        postResults,
+        persistedAnswers
+      });
+      // Store validation function reference
+      if (currentActivity && typeof currentActivity.validate === 'function') {
+        validationHandler = currentActivity.validate;
+      }
     } else {
       currentActivity = initSwipe({ 
         items: state.items, 

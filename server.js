@@ -141,6 +141,17 @@ function parseAnswersFromMarkdown(markdownText) {
         answers[itemIndex] = selectedAnswer;
       }
     }
+  } else if (/^text input$/i.test(type)) {
+    // Parse Text Input responses: "Selected Answer: [value]"
+    const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
+    let match;
+    while ((match = responseRegex.exec(responsesText)) !== null) {
+      const questionIndex = parseInt(match[1], 10) - 1; // Convert to 0-indexed
+      const selectedAnswer = match[2].trim();
+      if (selectedAnswer && selectedAnswer !== 'No answer selected') {
+        answers[questionIndex] = selectedAnswer;
+      }
+    }
   }
   
   return { answers, type };
@@ -475,6 +486,156 @@ function buildActivityFromMarkdown(markdownText) {
     };
   }
 
+  if (/^text input$/i.test(type)) {
+    // Parse Text Input with support for multiple questions
+    const questions = [];
+    const allTokens = Lexer.lex(markdownText);
+    
+    let currentQuestion = null;
+    let currentSection = null;
+    let questionBuffer = [];
+    let answerBuffer = [];
+    
+    function processQuestion() {
+      if (!currentQuestion || questionBuffer.length === 0) return;
+      
+      // Extract question text
+      const questionText = questionBuffer.map(t => t.raw || t.text || '').join('\n').trim();
+      currentQuestion.text = questionText;
+    }
+    
+    function parseValidationOptions(answerText) {
+      // Parse validation options from answer text
+      // Format: "answer [kind: string|numeric|numeric-with-units] [options: key=value,key=value]"
+      // Examples:
+      // "Hello World [kind: string] [options: caseInsensitive=true,fuzzy=false]"
+      // "42.5 [kind: numeric] [options: threshold=0.01,precision=2]"
+      // "100 kg [kind: numeric-with-units] [options: threshold=0.1,precision=1,units=kg,g]"
+      
+      const validationMatch = answerText.match(/^(.+?)(?:\s+\[kind:\s*([^\]]+)\])?(?:\s+\[options:\s*([^\]]+)\])?$/);
+      if (!validationMatch) {
+        return {
+          correctAnswer: answerText.trim(),
+          validation: {}
+        };
+      }
+      
+      const correctAnswer = validationMatch[1].trim();
+      const kind = validationMatch[2] ? validationMatch[2].trim() : 'string';
+      const optionsText = validationMatch[3] ? validationMatch[3].trim() : '';
+      
+      // Parse options
+      const options = {};
+      if (optionsText) {
+        const optionPairs = optionsText.split(',');
+        optionPairs.forEach(pair => {
+          const [key, value] = pair.split('=').map(s => s.trim());
+          if (key && value !== undefined) {
+            // Convert string booleans and numbers
+            if (value === 'true') {
+              options[key] = true;
+            } else if (value === 'false') {
+              options[key] = false;
+            } else if (!isNaN(value)) {
+              options[key] = parseFloat(value);
+            } else {
+              options[key] = value;
+            }
+          }
+        });
+      }
+      
+      // Parse units if present (comma-separated list)
+      if (kind === 'numeric-with-units' && options.units) {
+        if (typeof options.units === 'string') {
+          options.units = options.units.split(',').map(u => u.trim()).filter(Boolean);
+        }
+      }
+      
+      return {
+        correctAnswer,
+        validation: {
+          kind,
+          options
+        }
+      };
+    }
+    
+    function processAnswers() {
+      if (!currentQuestion || answerBuffer.length === 0) return;
+      
+      const answerItems = readListItems(answerBuffer);
+      
+      // For text-input, we expect a single correct answer per question
+      // But we support multiple answers in case of multiple correct answers
+      if (answerItems.length > 0) {
+        // Use the first answer as the correct answer
+        const answerText = answerItems[0].trim();
+        const { correctAnswer, validation } = parseValidationOptions(answerText);
+        
+        currentQuestion.correctAnswer = correctAnswer;
+        currentQuestion.validation = validation;
+      }
+      
+      // Add to questions array
+      questions.push(currentQuestion);
+    }
+    
+    // Parse tokens sequentially
+    for (const token of allTokens) {
+      if (token.type === 'paragraph') {
+        const text = (token.text || '').trim();
+        const m = text.match(/^__([^_]+)__\s*$/);
+        if (m) {
+          const sectionName = m[1].trim();
+          
+          if (sectionName === 'Practice Question') {
+            // Process previous question/answers if any
+            if (currentQuestion) {
+              processAnswers();
+            }
+            
+            // Start new question
+            currentQuestion = { id: questions.length, text: '', correctAnswer: '', validation: {} };
+            currentSection = 'question';
+            questionBuffer = [];
+            answerBuffer = [];
+            continue;
+          } else if (sectionName === 'Correct Answers' || sectionName === 'Suggested Answers') {
+            // Process current question text
+            if (currentQuestion) {
+              processQuestion();
+              currentSection = 'answers';
+              answerBuffer = [];
+            }
+            continue;
+          } else if (sectionName === 'Type') {
+            // Skip type section
+            currentSection = null;
+            continue;
+          }
+        }
+      }
+      
+      if (currentSection === 'question' && currentQuestion) {
+        questionBuffer.push(token);
+      } else if (currentSection === 'answers' && currentQuestion) {
+        answerBuffer.push(token);
+      }
+    }
+    
+    // Process last question and answers
+    if (currentQuestion) {
+      processAnswers();
+    }
+    
+    if (questions.length === 0) {
+      throw new Error('No text input questions found');
+    }
+    
+    return { type, question: null, textInput: { questions } };
+  }
+
   const labels = readListItems(sections.get('Labels'));
   if (/^sort into boxes$/i.test(type)) {
     let first = '', second = '';
@@ -592,13 +753,193 @@ const server = http.createServer((req, res) => {
         
         // Format results as markdown
         const activity = data.activity;
-        // For MCQ, compare sorted arrays; for others, exact string match
+        
+        // Calculate Levenshtein distance between two strings
+        function levenshteinDistance(str1, str2) {
+          const len1 = str1.length;
+          const len2 = str2.length;
+          const matrix = [];
+          
+          // Initialize matrix
+          for (let i = 0; i <= len1; i++) {
+            matrix[i] = [i];
+          }
+          for (let j = 0; j <= len2; j++) {
+            matrix[0][j] = j;
+          }
+          
+          // Fill matrix
+          for (let i = 1; i <= len1; i++) {
+            for (let j = 1; j <= len2; j++) {
+              if (str1[i - 1] === str2[j - 1]) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+              } else {
+                matrix[i][j] = Math.min(
+                  matrix[i - 1][j] + 1,     // deletion
+                  matrix[i][j - 1] + 1,     // insertion
+                  matrix[i - 1][j - 1] + 1  // substitution
+                );
+              }
+            }
+          }
+          
+          return matrix[len1][len2];
+        }
+        
+        // Calculate similarity percentage (0-1) between two strings
+        function calculateSimilarity(str1, str2) {
+          const maxLen = Math.max(str1.length, str2.length);
+          if (maxLen === 0) return 1.0;
+          
+          const distance = levenshteinDistance(str1, str2);
+          return 1 - (distance / maxLen);
+        }
+        
+        // Validation functions for text input
+        function validateTextInputString(userAnswer, correctAnswer, options = {}) {
+          const caseSensitive = options.caseSensitive === true; // Default false (case-insensitive)
+          const fuzzy = options.fuzzy; // Can be true, false, or a number (0-1)
+          
+          let user = String(userAnswer).trim();
+          let correct = String(correctAnswer).trim();
+          
+          if (!caseSensitive) {
+            // Default to case-insensitive matching
+            user = user.toLowerCase();
+            correct = correct.toLowerCase();
+          }
+          
+          // Handle fuzzy matching
+          if (fuzzy !== false && fuzzy !== undefined) {
+            // Normalize fuzzy threshold: true = 0.8, number = that number
+            let threshold = fuzzy === true ? 0.8 : parseFloat(fuzzy);
+            
+            // If threshold is invalid, default to 0.8
+            if (isNaN(threshold) || threshold < 0 || threshold > 1) {
+              threshold = 0.8;
+            }
+            
+            // Normalize spacing and punctuation
+            const normalizedUser = user.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+            const normalizedCorrect = correct.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+            
+            // If exact match after normalization, accept
+            if (normalizedUser === normalizedCorrect) {
+              return true;
+            }
+            
+            // Calculate similarity and compare to threshold
+            const similarity = calculateSimilarity(normalizedUser, normalizedCorrect);
+            return similarity >= threshold;
+          }
+          
+          // No fuzzy matching - exact match required
+          return user === correct;
+        }
+        
+        function validateTextInputNumeric(userAnswer, correctAnswer, options = {}) {
+          const threshold = options.threshold !== undefined ? options.threshold : 0.01;
+          const precision = options.precision !== undefined ? options.precision : 2;
+          
+          const user = parseFloat(userAnswer);
+          const correct = parseFloat(correctAnswer);
+          
+          if (isNaN(user) || isNaN(correct)) {
+            return false;
+          }
+          
+          // Round to specified precision
+          const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
+          const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
+          
+          return Math.abs(userRounded - correctRounded) <= threshold;
+        }
+        
+        function validateTextInputNumericWithUnits(userAnswer, correctAnswer, options = {}) {
+          const threshold = options.threshold !== undefined ? options.threshold : 0.01;
+          const precision = options.precision !== undefined ? options.precision : 2;
+          const units = options.units || [];
+          
+          // Extract numeric value and unit from user answer
+          const userMatch = String(userAnswer).trim().match(/^([\d.]+)\s*(.*)$/);
+          if (!userMatch) {
+            return false;
+          }
+          
+          const userValue = parseFloat(userMatch[1]);
+          const userUnit = userMatch[2].trim().toLowerCase();
+          
+          // Extract numeric value and unit from correct answer
+          const correctMatch = String(correctAnswer).trim().match(/^([\d.]+)\s*(.*)$/);
+          if (!correctMatch) {
+            return false;
+          }
+          
+          const correctValue = parseFloat(correctMatch[1]);
+          const correctUnit = correctMatch[2].trim().toLowerCase();
+          
+          // Check if units match (case insensitive, and check against allowed units)
+          if (units.length > 0) {
+            // If units are specified, check if user unit matches any allowed unit
+            const userUnitMatches = units.some(u => u.toLowerCase() === userUnit);
+            const correctUnitMatches = units.some(u => u.toLowerCase() === correctUnit);
+            
+            if (!userUnitMatches || !correctUnitMatches) {
+              return false;
+            }
+            
+            // If both match, check if they match each other
+            if (userUnit !== correctUnit) {
+              return false;
+            }
+          } else {
+            // If no units specified, just check if they match
+            if (userUnit !== correctUnit) {
+              return false;
+            }
+          }
+          
+          // Check numeric value
+          return validateTextInputNumeric(userValue, correctValue, { threshold, precision });
+        }
+        
+        function validateTextInputAnswer(question, userAnswer) {
+          if (!userAnswer || !userAnswer.trim()) {
+            return false;
+          }
+          
+          const validation = question.validation || {};
+          const options = validation.options || {};
+          
+          switch (validation.kind) {
+            case 'string':
+              return validateTextInputString(userAnswer, question.correctAnswer, options);
+            case 'numeric':
+              return validateTextInputNumeric(userAnswer, question.correctAnswer, options);
+            case 'numeric-with-units':
+              return validateTextInputNumericWithUnits(userAnswer, question.correctAnswer, options);
+            default:
+              // Default to exact string match (case-insensitive)
+              return validateTextInputString(userAnswer, question.correctAnswer, { caseSensitive: false });
+          }
+        }
+        
+        // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact string match
         const correctCount = data.results.filter(result => {
           if (activity && /^multiple choice$/i.test(activity.type)) {
             // For MCQ, compare sorted comma-separated values
             const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
             const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
             return selected === correct;
+          } else if (activity && /^text input$/i.test(activity.type)) {
+            // For Text Input, use validation logic based on question validation options
+            const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+            if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
+              const question = activity.textInput.questions[questionIndex];
+              return validateTextInputAnswer(question, result.selected);
+            }
+            // Fallback to simple string comparison if question not found
+            return result.selected === result.correct;
           }
           return result.selected === result.correct;
         }).length;
@@ -618,12 +959,22 @@ const server = http.createServer((req, res) => {
             markdown += `${index + 1}. **${result.text}**\n`;
             markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
             markdown += `   - Correct Answer: ${result.correct}\n`;
-            // For MCQ, compare sorted arrays; for others, exact match
+            // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact match
             let isCorrect = false;
             if (activity && /^multiple choice$/i.test(activity.type)) {
               const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
               const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
               isCorrect = selected === correct;
+            } else if (activity && /^text input$/i.test(activity.type)) {
+              // For Text Input, use validation logic based on question validation options
+              const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+              if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
+                const question = activity.textInput.questions[questionIndex];
+                isCorrect = validateTextInputAnswer(question, result.selected);
+              } else {
+                // Fallback to simple string comparison if question not found
+                isCorrect = result.selected === result.correct;
+              }
             } else {
               isCorrect = result.selected === result.correct;
             }
@@ -663,6 +1014,32 @@ const server = http.createServer((req, res) => {
               markdown += `- ${choice}\n`;
             });
             markdown += '\n';
+          } else if (/^text input$/i.test(activity.type)) {
+            // For Text Input, include each question with correct answers
+            if (activity.textInput && activity.textInput.questions) {
+              activity.textInput.questions.forEach((q, qIdx) => {
+                markdown += `__Practice Question__\n\n${q.text}\n\n`;
+                markdown += `__Correct Answers__\n\n`;
+                // Build answer string with validation options
+                let answerStr = q.correctAnswer;
+                if (q.validation && q.validation.kind) {
+                  answerStr += ` [kind: ${q.validation.kind}]`;
+                  if (q.validation.options && Object.keys(q.validation.options).length > 0) {
+                    const optionsStr = Object.entries(q.validation.options)
+                      .map(([key, value]) => {
+                        if (Array.isArray(value)) {
+                          return `${key}=${value.join(',')}`;
+                        }
+                        return `${key}=${value}`;
+                      })
+                      .join(',');
+                    answerStr += ` [options: ${optionsStr}]`;
+                  }
+                }
+                markdown += `- ${answerStr}\n`;
+                markdown += '\n';
+              });
+            }
           } else {
             // For swipe/sort activities, include question and labels
             if (activity.question) {
