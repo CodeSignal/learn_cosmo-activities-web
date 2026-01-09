@@ -15,11 +15,21 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
   elContainer.innerHTML = `
     <div id="text-input" class="text-input">
       <div id="text-input-questions" class="text-input-questions"></div>
+      <div id="text-input-scroll-indicator" class="text-input-scroll-indicator" aria-hidden="true">
+        <div class="text-input-scroll-indicator-fade"></div>
+        <div class="text-input-scroll-indicator-hint">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="body-xsmall">More questions below</span>
+        </div>
+      </div>
     </div>
   `;
   
   const elTextInput = document.getElementById('text-input');
   const elQuestions = document.getElementById('text-input-questions');
+  const elScrollIndicator = document.getElementById('text-input-scroll-indicator');
   
   // Track user answers per question
   const userAnswers = {};
@@ -265,10 +275,17 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
       nextButton.disabled = !hasAnswer;
       nextButton.setAttribute('aria-label', `Go to next question`);
       
-      // Scroll to next question when button is clicked
+      // Next button click handler (no scrolling)
       nextButton.addEventListener('click', () => {
-        const questionIndex = parseInt(questionEl.getAttribute('data-question-index'), 10);
-        scrollToNextQuestion(questionIndex);
+        // Focus the next question's input field
+        const nextQuestionIndex = qIdx + 1;
+        if (nextQuestionIndex < textInput.questions.length) {
+          const nextQuestion = textInput.questions[nextQuestionIndex];
+          const nextInput = document.getElementById(`q${nextQuestion.id}-input`);
+          if (nextInput) {
+            nextInput.focus();
+          }
+        }
       });
       
       // Update button state when input changes
@@ -284,102 +301,6 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     elQuestions.appendChild(questionEl);
   });
   
-  function findCenteredQuestionIndex() {
-    const viewportCenter = window.innerHeight / 2 + window.scrollY;
-    let closestQuestionIndex = 0;
-    let minDistance = Infinity;
-    
-    for (let i = 0; i < elQuestions.children.length; i++) {
-      const questionEl = elQuestions.children[i];
-      const rect = questionEl.getBoundingClientRect();
-      const questionCenter = rect.top + rect.height / 2 + window.scrollY;
-      const distance = Math.abs(viewportCenter - questionCenter);
-      
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestQuestionIndex = i;
-      }
-    }
-    
-    return closestQuestionIndex;
-  }
-  
-  function updateQuestionOpacity(centeredQuestionIndex) {
-    for (let i = 0; i < elQuestions.children.length; i++) {
-      const questionEl = elQuestions.children[i];
-      if (i === centeredQuestionIndex) {
-        questionEl.classList.add('text-input-question-centered');
-      } else {
-        questionEl.classList.remove('text-input-question-centered');
-      }
-    }
-  }
-  
-  function updateDynamicPadding(centeredQuestionIndex) {
-    const viewportHeight = window.innerHeight;
-    
-    // Calculate padding based on position
-    const totalQuestions = textInput.questions.length;
-    const isFirstQuestion = centeredQuestionIndex === 0;
-    const isLastQuestion = centeredQuestionIndex === totalQuestions - 1;
-    
-    // Calculate how much padding is needed
-    let topPadding = 0;
-    let bottomPadding = 0;
-    
-    if (isFirstQuestion) {
-      // Need padding at top to center first question
-      const firstQuestionEl = elQuestions.children[0];
-      if (firstQuestionEl) {
-        const rect = firstQuestionEl.getBoundingClientRect();
-        const questionHeight = rect.height;
-        // Reduce padding slightly (multiply by 0.85) for better centering
-        const neededPadding = Math.max(0, (viewportHeight - questionHeight) / 2 * 0.85);
-        topPadding = neededPadding;
-      }
-    }
-    
-    if (isLastQuestion) {
-      // Need padding at bottom to center last question
-      const lastQuestionEl = elQuestions.children[totalQuestions - 1];
-      if (lastQuestionEl) {
-        const rect = lastQuestionEl.getBoundingClientRect();
-        const questionHeight = rect.height;
-        const neededPadding = Math.max(0, (viewportHeight - questionHeight) / 2);
-        bottomPadding = neededPadding;
-      }
-    }
-    
-    // Apply padding dynamically
-    elQuestions.style.paddingTop = `${topPadding}px`;
-    elQuestions.style.paddingBottom = `${bottomPadding}px`;
-  }
-  
-  function centerQuestion(questionIndex) {
-    const questionEl = elQuestions.children[questionIndex];
-    if (questionEl) {
-      updateDynamicPadding(questionIndex);
-      updateQuestionOpacity(questionIndex);
-      questionEl.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center',
-        inline: 'nearest'
-      });
-      // Update opacity and padding again after scroll animation completes
-      setTimeout(() => {
-        const centeredIndex = findCenteredQuestionIndex();
-        updateQuestionOpacity(centeredIndex);
-        updateDynamicPadding(centeredIndex);
-      }, 600);
-    }
-  }
-  
-  function scrollToNextQuestion(currentQuestionIndex) {
-    const nextQuestionIndex = currentQuestionIndex + 1;
-    if (nextQuestionIndex < textInput.questions.length) {
-      centerQuestion(nextQuestionIndex);
-    }
-  }
   
   function addErrorIcon(questionEl) {
     // Check if icon already exists
@@ -490,50 +411,54 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     enabled: true
   });
   
-  // Add scroll event listener to update opacity dynamically on manual scroll
-  let scrollTimeout;
-  function handleScroll() {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-      const centeredIndex = findCenteredQuestionIndex();
-      updateQuestionOpacity(centeredIndex);
-      updateDynamicPadding(centeredIndex);
-    }, 50); // Debounce scroll events
-  }
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  window.addEventListener('resize', handleScroll, { passive: true });
+  // Add static top padding to position first question near the top
+  elQuestions.style.paddingTop = '2rem';
   
-  // Center the first question (or first answered question) on initial load
-  setTimeout(() => {
-    let questionToCenter = 0; // Default to first question
+  // Function to check if there's content below the fold and update scroll indicator
+  function updateScrollIndicator() {
+    if (!elScrollIndicator) return;
     
-    // If persisted answers exist, always scroll to the first question
-    if (persistedAnswers) {
-      questionToCenter = 0;
+    const containerRect = elTextInput.getBoundingClientRect();
+    const questionsRect = elQuestions.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    
+    // Check if questions container extends below the visible viewport
+    const isContentBelow = questionsRect.bottom > viewportHeight;
+    
+    // Also check if user has scrolled near the bottom (within 100px)
+    const scrollPosition = window.scrollY + viewportHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const isNearBottom = scrollPosition >= documentHeight - 100;
+    
+    if (isContentBelow && !isNearBottom) {
+      elScrollIndicator.classList.add('text-input-scroll-indicator-visible');
     } else {
-      // Otherwise, check if there's a pre-answered question from state
-      for (let i = 0; i < textInput.questions.length; i++) {
-        const q = textInput.questions[i];
-        if (userAnswers[q.id] && userAnswers[q.id].trim().length > 0) {
-          questionToCenter = i;
-          break;
-        }
-      }
+      elScrollIndicator.classList.remove('text-input-scroll-indicator-visible');
     }
-    
-    centerQuestion(questionToCenter);
-    // Update opacity and padding after scroll animation completes
-    setTimeout(() => {
-      const centeredIndex = findCenteredQuestionIndex();
-      updateQuestionOpacity(centeredIndex);
-      updateDynamicPadding(centeredIndex);
-    }, 600); // Wait for smooth scroll to complete
-  }, 100);
+  }
+  
+  // Update scroll indicator on scroll and resize
+  let scrollIndicatorTimeout;
+  function handleScrollIndicatorUpdate() {
+    clearTimeout(scrollIndicatorTimeout);
+    scrollIndicatorTimeout = setTimeout(() => {
+      updateScrollIndicator();
+    }, 100);
+  }
+  
+  window.addEventListener('scroll', handleScrollIndicatorUpdate, { passive: true });
+  window.addEventListener('resize', handleScrollIndicatorUpdate, { passive: true });
+  
+  // Initial check after questions are rendered
+  setTimeout(() => {
+    updateScrollIndicator();
+  }, 200);
   
   return {
     cleanup: () => {
       toolbar.unregisterTool('text-input-clear-all');
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScrollIndicatorUpdate);
+      window.removeEventListener('resize', handleScrollIndicatorUpdate);
       elContainer.innerHTML = '';
     },
     validate: validateAnswers

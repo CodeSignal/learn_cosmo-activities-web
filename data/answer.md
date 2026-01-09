@@ -4,7 +4,7 @@ Text Input
 
 __Summary__
 
-2/4 correct
+5/5 correct
 
 __Responses__
 
@@ -14,18 +14,23 @@ __Responses__
    - Result: ✓ Correct
 
 2. **Question 2**
-   - Selected Answer: 3.24
+   - Selected Answer: 3.14
    - Correct Answer: 3.14
-   - Result: ✗ Incorrect
+   - Result: ✓ Correct
 
 3. **Question 3**
-   - Selected Answer: 1 g
+   - Selected Answer: 1 kg
    - Correct Answer: 1 kg
-   - Result: ✗ Incorrect
+   - Result: ✓ Correct
 
 4. **Question 4**
-   - Selected Answer: do not repeat yourself
+   - Selected Answer: do not repeat yoursel
    - Correct Answer: Don't Repeat Yourself
+   - Result: ✓ Correct
+
+5. **Question 5**
+   - Selected Answer: ccommotion
+   - Correct Answer: accommodation
    - Result: ✓ Correct
 
 __Practice Question__
@@ -54,9 +59,17 @@ __Correct Answers__
 
 __Practice Question__
 
-What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with or without punctuation and extra spaces)
+What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with punctuation, spacing, and minor spelling errors)
 
 __Correct Answers__
 
 - Don't Repeat Yourself [kind: string] [options: caseSensitive=false,fuzzy=true]
+
+__Practice Question__
+
+Spell the word "accommodation" (Accept minor spelling errors)
+
+__Correct Answers__
+
+- accommodation [kind: string] [options: caseSensitive=false,fuzzy=0.7]
 
