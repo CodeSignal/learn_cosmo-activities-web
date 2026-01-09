@@ -23,6 +23,21 @@
   margin: 0 auto;
 }
 
+.text-input-with-content {
+  max-width: 100%;
+  padding: 0;
+  gap: 0;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  width: 100%;
+}
+
+.text-input-split-panel {
+  width: 100%;
+  height: 100%;
+}
+
 .text-input-questions {
   display: flex;
   flex-direction: column;
@@ -107,8 +122,49 @@
   margin-top: var(--UI-Spacing-spacing-ms, 16px);
 }
 
-.text-input-next-button {
-  /* Button styles are handled by design system button classes */
+/* Content and Splitter Styles */
+.text-input-content-wrapper {
+  height: 100%;
+  overflow: auto;
+  background-color: var(--Colors-Backgrounds-Main-Top, #ffffff);
+  position: relative;
+}
+
+.text-input-content-iframe {
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--Colors-Stroke-Lighter, rgba(0, 0, 0, 0.1));
+  display: block;
+}
+
+/* Disable pointer events on iframe during drag to prevent event loss */
+.split-panel-container.dragging .text-input-content-iframe {
+  pointer-events: none !important;
+}
+
+.text-input-questions-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 1.5rem;
+  position: relative;
+}
+
+@media (prefers-color-scheme: dark) {
+  .text-input-content-wrapper {
+    background-color: var(--Colors-Backgrounds-Main-Top);
+    border-right-color: var(--Colors-Stroke-Lighter);
+  }
+  
+  .text-input-splitter {
+    background-color: var(--Colors-Stroke-Lighter);
+  }
+  
+  .text-input-splitter:hover,
+  .text-input-splitter:focus {
+    background-color: var(--Colors-Stroke-Default);
+  }
 }
 
 /* Scroll Indicator */
@@ -121,6 +177,12 @@
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 10;
+}
+
+.text-input-with-content .text-input-scroll-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
 }
 
 .text-input-scroll-indicator-visible {

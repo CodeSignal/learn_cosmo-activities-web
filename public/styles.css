@@ -35,9 +35,21 @@ body:has(.matching) {
   padding-right: 0;
 }
 
+.main:has(.text-input-with-content) {
+  max-width: none;
+  padding: 0;
+  justify-content: flex-start;
+}
+
 /* Activity container */
 .activity-container {
   display: grid;
   place-items: center;
   min-height: 400px;;
+}
+
+.activity-container:has(.text-input-with-content) {
+  place-items: start;
+  width: 100%;
+  min-height: 100vh;
 }

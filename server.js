@@ -495,6 +495,8 @@ function buildActivityFromMarkdown(markdownText) {
     let currentSection = null;
     let questionBuffer = [];
     let answerBuffer = [];
+    let contentSection = null;
+    let contentBuffer = [];
     
     function processQuestion() {
       if (!currentQuestion || questionBuffer.length === 0) return;
@@ -613,6 +615,11 @@ function buildActivityFromMarkdown(markdownText) {
             // Skip type section
             currentSection = null;
             continue;
+          } else if (sectionName === 'Content') {
+            // Start content section
+            currentSection = 'content';
+            contentBuffer = [];
+            continue;
           }
         }
       }
@@ -621,6 +628,8 @@ function buildActivityFromMarkdown(markdownText) {
         questionBuffer.push(token);
       } else if (currentSection === 'answers' && currentQuestion) {
         answerBuffer.push(token);
+      } else if (currentSection === 'content') {
+        contentBuffer.push(token);
       }
     }
     
@@ -633,7 +642,22 @@ function buildActivityFromMarkdown(markdownText) {
       throw new Error('No text input questions found');
     }
     
-    return { type, question: null, textInput: { questions } };
+    // Process content section if present
+    let content = null;
+    if (contentBuffer.length > 0) {
+      const contentText = contentBuffer.map(t => t.raw || t.text || '').join('\n').trim();
+      if (contentText) {
+        // Check if it's a URL (starts with http:// or https://)
+        if (/^https?:\/\//i.test(contentText)) {
+          content = { url: contentText };
+        } else {
+          // Treat as markdown content
+          content = { markdown: contentText };
+        }
+      }
+    }
+    
+    return { type, question: null, textInput: { questions, content } };
   }
 
   const labels = readListItems(sections.get('Labels'));
@@ -736,6 +760,58 @@ const server = http.createServer((req, res) => {
       status: 'success', 
       message: 'Validation message sent to all connected clients',
       clientCount: clients.size
+    });
+    return;
+  }
+
+  // API: /api/content/markdown - Render markdown content for iframe
+  if (pathname === '/api/content/markdown' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const markdown = data.markdown || '';
+        const html = marked.parse(markdown);
+        
+        // Return HTML wrapped in a proper document with styles
+        const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content</title>
+  <link rel="stylesheet" href="/design-system/colors/colors.css" />
+  <link rel="stylesheet" href="/design-system/typography/typography.css" />
+  <link rel="stylesheet" href="/design-system/spacing/spacing.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      background-color: var(--Colors-Backgrounds-Main-Top);
+      color: var(--Colors-Text-Body-Default);
+      font-family: var(--body-family);
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: var(--Colors-Backgrounds-Main-Top);
+        color: var(--Colors-Text-Body-Default);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="body-medium">${html}</div>
+</body>
+</html>`;
+        
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(fullHtml);
+      } catch (e) {
+        respondJson(res, 400, { error: 'Invalid request' });
+      }
     });
     return;
   }

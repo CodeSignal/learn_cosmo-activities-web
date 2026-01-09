@@ -1,4 +1,5 @@
 import toolbar from '../components/toolbar.js';
+import SplitPanel from '../design-system/components/split-panel/split-panel.js';
 
 export function initTextInput({ activity, state, postResults, persistedAnswers = null }) {
   const elContainer = document.getElementById('activity-container');
@@ -11,9 +12,39 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     };
   }
   
+  // Check if content is provided
+  const hasContent = textInput.content && (textInput.content.url || textInput.content.markdown);
+  
+  // Store split panel reference for cleanup
+  let splitPanel = null;
+  
   // Create the text input container
-  elContainer.innerHTML = `
-    <div id="text-input" class="text-input">
+  if (hasContent) {
+    elContainer.innerHTML = `
+      <div id="text-input" class="text-input text-input-with-content">
+        <div id="text-input-split-panel" class="text-input-split-panel"></div>
+      </div>
+    `;
+    
+    // Initialize split panel
+    const splitPanelContainer = document.getElementById('text-input-split-panel');
+    splitPanel = new SplitPanel(splitPanelContainer, {
+      initialSplit: 40,
+      minLeft: 20,
+      minRight: 30,
+    });
+    
+    // Get panel references
+    const leftPanel = splitPanel.getLeftPanel();
+    const rightPanel = splitPanel.getRightPanel();
+    
+    // Set up left panel (content)
+    leftPanel.className = 'text-input-content-wrapper';
+    leftPanel.innerHTML = '<iframe id="text-input-content-iframe" class="text-input-content-iframe" frameborder="1"></iframe>';
+    
+    // Set up right panel (questions)
+    rightPanel.className = 'text-input-questions-wrapper';
+    rightPanel.innerHTML = `
       <div id="text-input-questions" class="text-input-questions"></div>
       <div id="text-input-scroll-indicator" class="text-input-scroll-indicator" aria-hidden="true">
         <div class="text-input-scroll-indicator-fade"></div>
@@ -24,12 +55,54 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
           <span class="body-xsmall">More questions below</span>
         </div>
       </div>
-    </div>
-  `;
+    `;
+  } else {
+    elContainer.innerHTML = `
+      <div id="text-input" class="text-input">
+        <div id="text-input-questions" class="text-input-questions"></div>
+        <div id="text-input-scroll-indicator" class="text-input-scroll-indicator" aria-hidden="true">
+          <div class="text-input-scroll-indicator-fade"></div>
+          <div class="text-input-scroll-indicator-hint">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="body-xsmall">More questions below</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
   
   const elTextInput = document.getElementById('text-input');
   const elQuestions = document.getElementById('text-input-questions');
   const elScrollIndicator = document.getElementById('text-input-scroll-indicator');
+  
+  // Initialize content iframe if content is provided
+  if (hasContent) {
+    const elContentIframe = document.getElementById('text-input-content-iframe');
+    const elQuestionsWrapper = document.getElementById('text-input-questions-wrapper');
+    
+    // Load content into iframe
+    if (textInput.content.url) {
+      elContentIframe.src = textInput.content.url;
+    } else if (textInput.content.markdown) {
+      // Render markdown content via API
+      fetch('/api/content/markdown', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown: textInput.content.markdown })
+      })
+      .then(res => res.text())
+      .then(html => {
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        elContentIframe.src = url;
+      })
+      .catch(err => {
+        console.error('Failed to render markdown content:', err);
+      });
+    }
+  }
   
   // Track user answers per question
   const userAnswers = {};
@@ -418,17 +491,24 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
   function updateScrollIndicator() {
     if (!elScrollIndicator) return;
     
-    const containerRect = elTextInput.getBoundingClientRect();
-    const questionsRect = elQuestions.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
+    const questionsWrapper = hasContent ? document.getElementById('text-input-questions-wrapper') : null;
+    const scrollContainer = questionsWrapper || window;
+    const scrollElement = questionsWrapper || document.documentElement;
     
-    // Check if questions container extends below the visible viewport
-    const isContentBelow = questionsRect.bottom > viewportHeight;
+    let scrollTop, scrollHeight, clientHeight;
+    if (hasContent && questionsWrapper) {
+      scrollTop = questionsWrapper.scrollTop;
+      scrollHeight = questionsWrapper.scrollHeight;
+      clientHeight = questionsWrapper.clientHeight;
+    } else {
+      scrollTop = window.scrollY || document.documentElement.scrollTop;
+      scrollHeight = document.documentElement.scrollHeight;
+      clientHeight = window.innerHeight;
+    }
     
-    // Also check if user has scrolled near the bottom (within 100px)
-    const scrollPosition = window.scrollY + viewportHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    const isNearBottom = scrollPosition >= documentHeight - 100;
+    // Check if there's content below the visible area
+    const isContentBelow = scrollHeight > clientHeight;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
     
     if (isContentBelow && !isNearBottom) {
       elScrollIndicator.classList.add('text-input-scroll-indicator-visible');
@@ -446,7 +526,14 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     }, 100);
   }
   
-  window.addEventListener('scroll', handleScrollIndicatorUpdate, { passive: true });
+  if (hasContent) {
+    const questionsWrapper = document.getElementById('text-input-questions-wrapper');
+    if (questionsWrapper) {
+      questionsWrapper.addEventListener('scroll', handleScrollIndicatorUpdate, { passive: true });
+    }
+  } else {
+    window.addEventListener('scroll', handleScrollIndicatorUpdate, { passive: true });
+  }
   window.addEventListener('resize', handleScrollIndicatorUpdate, { passive: true });
   
   // Initial check after questions are rendered
@@ -457,7 +544,18 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
   return {
     cleanup: () => {
       toolbar.unregisterTool('text-input-clear-all');
-      window.removeEventListener('scroll', handleScrollIndicatorUpdate);
+      if (splitPanel) {
+        splitPanel.destroy();
+        splitPanel = null;
+      }
+      if (hasContent) {
+        const questionsWrapper = document.getElementById('text-input-questions-wrapper');
+        if (questionsWrapper) {
+          questionsWrapper.removeEventListener('scroll', handleScrollIndicatorUpdate);
+        }
+      } else {
+        window.removeEventListener('scroll', handleScrollIndicatorUpdate);
+      }
       window.removeEventListener('resize', handleScrollIndicatorUpdate);
       elContainer.innerHTML = '';
     },
