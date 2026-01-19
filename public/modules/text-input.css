@@ -19,8 +19,11 @@
   flex-direction: column;
   gap: var(--UI-Spacing-spacing-ms, 16px);
   padding: 1.5rem;
+  padding-bottom: 0;
   max-width: 800px;
   margin: 0 auto;
+  scroll-padding-top: 2rem;
+  scroll-padding-bottom: 2rem;
 }
 
 .text-input-with-content {
@@ -31,6 +34,12 @@
   overflow: hidden;
   margin: 0;
   width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  /* Ensure container doesn't trigger document scroll */
+  contain: layout style paint;
 }
 
 .text-input-split-panel {
@@ -38,10 +47,37 @@
   height: 100%;
 }
 
+/* Prevent scrolling on split panel container and left panel */
+.text-input-split-panel .split-panel-container {
+  overflow: hidden !important;
+}
+
+.text-input-split-panel .split-panel-left {
+  overflow: hidden !important;
+}
+
 .text-input-questions {
   display: flex;
   flex-direction: column;
   gap: 72px;
+  padding-bottom: 50vh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Reduce padding for non-split-panel view to limit scrolling - 
+   allows last question to scroll to midpoint (50vh) instead of off-screen */
+.text-input:not(.text-input-with-content) .text-input-questions {
+  padding-bottom: 45vh;
+}
+
+/* When in split-panel mode, use same padding as non-split-panel to limit scrolling */
+.text-input-questions-wrapper .text-input-questions {
+  padding-bottom: 45vh;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .text-input-question {
@@ -49,6 +85,9 @@
   flex-direction: column;
   gap: var(--UI-Spacing-spacing-ms, 16px);
   transition: border-color 0.2s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .text-input-question-incorrect {
@@ -137,6 +176,8 @@
 .text-input-field {
   width: 100%;
   max-width: 100%;
+  scroll-margin-top: 2rem;
+  scroll-margin-bottom: 2rem;
 }
 
 .text-input-next-button-container {
@@ -170,8 +211,18 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 1.5rem;
+  padding-bottom: 0;
   position: relative;
+  scroll-padding-top: 2rem;
+  scroll-padding-bottom: 2rem;
+  /* Prevent horizontal scrolling */
+  scroll-behavior: smooth;
+  /* Ensure content doesn't cause horizontal overflow */
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -190,67 +241,4 @@
   }
 }
 
-/* Scroll Indicator */
-.text-input-scroll-indicator {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 10;
-}
-
-.text-input-with-content .text-input-scroll-indicator {
-  position: absolute;
-  left: 0;
-  right: 0;
-}
-
-.text-input-scroll-indicator-visible {
-  opacity: 1;
-}
-
-.text-input-scroll-indicator-fade {
-  background-color: var(--Colors-Backgrounds-Main-Top, #ffffff);
-  border-top: 1px solid var(--Colors-Stroke-Lighter, rgba(0, 0, 0, 0.1));
-}
-
-.text-input-scroll-indicator-hint {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--UI-Spacing-spacing-xs, 8px);
-  padding: var(--UI-Spacing-spacing-sm, 12px);
-  background-color: var(--Colors-Backgrounds-Main-Top, #ffffff);
-  color: var(--Colors-Text-Body-Muted, rgba(0, 0, 0, 0.6));
-}
-
-.text-input-scroll-indicator-hint svg {
-  animation: bounce 2s infinite;
-  color: var(--Colors-Text-Body-Muted, rgba(0, 0, 0, 0.6));
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-8px);
-  }
-  60% {
-    transform: translateY(-4px);
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .text-input-scroll-indicator-hint {
-    color: var(--Colors-Text-Body-Muted, rgba(255, 255, 255, 0.6));
-  }
-  
-  .text-input-scroll-indicator-hint svg {
-    color: var(--Colors-Text-Body-Muted, rgba(255, 255, 255, 0.6));
-  }
-}
 

@@ -4,29 +4,37 @@ Text Input
 
 __Practice Question__
 
-What is the capital of France?
+What is your quest?
 
 __Correct Answers__
 
-- Paris [kind: string] [options: caseSensitive=true]
+- Holy Grail [kind: string] [options: fuzzy=0.3]
 
 __Practice Question__
 
-What is 2 + 2?
+How many feet in a yard?
 
 __Correct Answers__
 
-- 4 [kind: numeric] [options: threshold=0.01,precision=2]
+- 3 [kind: numeric] [options: precision=0]
 
 __Practice Question__
 
-
+How many feet in a mile?
 
 __Correct Answers__
 
--  [kind: string]
+- 5280 [kind: numeric-with-units] [options: precision=0,units=ft]
+
+__Practice Question__
+
+How much is coffee?
+
+__Correct Answers__
+
+- 4.5 [kind: numeric-with-currency]
 
 __Content__
 
-http://example.com
+https://example.com/documentation
 

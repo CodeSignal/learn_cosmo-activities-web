@@ -13,6 +13,21 @@ body {
   background: var(--Colors-Backgrounds-Main-Default);
 }
 
+/* Prevent document scrolling when text-input-with-content is present */
+body:has(.text-input-with-content) {
+  height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+html:has(.text-input-with-content) {
+  height: 100vh;
+  overflow: hidden;
+}
+
 body:has(.matching) {
   margin: 0;
 }
@@ -39,6 +54,9 @@ body:has(.matching) {
   max-width: none;
   padding: 0;
   justify-content: flex-start;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
 }
 
 /* Activity container */
@@ -51,5 +69,7 @@ body:has(.matching) {
 .activity-container:has(.text-input-with-content) {
   place-items: start;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
 }

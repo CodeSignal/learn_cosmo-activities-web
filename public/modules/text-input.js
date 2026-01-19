@@ -38,7 +38,24 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     const leftPanel = splitPanel.getLeftPanel();
     const rightPanel = splitPanel.getRightPanel();
     
+    // Prevent scrolling on split panel container itself
+    // This prevents scrollIntoView from scrolling the container
+    // The panels themselves will handle their own scrolling via their content wrappers
+    const splitPanelContainerEl = splitPanel.container;
+    if (splitPanelContainerEl) {
+      splitPanelContainerEl.style.overflow = 'hidden';
+      // Also prevent any scroll events on the container
+      splitPanelContainerEl.addEventListener('scroll', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        splitPanelContainerEl.scrollTop = 0;
+        splitPanelContainerEl.scrollLeft = 0;
+      }, { passive: false, capture: true });
+    }
+    
     // Set up left panel (content)
+    // Note: leftPanel will get className 'text-input-content-wrapper' which has overflow: auto
+    // This allows the iframe content to scroll, but prevents split-panel-left from being scrollable
     leftPanel.className = 'text-input-content-wrapper';
     leftPanel.innerHTML = '<iframe id="text-input-content-iframe" class="text-input-content-iframe" frameborder="1"></iframe>';
     
@@ -46,36 +63,95 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     rightPanel.className = 'text-input-questions-wrapper';
     rightPanel.innerHTML = `
       <div id="text-input-questions" class="text-input-questions"></div>
-      <div id="text-input-scroll-indicator" class="text-input-scroll-indicator" aria-hidden="true">
-        <div class="text-input-scroll-indicator-fade"></div>
-        <div class="text-input-scroll-indicator-hint">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="body-xsmall">More questions below</span>
-        </div>
-      </div>
     `;
+    
+    // Prevent horizontal scrolling on the questions wrapper
+    const questionsWrapperEl = document.getElementById('text-input-questions-wrapper');
+    if (questionsWrapperEl) {
+      // Prevent horizontal scrolling aggressively
+      const preventHorizontalScroll = () => {
+        if (questionsWrapperEl.scrollLeft !== 0) {
+          questionsWrapperEl.scrollLeft = 0;
+        }
+      };
+      
+      // Listen to scroll events and reset horizontal scroll immediately
+      questionsWrapperEl.addEventListener('scroll', preventHorizontalScroll, { passive: false, capture: true });
+      
+      // Also reset on any scroll event (non-capture as backup)
+      questionsWrapperEl.addEventListener('scroll', preventHorizontalScroll, { passive: true });
+      
+      // Set initial scrollLeft to 0
+      questionsWrapperEl.scrollLeft = 0;
+    }
   } else {
     elContainer.innerHTML = `
       <div id="text-input" class="text-input">
         <div id="text-input-questions" class="text-input-questions"></div>
-        <div id="text-input-scroll-indicator" class="text-input-scroll-indicator" aria-hidden="true">
-          <div class="text-input-scroll-indicator-fade"></div>
-          <div class="text-input-scroll-indicator-hint">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="body-xsmall">More questions below</span>
-          </div>
-        </div>
       </div>
     `;
   }
   
   const elTextInput = document.getElementById('text-input');
   const elQuestions = document.getElementById('text-input-questions');
-  const elScrollIndicator = document.getElementById('text-input-scroll-indicator');
+  
+  // Prevent document-level scrolling when in split panel mode
+  // This prevents the container from being pushed up when tabbing
+  // The key is to make body/html fixed and exactly 100vh so there's nothing to scroll
+  let scrollPreventionCleanup = null;
+  if (hasContent) {
+    // Store original styles
+    const originalBodyStyle = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      height: document.body.style.height,
+      width: document.body.style.width,
+      top: document.body.style.top,
+      left: document.body.style.left
+    };
+    const originalHtmlStyle = {
+      overflow: document.documentElement.style.overflow,
+      height: document.documentElement.style.height
+    };
+    const mainEl = elContainer.closest('.main');
+    const originalMainOverflow = mainEl?.style.overflow || '';
+    const originalActivityOverflow = elContainer.style.overflow || '';
+    
+    // Make body/html fixed and exactly 100vh - this prevents ANY document scrolling
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.height = '100vh';
+    document.body.style.width = '100%';
+    document.body.style.top = '0';
+    document.body.style.left = '0';
+    
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.height = '100vh';
+    
+    if (mainEl) {
+      mainEl.style.overflow = 'hidden';
+    }
+    elContainer.style.overflow = 'hidden';
+    
+    // Store cleanup function
+    scrollPreventionCleanup = () => {
+      // Restore original styles
+      document.body.style.overflow = originalBodyStyle.overflow;
+      document.body.style.position = originalBodyStyle.position;
+      document.body.style.height = originalBodyStyle.height;
+      document.body.style.width = originalBodyStyle.width;
+      document.body.style.top = originalBodyStyle.top;
+      document.body.style.left = originalBodyStyle.left;
+      
+      document.documentElement.style.overflow = originalHtmlStyle.overflow;
+      document.documentElement.style.height = originalHtmlStyle.height;
+      
+      if (mainEl) {
+        mainEl.style.overflow = originalMainOverflow;
+      }
+      elContainer.style.overflow = originalActivityOverflow;
+    };
+  }
   
   // Initialize content iframe if content is provided
   if (hasContent) {
@@ -374,6 +450,143 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     input.setAttribute('aria-label', `Answer for question ${qIdx + 1}`);
     input.placeholder = 'Enter your answer...';
     
+    // Handle scrolling within the wrapper when in split panel mode
+    // Document scrolling is prevented by making body fixed, so we only need to handle wrapper scrolling
+    if (hasContent) {
+      const questionsWrapper = document.getElementById('text-input-questions-wrapper');
+      
+      // Helper function to scroll input into view within the wrapper
+      const scrollInputIntoView = (inputElement, behavior = 'smooth') => {
+        if (!questionsWrapper) return;
+        
+        // Get bounding rects
+        const inputRect = inputElement.getBoundingClientRect();
+        const wrapperRect = questionsWrapper.getBoundingClientRect();
+        
+        // Check if this is the last question
+        const isLastQuestion = qIdx === textInput.questions.length - 1;
+        
+        // Calculate scroll padding (2rem = 32px)
+        const scrollPadding = 2 * 16;
+        
+        // Get maximum scroll position
+        const maxScrollTop = questionsWrapper.scrollHeight - questionsWrapper.clientHeight;
+        
+        // Use getBoundingClientRect calculation - more reliable than offsetTop
+        const distanceFromWrapperTop = inputRect.top - wrapperRect.top;
+        const currentScrollTop = questionsWrapper.scrollTop;
+        const inputPositionInScrollContent = currentScrollTop + distanceFromWrapperTop;
+        
+        let targetScrollTop;
+        
+        // For the last question, always ensure it's visible
+        if (isLastQuestion) {
+          // For the last question, scroll to show it fully
+          const wrapperHeight = questionsWrapper.clientHeight;
+          const inputHeight = inputRect.height;
+          const inputBottomInContent = inputPositionInScrollContent + inputHeight;
+          
+          // Check if input extends beyond visible area
+          const inputTopVisible = inputRect.top >= wrapperRect.top;
+          const inputBottomVisible = inputRect.bottom <= wrapperRect.bottom;
+          
+          if (!inputTopVisible) {
+            // Input top is above visible area - scroll to show top with padding
+            targetScrollTop = inputPositionInScrollContent - scrollPadding;
+          } else if (!inputBottomVisible) {
+            // Input bottom is below visible area - scroll to show bottom
+            targetScrollTop = inputBottomInContent - wrapperHeight + scrollPadding;
+          } else {
+            // Input is visible, but for last question ensure it's positioned well
+            // Scroll to show input with padding at top
+            targetScrollTop = inputPositionInScrollContent - scrollPadding;
+          }
+          
+          // For last question, ensure we can scroll to maximum if needed
+          targetScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+        } else {
+          // Normal case - check if visible first
+          const margin = 50;
+          const isVisible = inputRect.top >= (wrapperRect.top - margin) && 
+                           inputRect.bottom <= (wrapperRect.bottom + margin);
+          
+          if (!isVisible) {
+            // Scroll to show input with padding
+            targetScrollTop = inputPositionInScrollContent - scrollPadding;
+            targetScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+          } else {
+            // Already visible, no need to scroll
+            return;
+          }
+        }
+        
+        // Ensure no horizontal scroll before scrolling
+        questionsWrapper.scrollLeft = 0;
+        
+        // Perform the scroll
+        questionsWrapper.scrollTo({
+          top: targetScrollTop,
+          behavior: behavior,
+          left: 0  // Ensure no horizontal scroll
+        });
+        
+        // Ensure no horizontal scroll after scrolling (in case scrollTo doesn't work)
+        requestAnimationFrame(() => {
+          questionsWrapper.scrollLeft = 0;
+        });
+      };
+      
+      // Check if this is the last question
+      const isLastQuestion = qIdx === textInput.questions.length - 1;
+      
+      // Override scrollIntoView to scroll within the wrapper instead of document
+      const originalScrollIntoView = input.scrollIntoView.bind(input);
+      input.scrollIntoView = function(options) {
+        if (questionsWrapper) {
+          // Prevent default browser scrolling and horizontal scroll
+          questionsWrapper.scrollLeft = 0;
+          scrollInputIntoView(this, options?.behavior || 'smooth');
+          // Don't call original - document is fixed so it can't scroll anyway
+          return;
+        }
+        originalScrollIntoView(options);
+      };
+      
+      // Add focus handler to handle wrapper scrolling
+      input.addEventListener('focus', (e) => {
+        // For the last question, always scroll to ensure it's visible
+        // Use multiple delays to ensure layout is complete
+        const scrollToInput = () => {
+          if (questionsWrapper) {
+            scrollInputIntoView(e.target, 'auto');
+          }
+        };
+        
+        // Immediate attempt
+        scrollToInput();
+        
+        // Use requestAnimationFrame to ensure layout is complete
+        requestAnimationFrame(() => {
+          scrollToInput();
+        });
+        
+        // Also try after a short delay in case the first attempts don't work
+        setTimeout(() => {
+          scrollToInput();
+        }, 50);
+        
+        // For last question, try multiple times to ensure it works
+        if (isLastQuestion) {
+          setTimeout(() => {
+            scrollToInput();
+          }, 100);
+          setTimeout(() => {
+            scrollToInput();
+          }, 200);
+        }
+      }, { passive: true });
+    }
+    
     // Add input event listener
     input.addEventListener('input', () => {
       // Clear validation when user changes any value
@@ -538,60 +751,6 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
   // Add static top padding to position first question near the top
   elQuestions.style.paddingTop = '2rem';
   
-  // Function to check if there's content below the fold and update scroll indicator
-  function updateScrollIndicator() {
-    if (!elScrollIndicator) return;
-    
-    const questionsWrapper = hasContent ? document.getElementById('text-input-questions-wrapper') : null;
-    const scrollContainer = questionsWrapper || window;
-    const scrollElement = questionsWrapper || document.documentElement;
-    
-    let scrollTop, scrollHeight, clientHeight;
-    if (hasContent && questionsWrapper) {
-      scrollTop = questionsWrapper.scrollTop;
-      scrollHeight = questionsWrapper.scrollHeight;
-      clientHeight = questionsWrapper.clientHeight;
-    } else {
-      scrollTop = window.scrollY || document.documentElement.scrollTop;
-      scrollHeight = document.documentElement.scrollHeight;
-      clientHeight = window.innerHeight;
-    }
-    
-    // Check if there's content below the visible area
-    const isContentBelow = scrollHeight > clientHeight;
-    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
-    
-    if (isContentBelow && !isNearBottom) {
-      elScrollIndicator.classList.add('text-input-scroll-indicator-visible');
-    } else {
-      elScrollIndicator.classList.remove('text-input-scroll-indicator-visible');
-    }
-  }
-  
-  // Update scroll indicator on scroll and resize
-  let scrollIndicatorTimeout;
-  function handleScrollIndicatorUpdate() {
-    clearTimeout(scrollIndicatorTimeout);
-    scrollIndicatorTimeout = setTimeout(() => {
-      updateScrollIndicator();
-    }, 100);
-  }
-  
-  if (hasContent) {
-    const questionsWrapper = document.getElementById('text-input-questions-wrapper');
-    if (questionsWrapper) {
-      questionsWrapper.addEventListener('scroll', handleScrollIndicatorUpdate, { passive: true });
-    }
-  } else {
-    window.addEventListener('scroll', handleScrollIndicatorUpdate, { passive: true });
-  }
-  window.addEventListener('resize', handleScrollIndicatorUpdate, { passive: true });
-  
-  // Initial check after questions are rendered
-  setTimeout(() => {
-    updateScrollIndicator();
-  }, 200);
-  
   return {
     cleanup: () => {
       toolbar.unregisterTool('text-input-clear-all');
@@ -600,14 +759,11 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
         splitPanel = null;
       }
       if (hasContent) {
-        const questionsWrapper = document.getElementById('text-input-questions-wrapper');
-        if (questionsWrapper) {
-          questionsWrapper.removeEventListener('scroll', handleScrollIndicatorUpdate);
+        // Restore document scrolling
+        if (scrollPreventionCleanup) {
+          scrollPreventionCleanup();
         }
-      } else {
-        window.removeEventListener('scroll', handleScrollIndicatorUpdate);
       }
-      window.removeEventListener('resize', handleScrollIndicatorUpdate);
       elContainer.innerHTML = '';
     },
     validate: validateAnswers
