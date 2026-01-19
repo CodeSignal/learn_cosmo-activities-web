@@ -8,6 +8,49 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = path.join(__dirname, 'data');
 
+// Parse command line arguments for --edit and --type flags
+let EDIT_MODE = false;
+let EDIT_FILE_PATH = null;
+let EDIT_QUESTION_TYPE = null;
+const args = process.argv.slice(2);
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--edit' && i + 1 < args.length) {
+    EDIT_MODE = true;
+    let editPathArg = args[i + 1];
+    // Resolve relative to DATA_DIR if path is relative, otherwise use as-is
+    if (path.isAbsolute(editPathArg)) {
+      EDIT_FILE_PATH = editPathArg;
+    } else {
+      // Remove leading ./data/ or data/ prefix if present, since DATA_DIR already points to data/
+      editPathArg = editPathArg.replace(/^\.\/data\//, '').replace(/^data\//, '');
+      EDIT_FILE_PATH = path.resolve(DATA_DIR, editPathArg);
+    }
+    // Ensure the file path is within the data directory for security
+    if (!isPathInside(EDIT_FILE_PATH, DATA_DIR)) {
+      console.error('Error: Edit file must be within the data directory');
+      process.exit(1);
+    }
+  } else if (args[i] === '--type' && i + 1 < args.length) {
+    EDIT_QUESTION_TYPE = args[i + 1];
+  }
+}
+
+// Require type when in edit mode
+if (EDIT_MODE && !EDIT_QUESTION_TYPE) {
+  console.error('Error: --type flag is required when using --edit');
+  console.error('');
+  console.error('Available question types:');
+  console.error('  - "Text Input"');
+  console.error('  - "Multiple Choice"');
+  console.error('  - "Fill in the Blanks"');
+  console.error('  - "Matching"');
+  console.error('  - "Sort into Boxes"');
+  console.error('  - "Swipe Left/Right"');
+  console.error('');
+  console.error('Example: node server.js --edit ./data/question.md --type "Text Input"');
+  process.exit(1);
+}
+
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -709,6 +752,75 @@ const clients = new Set();
 const server = http.createServer((req, res) => {
   const urlObj = new URL(req.url, 'http://localhost');
   let pathname = decodeURIComponent(urlObj.pathname || '/');
+
+  // In edit mode, serve editor.html for root path
+  if (EDIT_MODE && pathname === '/') {
+    pathname = '/editor.html';
+  }
+
+  // API: /api/editor/load - Load markdown file for editing
+  if (pathname === '/api/editor/load' && req.method === 'GET') {
+    if (!EDIT_MODE || !EDIT_FILE_PATH) {
+      respondJson(res, 400, { error: 'Editor mode not enabled' });
+      return;
+    }
+    fs.readFile(EDIT_FILE_PATH, 'utf8', (err, data) => {
+      if (err) {
+        if (err.code === 'ENOENT') {
+          // File doesn't exist, return empty structure
+          respondJson(res, 200, { 
+            markdown: '', 
+            filePath: EDIT_FILE_PATH,
+            questionType: EDIT_QUESTION_TYPE
+          });
+        } else {
+          respondJson(res, 500, { error: 'Failed to read file' });
+        }
+        return;
+      }
+      respondJson(res, 200, { 
+        markdown: data, 
+        filePath: EDIT_FILE_PATH,
+        questionType: EDIT_QUESTION_TYPE
+      });
+    });
+    return;
+  }
+
+  // API: /api/editor/save - Save markdown file
+  if (pathname === '/api/editor/save' && req.method === 'POST') {
+    if (!EDIT_MODE || !EDIT_FILE_PATH) {
+      respondJson(res, 400, { error: 'Editor mode not enabled' });
+      return;
+    }
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const markdown = data.markdown || '';
+        
+        // Ensure directory exists
+        const dir = path.dirname(EDIT_FILE_PATH);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        
+        fs.writeFile(EDIT_FILE_PATH, markdown, 'utf8', (err) => {
+          if (err) {
+            respondJson(res, 500, { error: 'Failed to save file' });
+            return;
+          }
+          respondJson(res, 200, { success: true, filePath: EDIT_FILE_PATH });
+        });
+      } catch (e) {
+        respondJson(res, 400, { error: 'Invalid JSON' });
+      }
+    });
+    return;
+  }
 
   // API: /api/activity
   if (pathname === '/api/activity') {

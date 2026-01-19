@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Question Editor</title>
+  <link rel="stylesheet" href="/design-system/colors/colors.css" />
+  <link rel="stylesheet" href="/design-system/typography/typography.css" />
+  <link rel="stylesheet" href="/design-system/spacing/spacing.css" />
+  <link rel="stylesheet" href="/design-system/components/input/input.css" />
+  <link rel="stylesheet" href="/design-system/components/button/button.css" />
+  <link rel="stylesheet" href="/design-system/components/dropdown/dropdown.css" />
+  <link rel="stylesheet" href="/design-system/components/boxes/boxes.css" />
+  <link rel="stylesheet" href="/design-system/components/icons/icons.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%98%85%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--Colors-Backgrounds-Main-Default);
+      color: var(--Colors-Text-Body-Default);
+      font-family: var(--body-family);
+    }
+
+    .editor-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--UI-Spacing-spacing-xl);
+    }
+
+    .save-status {
+      display: inline-block;
+      padding: var(--UI-Spacing-spacing-xs) var(--UI-Spacing-spacing-ms);
+      border-radius: var(--UI-Radius-radius-xs);
+      font-size: var(--Fonts-Body-Default-xs);
+      margin-bottom: var(--UI-Spacing-spacing-l);
+      transition: opacity 0.2s ease;
+    }
+
+    .save-status.saving {
+      background-color: var(--Colors-Base-Primary-100);
+      color: var(--Colors-Base-Primary-700);
+    }
+
+    .save-status.saved {
+      background-color: var(--Colors-Base-Accent-Green-100);
+      color: var(--Colors-Base-Accent-Green-700);
+    }
+
+    .save-status.error {
+      background-color: var(--Colors-Base-Accent-Red-100);
+      color: var(--Colors-Base-Accent-Red-700);
+    }
+
+    .save-status.hidden {
+      opacity: 0;
+    }
+
+    .editor-section {
+      background: var(--Colors-Backgrounds-Main-Top);
+      border: 1px solid var(--Colors-Stroke-Default);
+      border-radius: var(--UI-Radius-radius-s);
+      padding: var(--UI-Spacing-spacing-xl);
+      margin-bottom: var(--UI-Spacing-spacing-xl);
+    }
+
+    .editor-section-title {
+      font-family: var(--heading-family);
+      font-size: var(--Fonts-Heading-md);
+      font-weight: 600;
+      color: var(--Colors-Text-Body-Strong);
+      margin: 0 0 var(--UI-Spacing-spacing-l) 0;
+    }
+
+    .form-group {
+      margin-bottom: var(--UI-Spacing-spacing-l);
+      display: flex;
+      flex-direction: column;
+      gap: var(--UI-Spacing-spacing-xs);
+    }
+
+    .form-label {
+      display: inline-flex;
+      align-items: center;
+      font-size: var(--Fonts-Body-Default-md);
+      font-weight: 500;
+      color: var(--Colors-Text-Body-Strong);
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    .form-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: var(--UI-Spacing-spacing-ms);
+      border-radius: var(--UI-Radius-radius-s);
+      border: 1px solid var(--Colors-Stroke-Default);
+      background: var(--Colors-Input-Background-Default);
+      color: var(--Colors-Input-Text-Default);
+      font-family: var(--body-family);
+      font-size: var(--Fonts-Body-Default-md);
+      line-height: 1.5;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--Colors-Input-Border-Focus);
+      box-shadow: 0 0 0 4px var(--Colors-Input-Shadow-Focus);
+    }
+
+    .question-item {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      gap: var(--UI-Spacing-spacing-l);
+      margin-bottom: var(--UI-Spacing-spacing-l);
+      width: 100%;
+      height: auto;
+      align-self: stretch;
+      padding: var(--UI-Spacing-spacing-xl);
+      text-align: left;
+    }
+
+    .question-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--UI-Spacing-spacing-ms);
+      gap: var(--UI-Spacing-spacing-ms);
+      flex-wrap: wrap;
+    }
+
+    .question-item-title {
+      font-size: var(--Fonts-Body-Default-lg);
+      font-weight: 600;
+      color: var(--Colors-Text-Body-Strong);
+    }
+
+    .validation-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--UI-Spacing-spacing-l);
+      margin-top: var(--UI-Spacing-spacing-ms);
+      padding-top: var(--UI-Spacing-spacing-ms);
+      border-top: 1px solid var(--Colors-Stroke-Default);
+    }
+
+    @media (max-width: 768px) {
+      .validation-options {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .validation-option {
+      display: flex;
+      flex-direction: column;
+      gap: var(--UI-Spacing-spacing-xs);
+      min-width: 0;
+    }
+
+    .validation-option .input {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .add-question-button {
+      margin-top: var(--UI-Spacing-spacing-l);
+    }
+
+    .button-group {
+      display: flex;
+      gap: var(--UI-Spacing-spacing-ms);
+      margin-top: var(--UI-Spacing-spacing-l);
+    }
+  </style>
+</head>
+<body>
+  <div class="editor-container">
+    <span class="save-status hidden" id="save-status"></span>
+
+    <h2 class="editor-section-title">Content Panel</h2>
+    <div class="form-group">
+      <label class="form-label" for="content-type">Content Type</label>
+      <div id="content-type-dropdown"></div>
+    </div>
+    <div class="form-group" id="content-input-group" style="display: none;">
+      <label class="form-label" id="content-label" for="content-input">Content</label>
+      <div id="content-input-container"></div>
+    </div>
+
+    <h2 class="editor-section-title" style="margin-top: var(--UI-Spacing-spacing-xl);">Questions</h2>
+    <div id="questions-container"></div>
+    <button type="button" class="button button-secondary add-question-button" id="add-question-btn">
+      Add Question
+    </button>
+  </div>
+
+  <script type="module" src="/editor.js"></script>
+</body>
+</html>
