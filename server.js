@@ -17,18 +17,12 @@ for (let i = 0; i < args.length; i++) {
   if (args[i] === '--edit' && i + 1 < args.length) {
     EDIT_MODE = true;
     let editPathArg = args[i + 1];
-    // Resolve relative to DATA_DIR if path is relative, otherwise use as-is
+    // Resolve path relative to current working directory if path is relative, otherwise use as-is
     if (path.isAbsolute(editPathArg)) {
       EDIT_FILE_PATH = editPathArg;
     } else {
-      // Remove leading ./data/ or data/ prefix if present, since DATA_DIR already points to data/
-      editPathArg = editPathArg.replace(/^\.\/data\//, '').replace(/^data\//, '');
-      EDIT_FILE_PATH = path.resolve(DATA_DIR, editPathArg);
-    }
-    // Ensure the file path is within the data directory for security
-    if (!isPathInside(EDIT_FILE_PATH, DATA_DIR)) {
-      console.error('Error: Edit file must be within the data directory');
-      process.exit(1);
+      // Resolve relative paths from current working directory
+      EDIT_FILE_PATH = path.resolve(process.cwd(), editPathArg);
     }
   } else if (args[i] === '--type' && i + 1 < args.length) {
     EDIT_QUESTION_TYPE = args[i + 1];
