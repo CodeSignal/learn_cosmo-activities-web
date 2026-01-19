@@ -111,6 +111,29 @@
   gap: var(--UI-Spacing-spacing-ms, 16px);
 }
 
+.text-input-field-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.text-input-field-wrapper-currency::before {
+  content: attr(data-currency);
+  position: absolute;
+  left: var(--UI-Spacing-spacing-ms, 16px);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--Colors-Text-Body-Default);
+  font-family: "Work Sans", sans-serif;
+  font-size: var(--Fonts-Body-Default-md);
+  font-weight: 400;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.text-input-field-wrapper-currency .text-input-field {
+  padding-left: calc(var(--UI-Spacing-spacing-ms, 16px) + 1ch + var(--UI-Spacing-spacing-xs, 8px));
+}
+
 .text-input-field {
   width: 100%;
   max-width: 100%;

@@ -268,6 +268,42 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     return validateNumeric(userValue, correctValue, { threshold, precision });
   }
   
+  function validateNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
+    const threshold = options.threshold !== undefined ? options.threshold : 0.01;
+    const currency = options.currency !== undefined ? options.currency : '$';
+    
+    // Escape currency symbol for regex
+    const escapedCurrency = currency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Remove currency symbol and any whitespace from user answer
+    let userStr = String(userAnswer).trim();
+    // Remove currency symbol (could be at start or end, with or without space)
+    userStr = userStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, 'g'), '');
+    userStr = userStr.trim();
+    
+    // Remove currency symbol from correct answer
+    let correctStr = String(correctAnswer).trim();
+    correctStr = correctStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, 'g'), '');
+    correctStr = correctStr.trim();
+    
+    // Normalize decimal separators: replace comma with period
+    // This allows both "4.50" and "4,50" to be accepted
+    userStr = userStr.replace(',', '.');
+    correctStr = correctStr.replace(',', '.');
+    
+    // Parse numeric values (parseFloat handles trailing zeros automatically: 4.50 = 4.5)
+    const userValue = parseFloat(userStr);
+    const correctValue = parseFloat(correctStr);
+    
+    if (isNaN(userValue) || isNaN(correctValue)) {
+      return false;
+    }
+    
+    // Compare numeric values directly (parseFloat normalizes trailing zeros)
+    // Use threshold to allow small differences
+    return Math.abs(userValue - correctValue) <= threshold;
+  }
+  
   function validateAnswer(question) {
     const userAnswer = userAnswers[question.id] || '';
     const correctAnswer = question.correctAnswer;
@@ -286,6 +322,8 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
         return validateNumeric(userAnswer, correctAnswer, options);
       case 'numeric-with-units':
         return validateNumericWithUnits(userAnswer, correctAnswer, options);
+      case 'numeric-with-currency':
+        return validateNumericWithCurrency(userAnswer, correctAnswer, options);
       default:
         // Default to exact string match (case-insensitive)
         return validateString(userAnswer, correctAnswer, { caseSensitive: false });
@@ -315,6 +353,18 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     const inputContainer = document.createElement('div');
     inputContainer.className = 'text-input-container';
     
+    // Check if this is a currency input
+    const isCurrency = question.validation && question.validation.kind === 'numeric-with-currency';
+    const currencySymbol = isCurrency ? (question.validation.options?.currency || '$') : null;
+    
+    // Create input wrapper for currency overlay
+    const inputWrapper = document.createElement('div');
+    inputWrapper.className = 'text-input-field-wrapper';
+    if (isCurrency) {
+      inputWrapper.classList.add('text-input-field-wrapper-currency');
+      inputWrapper.setAttribute('data-currency', currencySymbol);
+    }
+    
     // Create input field
     const input = document.createElement('input');
     input.type = 'text';
@@ -332,7 +382,8 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
       updateResultsAndPost();
     });
     
-    inputContainer.appendChild(input);
+    inputWrapper.appendChild(input);
+    inputContainer.appendChild(inputWrapper);
     
     // Add "Next" button for non-last questions
     if (qIdx < textInput.questions.length - 1) {

@@ -42,3 +42,10 @@ __Correct Answers__
 
 - accommodation [kind: string] [options: caseSensitive=false,fuzzy=0.7]
 
+__Practice Question__
+
+What is the price of a coffee? (Enter amount in dollars)
+
+__Correct Answers__
+
+- 4.50 [kind: numeric-with-currency] [options: threshold=0.01,precision=2,currency=$]

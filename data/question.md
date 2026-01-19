@@ -2,39 +2,50 @@ __Type__
 
 Text Input
 
-__Content__
-
-# Additional Information
-
-This section provides context and details to help you answer the questions below.
-
-## Key Concepts
-
-- **Capital City**: The city that serves as the seat of government
-- **Mathematical Operations**: Basic arithmetic including addition, subtraction, multiplication, and division
-
-## Tips
-
-1. Read each question carefully
-2. Consider the context provided
-3. Check your spelling before submitting
-
----
-
-> Note: All answers are case-insensitive unless otherwise specified.
-
 __Practice Question__
 
-What is the capital of France?
+What is the capital of France? (Accept any case variation)
 
 __Correct Answers__
 
-- Paris [kind: string] [options: caseSensitive=false]
+- Paris [kind: string] [options: caseSensitive=false,fuzzy=false]
 
 __Practice Question__
 
-What is 2 + 2?
+What is the approximate value of π? (Accept values within 0.1)
 
 __Correct Answers__
 
-- 4 [kind: numeric] [options: threshold=0.01,precision=2]
+- 3.14 [kind: numeric] [options: threshold=0.1,precision=2]
+
+__Practice Question__
+
+How many kilograms are in 1000 grams? (Include unit)
+
+__Correct Answers__
+
+- 1 kg [kind: numeric-with-units] [options: threshold=0.01,precision=2,units=kg,g]
+
+__Practice Question__
+
+What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with punctuation, spacing, and minor spelling errors)
+
+__Correct Answers__
+
+- Don't Repeat Yourself [kind: string] [options: caseSensitive=false,fuzzy=true]
+
+__Practice Question__
+
+Spell the word "accommodation" (Accept minor spelling errors)
+
+__Correct Answers__
+
+- accommodation [kind: string] [options: caseSensitive=false,fuzzy=0.7]
+
+__Practice Question__
+
+What is the price of a coffee? (Enter amount in dollars)
+
+__Correct Answers__
+
+- 4.5 [kind: numeric-with-currency] [options: threshold=0.1,precision=1,currency=$]

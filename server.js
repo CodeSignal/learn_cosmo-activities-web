@@ -979,6 +979,42 @@ const server = http.createServer((req, res) => {
           return validateTextInputNumeric(userValue, correctValue, { threshold, precision });
         }
         
+        function validateTextInputNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
+          const threshold = options.threshold !== undefined ? options.threshold : 0.01;
+          const currency = options.currency !== undefined ? options.currency : '$';
+          
+          // Escape currency symbol for regex
+          const escapedCurrency = currency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          
+          // Remove currency symbol and any whitespace from user answer
+          let userStr = String(userAnswer).trim();
+          // Remove currency symbol (could be at start or end, with or without space)
+          userStr = userStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, 'g'), '');
+          userStr = userStr.trim();
+          
+          // Remove currency symbol from correct answer
+          let correctStr = String(correctAnswer).trim();
+          correctStr = correctStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, 'g'), '');
+          correctStr = correctStr.trim();
+          
+          // Normalize decimal separators: replace comma with period
+          // This allows both "4.50" and "4,50" to be accepted
+          userStr = userStr.replace(',', '.');
+          correctStr = correctStr.replace(',', '.');
+          
+          // Parse numeric values (parseFloat handles trailing zeros automatically: 4.50 = 4.5)
+          const userValue = parseFloat(userStr);
+          const correctValue = parseFloat(correctStr);
+          
+          if (isNaN(userValue) || isNaN(correctValue)) {
+            return false;
+          }
+          
+          // Compare numeric values directly (parseFloat normalizes trailing zeros)
+          // Use threshold to allow small differences
+          return Math.abs(userValue - correctValue) <= threshold;
+        }
+        
         function validateTextInputAnswer(question, userAnswer) {
           if (!userAnswer || !userAnswer.trim()) {
             return false;
@@ -994,6 +1030,8 @@ const server = http.createServer((req, res) => {
               return validateTextInputNumeric(userAnswer, question.correctAnswer, options);
             case 'numeric-with-units':
               return validateTextInputNumericWithUnits(userAnswer, question.correctAnswer, options);
+            case 'numeric-with-currency':
+              return validateTextInputNumericWithCurrency(userAnswer, question.correctAnswer, options);
             default:
               // Default to exact string match (case-insensitive)
               return validateTextInputString(userAnswer, question.correctAnswer, { caseSensitive: false });
