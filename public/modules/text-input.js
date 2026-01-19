@@ -433,17 +433,29 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     const isCurrency = question.validation && question.validation.kind === 'numeric-with-currency';
     const currencySymbol = isCurrency ? (question.validation.options?.currency || '$') : null;
     
-    // Create input wrapper for currency overlay
+    // Check if this is a multi-line input
+    const isMultiLine = question.validation && question.validation.kind === 'string' && 
+                        question.validation.options?.multiLine === true;
+    
+    // Create input wrapper for currency overlay (only for single-line inputs)
     const inputWrapper = document.createElement('div');
     inputWrapper.className = 'text-input-field-wrapper';
-    if (isCurrency) {
+    if (isCurrency && !isMultiLine) {
       inputWrapper.classList.add('text-input-field-wrapper-currency');
       inputWrapper.setAttribute('data-currency', currencySymbol);
     }
     
-    // Create input field
-    const input = document.createElement('input');
-    input.type = 'text';
+    // Create input field (textarea for multi-line, input for single-line)
+    const input = isMultiLine ? document.createElement('textarea') : document.createElement('input');
+    if (!isMultiLine) {
+      input.type = 'text';
+    } else {
+      // Set textarea-specific attributes
+      input.rows = 4;
+      input.style.resize = 'vertical';
+      input.style.minHeight = 'var(--UI-Input-md)';
+      input.style.height = 'auto';
+    }
     input.className = 'input text-input-field';
     input.id = `q${question.id}-input`;
     input.value = userAnswers[question.id] || '';

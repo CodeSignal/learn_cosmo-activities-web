@@ -180,6 +180,18 @@
   scroll-margin-bottom: 2rem;
 }
 
+/* Multi-line textarea styling */
+.text-input-field:is(textarea) {
+  display: block;
+  height: auto;
+  min-height: var(--UI-Input-md);
+  padding-top: var(--UI-Spacing-spacing-ms);
+  padding-bottom: var(--UI-Spacing-spacing-ms);
+  line-height: 1.5;
+  resize: vertical;
+  align-items: stretch;
+}
+
 .text-input-next-button-container {
   display: flex;
   justify-content: flex-start;

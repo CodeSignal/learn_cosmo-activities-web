@@ -9,7 +9,7 @@ __Summary__
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: qq
+   - Selected Answer: No answer selected
    - Correct Answer: Holy Grail
    - Result: ✗ Incorrect
 
@@ -34,7 +34,7 @@ What is your quest?
 
 __Correct Answers__
 
-- Holy Grail [kind: string] [options: fuzzy=0.3]
+- Holy Grail [kind: string] [options: fuzzy=0.3,multiLine=true]
 
 __Practice Question__
 
@@ -42,7 +42,7 @@ How many feet in a yard?
 
 __Correct Answers__
 
-- 3 [kind: numeric] [options: precision=0]
+- 3 [kind: string] [options: precision=0]
 
 __Practice Question__
 
