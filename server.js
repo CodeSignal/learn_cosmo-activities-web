@@ -335,7 +335,16 @@ function buildActivityFromMarkdown(markdownText) {
       // Extract question text without options
       const questionTextOnly = questionText.replace(/^[A-Z]\.\s*.+$/gm, '').trim();
       
+      // Store raw markdown text (for answer.md generation)
       currentQuestion.text = questionTextOnly || questionText;
+      
+      // Parse markdown to HTML for rendering (supports multiple paragraphs, blockquotes, etc.)
+      if (currentQuestion.text) {
+        currentQuestion.textHtml = marked.parse(currentQuestion.text);
+      } else {
+        currentQuestion.textHtml = '';
+      }
+      
       currentQuestion.options = options;
     }
     

@@ -44,22 +44,30 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
   });
   
   // Render all questions
+  const hasMultipleQuestions = mcq.questions.length > 1;
+  
   mcq.questions.forEach((question, qIdx) => {
     const questionEl = document.createElement('div');
     questionEl.className = 'mcq-question';
     questionEl.setAttribute('data-question-id', question.id);
     questionEl.setAttribute('data-question-index', qIdx.toString());
     
-    // Question legend (Question 1, Question 2, etc.)
-    const legend = document.createElement('div');
-    legend.className = 'mcq-legend heading-xsmall';
-    legend.textContent = `Question ${qIdx + 1}`;
-    questionEl.appendChild(legend);
+    // Question legend (Question 1, Question 2, etc.) - only show if multiple questions
+    if (hasMultipleQuestions) {
+      const legend = document.createElement('div');
+      legend.className = 'mcq-legend heading-xsmall';
+      legend.textContent = `Question ${qIdx + 1}`;
+      questionEl.appendChild(legend);
+    }
     
-    // Question text
+    // Question text (support markdown HTML if available, fallback to plain text for backward compatibility)
     const questionTextEl = document.createElement('div');
     questionTextEl.className = 'mcq-question-text body-xlarge';
-    questionTextEl.textContent = question.text;
+    if (question.textHtml) {
+      questionTextEl.innerHTML = question.textHtml;
+    } else {
+      questionTextEl.textContent = question.text;
+    }
     questionEl.appendChild(questionTextEl);
     
     // Options container

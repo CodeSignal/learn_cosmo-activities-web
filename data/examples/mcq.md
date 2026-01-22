@@ -11,13 +11,13 @@ B. Her actual brand doesn't match her identity
 C. Her brand image is too positive  
 D. She needs a better logo
 
-__Explain Your Answer__
-
-true
-
 __Suggested Answers__
 
 - A  
 - B - Correct  
 - C  
 - D
+
+__Explain Your Answer__
+
+true
