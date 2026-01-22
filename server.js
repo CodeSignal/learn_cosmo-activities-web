@@ -279,6 +279,7 @@ function buildActivityFromMarkdown(markdownText) {
     let questionBuffer = [];
     let answerBuffer = [];
     let explainAnswerBuffer = [];
+    let questionOptionsBuffer = [];
     
     // Deterministic shuffle using text as seed
     function seededShuffle(array, seed) {
@@ -356,6 +357,20 @@ function buildActivityFromMarkdown(markdownText) {
       currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
     }
     
+    function processQuestionOptions() {
+      if (!currentQuestion) return;
+      
+      // Parse question options section
+      const optionsText = questionOptionsBuffer.map(t => t.raw || t.text || '').join('\n').trim().toLowerCase();
+      
+      // Check for shuffle option
+      if (optionsText.includes('shuffle=false') || optionsText.includes('don\'t shuffle') || optionsText.includes('dont shuffle') || optionsText === 'no shuffle') {
+        currentQuestion.shuffleOptions = false;
+      } else {
+        currentQuestion.shuffleOptions = true; // Default to shuffling
+      }
+    }
+    
     function processAnswers() {
       if (!currentQuestion) return;
       
@@ -364,6 +379,13 @@ function buildActivityFromMarkdown(markdownText) {
         processExplainAnswer();
       } else {
         currentQuestion.explainAnswer = false;
+      }
+      
+      // Process question options if buffer exists
+      if (questionOptionsBuffer.length > 0) {
+        processQuestionOptions();
+      } else {
+        currentQuestion.shuffleOptions = true; // Default to shuffling
       }
       
       // Process answers if buffer has content
@@ -392,9 +414,11 @@ function buildActivityFromMarkdown(markdownText) {
         currentQuestion.isMultiSelect = correctAnswers.size > 1;
       }
       
-      // Shuffle options using deterministic seed based on question and option text
-      const seed = generateSeed(currentQuestion.text, currentQuestion.options);
-      currentQuestion.options = seededShuffle(currentQuestion.options, seed);
+      // Shuffle options only if shuffleOptions is true (default behavior)
+      if (currentQuestion.shuffleOptions !== false) {
+        const seed = generateSeed(currentQuestion.text, currentQuestion.options);
+        currentQuestion.options = seededShuffle(currentQuestion.options, seed);
+      }
       
       // Add to questions array
       questions.push(currentQuestion);
@@ -415,25 +439,44 @@ function buildActivityFromMarkdown(markdownText) {
             }
             
             // Start new question
-            currentQuestion = { id: questions.length, text: '', options: [], isMultiSelect: false, explainAnswer: false };
+            currentQuestion = { id: questions.length, text: '', options: [], isMultiSelect: false, explainAnswer: false, shuffleOptions: true };
             currentSection = 'question';
             questionBuffer = [];
             answerBuffer = [];
             explainAnswerBuffer = [];
+            questionOptionsBuffer = [];
             continue;
           } else if (sectionName === 'Suggested Answers') {
-            // Process current question text
+            // Process current question text and question options if they exist
             if (currentQuestion) {
               processQuestion();
+              // Process question options if we were in that section
+              if (currentSection === 'questionOptions' && questionOptionsBuffer.length > 0) {
+                processQuestionOptions();
+              }
               currentSection = 'answers';
               answerBuffer = [];
             }
             continue;
+          } else if (sectionName === 'Question Options' || sectionName === 'Question options') {
+            // Switch to question options section - should come after question text, before Suggested Answers
+            if (currentQuestion && currentSection === 'question') {
+              processQuestion();
+              currentSection = 'questionOptions';
+              questionOptionsBuffer = [];
+            }
+            continue;
           } else if (sectionName === 'Explain Your Answer' || sectionName === 'Explain your answer') {
             // Switch to explain section - answers will be processed when we hit the next question or end
-            if (currentQuestion && currentSection === 'answers') {
-              currentSection = 'explain';
-              explainAnswerBuffer = [];
+            if (currentQuestion) {
+              // Process question options if we were in that section
+              if (currentSection === 'questionOptions' && questionOptionsBuffer.length > 0) {
+                processQuestionOptions();
+              }
+              if (currentSection === 'answers' || currentSection === 'questionOptions') {
+                currentSection = 'explain';
+                explainAnswerBuffer = [];
+              }
             }
             continue;
           } else if (sectionName === 'Type') {
@@ -446,6 +489,8 @@ function buildActivityFromMarkdown(markdownText) {
       
       if (currentSection === 'question' && currentQuestion) {
         questionBuffer.push(token);
+      } else if (currentSection === 'questionOptions' && currentQuestion) {
+        questionOptionsBuffer.push(token);
       } else if (currentSection === 'answers' && currentQuestion) {
         answerBuffer.push(token);
       } else if (currentSection === 'explain' && currentQuestion) {
