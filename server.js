@@ -1151,11 +1151,17 @@ const server = http.createServer((req, res) => {
         }
         
         function validateTextInputAnswer(question, userAnswer) {
+          const validation = question.validation || {};
+          
+          // Skip validation for "validate-later" type - return null to exclude from scoring
+          if (validation.kind === 'validate-later') {
+            return null;
+          }
+          
           if (!userAnswer || !userAnswer.trim()) {
             return false;
           }
           
-          const validation = question.validation || {};
           const options = validation.options || {};
           
           switch (validation.kind) {
@@ -1185,14 +1191,31 @@ const server = http.createServer((req, res) => {
             const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
             if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
               const question = activity.textInput.questions[questionIndex];
-              return validateTextInputAnswer(question, result.selected);
+              const validationResult = validateTextInputAnswer(question, result.selected);
+              // Exclude "validate-later" questions from scoring (null result)
+              return validationResult === true;
             }
             // Fallback to simple string comparison if question not found
             return result.selected === result.correct;
           }
           return result.selected === result.correct;
         }).length;
-        const totalCount = data.results.length;
+        
+        // Count validate-later questions for text input
+        let validateLaterCount = 0;
+        if (activity && /^text input$/i.test(activity.type)) {
+          validateLaterCount = data.results.filter(result => {
+            const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+            if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
+              const question = activity.textInput.questions[questionIndex];
+              return question.validation && question.validation.kind === 'validate-later';
+            }
+            return false;
+          }).length;
+        }
+        
+        // Total count excludes "validate-later" questions from scoring
+        const totalCount = data.results.length - validateLaterCount;
         
         let markdown = '';
         
@@ -1200,8 +1223,12 @@ const server = http.createServer((req, res) => {
         if (activity) {
           markdown += `__Type__\n\n${activity.type}\n\n`;
           
-          // Add results section
-          markdown += `__Summary__\n\n${correctCount}/${totalCount} correct\n\n`;
+          // Add results section with summary
+          let summaryText = `${correctCount}/${totalCount} correct`;
+          if (validateLaterCount > 0) {
+            summaryText += `\n${validateLaterCount} unvalidated`;
+          }
+          markdown += `__Summary__\n\n${summaryText}\n\n`;
           markdown += '__Responses__\n\n';
           
           data.results.forEach((result, index) => {
@@ -1210,6 +1237,7 @@ const server = http.createServer((req, res) => {
             markdown += `   - Correct Answer: ${result.correct}\n`;
             // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact match
             let isCorrect = false;
+            let isValidateLater = false;
             if (activity && /^multiple choice$/i.test(activity.type)) {
               const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
               const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
@@ -1219,7 +1247,13 @@ const server = http.createServer((req, res) => {
               const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
               if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
                 const question = activity.textInput.questions[questionIndex];
-                isCorrect = validateTextInputAnswer(question, result.selected);
+                isValidateLater = question.validation && question.validation.kind === 'validate-later';
+                if (isValidateLater) {
+                  // Skip validation for validate-later questions
+                } else {
+                  const validationResult = validateTextInputAnswer(question, result.selected);
+                  isCorrect = validationResult === true;
+                }
               } else {
                 // Fallback to simple string comparison if question not found
                 isCorrect = result.selected === result.correct;
@@ -1227,7 +1261,14 @@ const server = http.createServer((req, res) => {
             } else {
               isCorrect = result.selected === result.correct;
             }
-            markdown += `   - Result: ${isCorrect ? '✓ Correct' : '✗ Incorrect'}\n`;
+            
+            // Show result status
+            if (isValidateLater) {
+              markdown += `   - Result: Unvalidated\n`;
+            } else {
+              markdown += `   - Result: ${isCorrect ? '✓ Correct' : '✗ Incorrect'}\n`;
+            }
+            
             // Add explanation if present (for MCQ questions with explainAnswer enabled)
             if (result.explanation) {
               markdown += `   - Explanation: ${result.explanation}\n`;

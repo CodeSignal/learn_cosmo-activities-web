@@ -49,3 +49,11 @@ What is the price of a coffee? (Enter amount in dollars)
 __Correct Answers__
 
 - 4.50 [kind: numeric-with-currency] [options: threshold=0.01,precision=2,currency=$]
+
+__Practice Question__
+
+Describe your approach to solving this problem. (This will be reviewed later and is not part of the score)
+
+__Correct Answers__
+
+- [kind: validate-later]

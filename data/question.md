@@ -1,23 +1,23 @@
 __Type__
 
-Multiple Choice
+Text Input
+
+__Content__
+
+https://example.com/documentation
 
 __Practice Question__
 
-Let's test your understanding! Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
+What is the capital of France?
 
-A. Her brand identity is wrong  
-B. Her actual brand doesn't match her identity  
-C. Her brand image is too positive  
-D. She needs a better logo
+__Correct Answers__
 
-__Suggested Answers__
+- Paris [kind: string] [options: caseSensitive=false]
 
-- A  
-- B - Correct  
-- C  
-- D
+__Practice Question__
 
-__Explain Your Answer__
+What is 2 + 2?
 
-true
+__Correct Answers__
+
+- 4 [kind: numeric] [options: threshold=0.01,precision=2]

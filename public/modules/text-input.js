@@ -385,6 +385,11 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     const correctAnswer = question.correctAnswer;
     const validation = question.validation || {};
     
+    // Skip validation for "validate-later" type
+    if (validation.kind === 'validate-later') {
+      return null;
+    }
+    
     if (!userAnswer.trim()) {
       return false;
     }
@@ -694,11 +699,16 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     
     // Check each question and mark incorrect ones
     textInput.questions.forEach(q => {
+      // Skip validation for "validate-later" type
+      if (q.validation && q.validation.kind === 'validate-later') {
+        return;
+      }
+      
       const isCorrect = validateAnswer(q);
       
       const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
       if (questionEl) {
-        if (!isCorrect) {
+        if (isCorrect === false) {
           questionEl.classList.add('text-input-question-incorrect');
           addErrorIcon(questionEl);
         } else {
@@ -710,19 +720,26 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
   }
   
   function updateResultsAndPost() {
+    // Include all questions in results, including "validate-later"
     state.results = textInput.questions.map((q, idx) => {
       const userAnswer = userAnswers[q.id] || '';
-      const isCorrect = validateAnswer(q);
+      const isValidateLater = q.validation && q.validation.kind === 'validate-later';
+      const isCorrect = isValidateLater ? null : validateAnswer(q);
       
       return {
         text: `Question ${idx + 1}`,
         selected: userAnswer,
-        correct: q.correctAnswer
+        correct: q.correctAnswer,
+        validateLater: isValidateLater
       };
     });
     
-    // Count answered questions
-    state.index = Object.values(userAnswers).filter(answer => answer && answer.trim().length > 0).length;
+    // Count answered questions (excluding "validate-later" questions)
+    state.index = Object.entries(userAnswers).filter(([questionId, answer]) => {
+      const question = textInput.questions.find(q => q.id === parseInt(questionId, 10));
+      return answer && answer.trim().length > 0 && 
+             !(question && question.validation && question.validation.kind === 'validate-later');
+    }).length;
     
     postResults();
   }

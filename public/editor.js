@@ -299,7 +299,8 @@ function renderQuestion(question, index) {
       { value: 'string', label: 'String' },
       { value: 'numeric', label: 'Numeric' },
       { value: 'numeric-with-units', label: 'Numeric with Units' },
-      { value: 'numeric-with-currency', label: 'Numeric with Currency' }
+      { value: 'numeric-with-currency', label: 'Numeric with Currency' },
+      { value: 'validate-later', label: 'Validate Later' }
     ],
     selectedValue: question.validation.kind || 'string',
     growToFit: false,
@@ -398,6 +399,12 @@ function renderValidationOptions(container, question, index) {
 
   const validationDiv = document.createElement('div');
   validationDiv.className = 'validation-options';
+
+  // "validate-later" type doesn't need validation options
+  if (kind === 'validate-later') {
+    container.appendChild(validationDiv);
+    return;
+  }
 
   if (kind === 'string') {
     // Case sensitive option
