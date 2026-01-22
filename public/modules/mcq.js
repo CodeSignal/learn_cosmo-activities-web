@@ -155,7 +155,8 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
         updateSelection(question.id, option.label, input.checked);
         
         // For radio questions, center the selected question and auto-scroll after a short delay
-        if (!question.isMultiSelect && input.checked) {
+        // Only do this if there are multiple questions
+        if (!question.isMultiSelect && input.checked && mcq.questions.length > 1) {
           const questionEl = elQuestions.querySelector(`[data-question-id="${question.id}"]`);
           const questionIndex = parseInt(questionEl.getAttribute('data-question-index'), 10);
           
