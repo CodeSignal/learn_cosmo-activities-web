@@ -311,8 +311,96 @@ import toolbar from './components/toolbar.js';
     }
   }
 
+  function initScrollIndicator() {
+    // Create scroll indicator element
+    const scrollIndicator = document.createElement('div');
+    scrollIndicator.className = 'scroll-indicator';
+    scrollIndicator.innerHTML = `
+      <div class="scroll-indicator-gradient"></div>
+      <div class="scroll-indicator-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 13l5 5 5-5M7 6l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    `;
+    document.body.appendChild(scrollIndicator);
+
+    // Track if user has reached the bottom at least once
+    let hasReachedBottom = false;
+
+    function checkScrollPosition() {
+      // Don't show indicator for activities that handle their own scrolling
+      const hasTextInputWithContent = document.querySelector('.text-input-with-content');
+      const hasMatching = document.querySelector('.matching');
+      
+      if (hasTextInputWithContent || hasMatching) {
+        scrollIndicator.classList.remove('visible');
+        return;
+      }
+
+      // If user has already reached bottom, don't show indicator again
+      if (hasReachedBottom) {
+        scrollIndicator.classList.remove('visible');
+        return;
+      }
+
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      
+      // Check if there's more content below (with a small threshold to account for rounding)
+      const isAtBottom = scrollTop + windowHeight >= documentHeight - 10;
+      
+      // Mark that user has reached bottom
+      if (isAtBottom) {
+        hasReachedBottom = true;
+        scrollIndicator.classList.remove('visible');
+        return;
+      }
+      
+      // Only show if there's scrollable content and we're not at the bottom
+      const hasScrollableContent = documentHeight > windowHeight;
+      
+      if (hasScrollableContent && !isAtBottom) {
+        scrollIndicator.classList.add('visible');
+      } else {
+        scrollIndicator.classList.remove('visible');
+      }
+    }
+
+    // Check on scroll, resize, and initial load
+    window.addEventListener('scroll', checkScrollPosition, { passive: true });
+    window.addEventListener('resize', checkScrollPosition, { passive: true });
+    
+    // Initial check after a short delay to ensure DOM is ready
+    setTimeout(checkScrollPosition, 100);
+    
+    // Also check when activity changes (for dynamic content)
+    const observer = new MutationObserver(() => {
+      setTimeout(checkScrollPosition, 100);
+    });
+    
+    const activityContainer = document.getElementById('activity-container');
+    if (activityContainer) {
+      observer.observe(activityContainer, { childList: true, subtree: true });
+    }
+  }
+
+  // Prevent browser scroll restoration on reload
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  // Ensure page starts at top on load
+  window.addEventListener('load', () => {
+    window.scrollTo(0, 0);
+  });
+
   async function start() {
     try {
+      // Ensure we're at the top before loading activity
+      window.scrollTo(0, 0);
+      
       const [activity, persistedData] = await Promise.all([
         loadActivityJson(),
         loadAnswers()
@@ -327,6 +415,12 @@ import toolbar from './components/toolbar.js';
       const validatedAnswers = validatePersistedAnswers(activity, persistedData);
       initActivity(activity, validatedAnswers);
       bindRestart();
+      
+      // Initialize scroll indicator
+      initScrollIndicator();
+      
+      // Ensure we're still at top after activity loads
+      window.scrollTo(0, 0);
       
       // Connect WebSocket after activity is initialized
       connectWebSocket();

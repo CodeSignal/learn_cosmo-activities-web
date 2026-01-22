@@ -510,31 +510,13 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
   window.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('resize', handleScroll, { passive: true });
   
-  // Center the first question (or first selected question) on initial load
+  // Initialize opacity and padding without scrolling on initial load
+  // Only update visual state, don't scroll - let page start at top
   setTimeout(() => {
-    let questionToCenter = 0; // Default to first question
-    
-    // If persisted answers exist, always scroll to the first question
-    if (persistedAnswers) {
-      questionToCenter = 0;
-    } else {
-      // Otherwise, check if there's a pre-selected question from state
-      for (let i = 0; i < mcq.questions.length; i++) {
-        const q = mcq.questions[i];
-        if (!q.isMultiSelect && selectedAnswers[q.id] && selectedAnswers[q.id].length > 0) {
-          questionToCenter = i;
-          break;
-        }
-      }
-    }
-    
-    centerQuestion(questionToCenter);
-    // Update opacity and padding after scroll animation completes
-    setTimeout(() => {
-      const centeredIndex = findCenteredQuestionIndex();
-      updateQuestionOpacity(centeredIndex);
-      updateDynamicPadding(centeredIndex);
-    }, 600); // Wait for smooth scroll to complete
+    // Find the question that's currently centered (or first question if at top)
+    const centeredIndex = findCenteredQuestionIndex();
+    updateQuestionOpacity(centeredIndex);
+    updateDynamicPadding(centeredIndex);
   }, 100);
   
   return {

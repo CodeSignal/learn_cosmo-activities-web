@@ -73,3 +73,70 @@ body:has(.matching) {
   overflow: hidden;
   position: relative;
 }
+
+/* Scroll indicator - shows when there's more content below */
+.scroll-indicator {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.scroll-indicator.visible {
+  opacity: 1;
+}
+
+.scroll-indicator-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    var(--Colors-Backgrounds-Main-Default) 0%,
+    transparent 100%
+  );
+}
+
+.scroll-indicator-icon {
+  position: absolute;
+  bottom: var(--UI-Spacing-spacing-ms, 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--Colors-Text-Body-Secondary);
+  animation: scroll-bounce 2s ease-in-out infinite;
+}
+
+@keyframes scroll-bounce {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-8px);
+  }
+}
+
+.scroll-indicator-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+/* Hide scroll indicator for activities that don't scroll */
+body:has(.text-input-with-content) .scroll-indicator,
+body:has(.matching) .scroll-indicator {
+  display: none;
+}
