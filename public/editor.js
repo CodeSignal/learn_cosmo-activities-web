@@ -587,9 +587,9 @@ function renderValidationOptions(container, question, index) {
   container.appendChild(validationDiv);
 }
 
-// Global structure
+// Global structure - will be initialized based on question type
 let currentStructure = {
-  type: 'Text Input',
+  type: '',
   questions: [],
   content: null
 };
@@ -602,9 +602,596 @@ const debouncedSave = debounce((markdown) => {
   saveMarkdown(markdown);
 }, 500);
 
+// Track if we're in MCQ mode
+let isMcqMode = false;
+
 function updateStructure() {
-  const markdown = structureToMarkdown(currentStructure);
+  let markdown;
+  if (isMcqMode) {
+    markdown = mcqStructureToMarkdown(currentStructure);
+  } else {
+    markdown = structureToMarkdown(currentStructure);
+  }
   debouncedSave(markdown);
+}
+
+
+// ===== MCQ-SPECIFIC PARSING AND RENDERING =====
+
+// Parse MCQ markdown into editable structure
+function parseMcqMarkdownToStructure(markdown) {
+  const lines = markdown.split('\n');
+  const structure = {
+    type: 'Multiple Choice',
+    questions: []
+  };
+
+  let currentSection = null;
+  let currentQuestion = null;
+  let questionBuffer = [];
+  let answerBuffer = [];
+  let explainAnswerBuffer = [];
+  let questionOptionsBuffer = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const sectionMatch = line.match(/^__([^_]+)__\s*$/);
+
+    if (sectionMatch) {
+      const sectionName = sectionMatch[1].trim();
+
+      // Handle section transitions and process previous section data
+      if (sectionName === 'Type') {
+        currentSection = 'type';
+      } else if (sectionName === 'Practice Question') {
+        // Process previous question if exists before starting new one
+        if (currentQuestion) {
+          // Process any remaining buffers
+          if (answerBuffer.length > 0 && currentQuestion.options.length > 0) {
+            const answerItems = answerBuffer.map(line => line.trim()).filter(line => line.startsWith('-'));
+            const correctAnswers = new Set();
+            answerItems.forEach(item => {
+              const trimmed = item.replace(/^-\s*/, '').trim();
+              const match = trimmed.match(/^([A-Z])\s*(?:-?\s*(?:Correct)?)?$/i);
+              if (match) {
+                const label = match[1].toUpperCase();
+                if (trimmed.toLowerCase().includes('correct')) {
+                  correctAnswers.add(label);
+                }
+              }
+            });
+            currentQuestion.options.forEach(opt => {
+              opt.correct = correctAnswers.has(opt.label);
+            });
+            currentQuestion.isMultiSelect = correctAnswers.size > 1;
+          }
+          if (explainAnswerBuffer.length > 0) {
+            const explainText = explainAnswerBuffer.join('\n').trim().toLowerCase();
+            currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+          }
+          if (questionOptionsBuffer.length > 0) {
+            const optionsText = questionOptionsBuffer.join('\n').trim().toLowerCase();
+            if (optionsText.includes('shuffle=false') || optionsText.includes('don\'t shuffle') || optionsText.includes('dont shuffle') || optionsText === 'no shuffle') {
+              currentQuestion.shuffleOptions = false;
+            }
+          }
+          structure.questions.push(currentQuestion);
+        }
+        // Start new question
+        currentSection = 'question';
+        currentQuestion = {
+          text: '',
+          options: [],
+          isMultiSelect: false,
+          explainAnswer: false,
+          shuffleOptions: true
+        };
+        questionBuffer = [];
+        answerBuffer = [];
+        explainAnswerBuffer = [];
+        questionOptionsBuffer = [];
+      } else if (sectionName === 'Suggested Answers') {
+        // Process question text and extract options when entering answers section
+        if (currentQuestion && currentSection === 'question') {
+          const questionText = questionBuffer.join('\n').trim();
+          const optionRegex = /^([A-Z])\.\s*(.+)$/gm;
+          const options = [];
+          let match;
+          while ((match = optionRegex.exec(questionText)) !== null) {
+            options.push({
+              label: match[1],
+              text: match[2].trim(),
+              correct: false
+            });
+          }
+          const questionTextOnly = questionText.replace(/^[A-Z]\.\s*.+$/gm, '').trim();
+          currentQuestion.text = questionTextOnly || questionText;
+          currentQuestion.options = options;
+        }
+        currentSection = 'answers';
+        answerBuffer = [];
+      } else if (sectionName === 'Question Options' || sectionName === 'Question options') {
+        // Process question text and extract options when entering question options section
+        if (currentQuestion && currentSection === 'question') {
+          const questionText = questionBuffer.join('\n').trim();
+          const optionRegex = /^([A-Z])\.\s*(.+)$/gm;
+          const options = [];
+          let match;
+          while ((match = optionRegex.exec(questionText)) !== null) {
+            options.push({
+              label: match[1],
+              text: match[2].trim(),
+              correct: false
+            });
+          }
+          const questionTextOnly = questionText.replace(/^[A-Z]\.\s*.+$/gm, '').trim();
+          currentQuestion.text = questionTextOnly || questionText;
+          currentQuestion.options = options;
+        }
+        currentSection = 'questionOptions';
+        questionOptionsBuffer = [];
+      } else if (sectionName === 'Explain Your Answer' || sectionName === 'Explain your answer') {
+        // Process answers when entering explain section
+        if (currentQuestion && currentSection === 'answers' && answerBuffer.length > 0) {
+          const answerItems = answerBuffer.map(line => line.trim()).filter(line => line.startsWith('-'));
+          const correctAnswers = new Set();
+          answerItems.forEach(item => {
+            const trimmed = item.replace(/^-\s*/, '').trim();
+            const match = trimmed.match(/^([A-Z])\s*(?:-?\s*(?:Correct)?)?$/i);
+            if (match) {
+              const label = match[1].toUpperCase();
+              if (trimmed.toLowerCase().includes('correct')) {
+                correctAnswers.add(label);
+              }
+            }
+          });
+          if (currentQuestion.options.length > 0) {
+            currentQuestion.options.forEach(opt => {
+              opt.correct = correctAnswers.has(opt.label);
+            });
+            currentQuestion.isMultiSelect = correctAnswers.size > 1;
+          }
+        }
+        currentSection = 'explain';
+        explainAnswerBuffer = [];
+      } else {
+        currentSection = null;
+      }
+      continue;
+    }
+
+    // Accumulate content based on current section
+    if (currentSection === 'question' && currentQuestion) {
+      questionBuffer.push(line);
+    } else if (currentSection === 'answers' && currentQuestion) {
+      answerBuffer.push(line);
+    } else if (currentSection === 'explain' && currentQuestion) {
+      explainAnswerBuffer.push(line);
+    } else if (currentSection === 'questionOptions' && currentQuestion) {
+      questionOptionsBuffer.push(line);
+    }
+  }
+
+  // Process last question if exists
+  if (currentQuestion) {
+    // Process question text and extract options if we haven't done so yet
+    if (questionBuffer.length > 0 && (!currentQuestion.options || currentQuestion.options.length === 0)) {
+      const questionText = questionBuffer.join('\n').trim();
+      const optionRegex = /^([A-Z])\.\s*(.+)$/gm;
+      const options = [];
+      let match;
+      while ((match = optionRegex.exec(questionText)) !== null) {
+        options.push({
+          label: match[1],
+          text: match[2].trim(),
+          correct: false
+        });
+      }
+      const questionTextOnly = questionText.replace(/^[A-Z]\.\s*.+$/gm, '').trim();
+      currentQuestion.text = questionTextOnly || questionText;
+      if (options.length > 0) {
+        currentQuestion.options = options;
+      }
+    }
+    
+    // Process question options if we're in that section
+    if (questionOptionsBuffer.length > 0) {
+      const optionsText = questionOptionsBuffer.join('\n').trim().toLowerCase();
+      if (optionsText.includes('shuffle=false') || optionsText.includes('don\'t shuffle') || optionsText.includes('dont shuffle') || optionsText === 'no shuffle') {
+        currentQuestion.shuffleOptions = false;
+      }
+    }
+    
+    // Process answers if we have answer buffer (we were in answers section)
+    if (answerBuffer.length > 0 && currentQuestion.options && currentQuestion.options.length > 0) {
+      const answerItems = answerBuffer.map(line => line.trim()).filter(line => line.startsWith('-'));
+      const correctAnswers = new Set();
+      answerItems.forEach(item => {
+        const trimmed = item.replace(/^-\s*/, '').trim();
+        const match = trimmed.match(/^([A-Z])\s*(?:-?\s*(?:Correct)?)?$/i);
+        if (match) {
+          const label = match[1].toUpperCase();
+          if (trimmed.toLowerCase().includes('correct')) {
+            correctAnswers.add(label);
+          }
+        }
+      });
+      currentQuestion.options.forEach(opt => {
+        opt.correct = correctAnswers.has(opt.label);
+      });
+      currentQuestion.isMultiSelect = correctAnswers.size > 1;
+    }
+    
+    // Process explain answer if we're in explain section
+    if (explainAnswerBuffer.length > 0) {
+      const explainText = explainAnswerBuffer.join('\n').trim().toLowerCase();
+      currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+    }
+    
+    structure.questions.push(currentQuestion);
+  }
+
+  return structure;
+}
+
+// Convert MCQ structure back to markdown
+function mcqStructureToMarkdown(structure) {
+  let markdown = `__Type__\n\n${structure.type}\n\n`;
+
+  structure.questions.forEach((q) => {
+    markdown += `__Practice Question__\n\n${q.text}\n\n`;
+    
+    // Add options
+    q.options.forEach(opt => {
+      markdown += `${opt.label}. ${opt.text}\n`;
+    });
+    markdown += '\n';
+    
+    // Add question options if shuffle is disabled
+    if (q.shuffleOptions === false) {
+      markdown += `__Question Options__\n\ndon't shuffle\n\n`;
+    }
+    
+    // Add suggested answers
+    markdown += `__Suggested Answers__\n\n`;
+    q.options.forEach(opt => {
+      const correctMarker = opt.correct ? ' - Correct' : '';
+      markdown += `- ${opt.label}${correctMarker}\n`;
+    });
+    markdown += '\n';
+    
+    // Add explain your answer if enabled
+    if (q.explainAnswer) {
+      markdown += `__Explain Your Answer__\n\ntrue\n\n`;
+    }
+  });
+
+  return markdown;
+}
+
+// Render MCQ question item
+function renderMcqQuestion(question, index) {
+  const container = document.createElement('div');
+  container.className = 'box card non-interactive question-item';
+  container.dataset.index = index;
+
+  const header = document.createElement('div');
+  header.className = 'question-item-header';
+  
+  const title = document.createElement('div');
+  title.className = 'question-item-title';
+  title.textContent = `Question ${index + 1}`;
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'button button-text button-danger';
+  deleteBtn.textContent = 'Delete';
+  if (currentStructure.questions.length <= 1) {
+    deleteBtn.disabled = true;
+    deleteBtn.classList.add('disabled');
+  }
+  deleteBtn.onclick = () => {
+    if (currentStructure.questions.length <= 1) {
+      return;
+    }
+    const questionIndex = parseInt(container.dataset.index);
+    currentStructure.questions.splice(questionIndex, 1);
+    container.remove();
+    // Re-render all questions to update indices
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = '';
+    currentStructure.questions.forEach((q, idx) => {
+      questionsContainer.appendChild(renderMcqQuestion(q, idx));
+    });
+    updateStructure();
+  };
+
+  header.appendChild(title);
+  header.appendChild(deleteBtn);
+
+  // Question text textarea
+  const questionTextArea = document.createElement('textarea');
+  questionTextArea.className = 'form-textarea';
+  questionTextArea.placeholder = 'Enter question text (supports markdown)...';
+  questionTextArea.value = question.text || '';
+  questionTextArea.rows = 4;
+  questionTextArea.oninput = debounce(() => {
+    question.text = questionTextArea.value;
+    updateStructure();
+  }, 300);
+
+  // Options section
+  const optionsLabel = document.createElement('label');
+  optionsLabel.className = 'form-label';
+  optionsLabel.textContent = 'Options';
+  optionsLabel.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+
+  const optionsContainer = document.createElement('div');
+  optionsContainer.className = 'mcq-options-editor';
+  optionsContainer.style.display = 'flex';
+  optionsContainer.style.flexDirection = 'column';
+  optionsContainer.style.gap = 'var(--UI-Spacing-spacing-xs)';
+
+  // Ensure question has options array
+  if (!question.options || question.options.length === 0) {
+    question.options = [
+      { label: 'A', text: '', correct: false },
+      { label: 'B', text: '', correct: false },
+      { label: 'C', text: '', correct: false },
+      { label: 'D', text: '', correct: false }
+    ];
+  }
+
+  // Render each option
+  question.options.forEach((option, optIdx) => {
+    const optionRow = document.createElement('div');
+    optionRow.style.display = 'flex';
+    optionRow.style.gap = 'var(--UI-Spacing-spacing-xs)';
+    optionRow.style.alignItems = 'center';
+
+    const optionLabel = document.createElement('span');
+    optionLabel.textContent = `${option.label}.`;
+    optionLabel.style.minWidth = '24px';
+    optionLabel.style.fontWeight = '500';
+
+    const optionInput = document.createElement('input');
+    optionInput.type = 'text';
+    optionInput.className = 'input';
+    optionInput.style.flex = '1';
+    optionInput.value = option.text || '';
+    optionInput.placeholder = `Option ${option.label} text`;
+    optionInput.oninput = debounce(() => {
+      option.text = optionInput.value;
+      updateStructure();
+    }, 300);
+
+    const correctCheckbox = document.createElement('label');
+    correctCheckbox.className = 'input-checkbox';
+    correctCheckbox.style.flexShrink = '0';
+    
+    const checkboxInput = document.createElement('input');
+    checkboxInput.type = 'checkbox';
+    checkboxInput.checked = option.correct || false;
+    checkboxInput.onchange = () => {
+      option.correct = checkboxInput.checked;
+      // Update isMultiSelect based on number of correct answers
+      const correctCount = question.options.filter(opt => opt.correct).length;
+      question.isMultiSelect = correctCount > 1;
+      updateStructure();
+    };
+
+    const checkboxBox = document.createElement('span');
+    checkboxBox.className = 'input-checkbox-box';
+    const checkboxCheckmark = document.createElement('span');
+    checkboxCheckmark.className = 'input-checkbox-checkmark';
+    checkboxBox.appendChild(checkboxCheckmark);
+
+    const checkboxLabel = document.createElement('span');
+    checkboxLabel.className = 'input-checkbox-label';
+    checkboxLabel.textContent = 'Correct';
+
+    correctCheckbox.appendChild(checkboxInput);
+    correctCheckbox.appendChild(checkboxBox);
+    correctCheckbox.appendChild(checkboxLabel);
+
+    // Delete button for option
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'button button-text button-danger';
+    deleteBtn.textContent = '×';
+    deleteBtn.style.flexShrink = '0';
+    deleteBtn.style.minWidth = '32px';
+    deleteBtn.style.padding = '0';
+    deleteBtn.style.fontSize = '20px';
+    deleteBtn.style.lineHeight = '1';
+    deleteBtn.disabled = question.options.length <= 2;
+    if (deleteBtn.disabled) {
+      deleteBtn.classList.add('disabled');
+    }
+    deleteBtn.onclick = () => {
+      if (question.options.length <= 2) {
+        return;
+      }
+      question.options.splice(optIdx, 1);
+      // Re-render the entire question to update indices
+      const questionIndex = parseInt(container.dataset.index);
+      const questionsContainer = document.getElementById('questions-container');
+      questionsContainer.innerHTML = '';
+      currentStructure.questions.forEach((q, idx) => {
+        questionsContainer.appendChild(renderMcqQuestion(q, idx));
+      });
+      updateStructure();
+    };
+
+    optionRow.appendChild(optionLabel);
+    optionRow.appendChild(optionInput);
+    optionRow.appendChild(correctCheckbox);
+    optionRow.appendChild(deleteBtn);
+    optionsContainer.appendChild(optionRow);
+  });
+
+  // Add option button
+  const addOptionBtn = document.createElement('button');
+  addOptionBtn.type = 'button';
+  addOptionBtn.className = 'button button-text';
+  addOptionBtn.textContent = '+ Add Option';
+  addOptionBtn.style.marginTop = 'var(--UI-Spacing-spacing-xs)';
+  addOptionBtn.onclick = () => {
+    const nextLabel = String.fromCharCode(65 + question.options.length); // A, B, C, etc.
+    question.options.push({
+      label: nextLabel,
+      text: '',
+      correct: false
+    });
+    // Re-render options
+    optionsContainer.innerHTML = '';
+    question.options.forEach((opt, optIdx) => {
+      const optionRow = document.createElement('div');
+      optionRow.style.display = 'flex';
+      optionRow.style.gap = 'var(--UI-Spacing-spacing-xs)';
+      optionRow.style.alignItems = 'center';
+
+      const optionLabel = document.createElement('span');
+      optionLabel.textContent = `${opt.label}.`;
+      optionLabel.style.minWidth = '24px';
+      optionLabel.style.fontWeight = '500';
+
+      const optionInput = document.createElement('input');
+      optionInput.type = 'text';
+      optionInput.className = 'input';
+      optionInput.style.flex = '1';
+      optionInput.value = opt.text || '';
+      optionInput.placeholder = `Option ${opt.label} text`;
+      optionInput.oninput = debounce(() => {
+        opt.text = optionInput.value;
+        updateStructure();
+      }, 300);
+
+      const correctCheckbox = document.createElement('label');
+      correctCheckbox.className = 'input-checkbox';
+      correctCheckbox.style.flexShrink = '0';
+      
+      const checkboxInput = document.createElement('input');
+      checkboxInput.type = 'checkbox';
+      checkboxInput.checked = opt.correct || false;
+      checkboxInput.onchange = () => {
+        opt.correct = checkboxInput.checked;
+        const correctCount = question.options.filter(o => o.correct).length;
+        question.isMultiSelect = correctCount > 1;
+        updateStructure();
+      };
+
+      const checkboxBox = document.createElement('span');
+      checkboxBox.className = 'input-checkbox-box';
+      const checkboxCheckmark = document.createElement('span');
+      checkboxCheckmark.className = 'input-checkbox-checkmark';
+      checkboxBox.appendChild(checkboxCheckmark);
+
+      const checkboxLabel = document.createElement('span');
+      checkboxLabel.className = 'input-checkbox-label';
+      checkboxLabel.textContent = 'Correct';
+
+      correctCheckbox.appendChild(checkboxInput);
+      correctCheckbox.appendChild(checkboxBox);
+      correctCheckbox.appendChild(checkboxLabel);
+
+      // Delete button for option
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'button button-text button-danger';
+      deleteBtn.textContent = '×';
+      deleteBtn.style.flexShrink = '0';
+      deleteBtn.style.minWidth = '32px';
+      deleteBtn.style.padding = '0';
+      deleteBtn.style.fontSize = '20px';
+      deleteBtn.style.lineHeight = '1';
+      deleteBtn.disabled = question.options.length <= 2;
+      if (deleteBtn.disabled) {
+        deleteBtn.classList.add('disabled');
+      }
+      deleteBtn.onclick = () => {
+        if (question.options.length <= 2) {
+          return;
+        }
+        question.options.splice(optIdx, 1);
+        // Re-render the entire question to update indices
+        const questionIndex = parseInt(container.dataset.index);
+        const questionsContainer = document.getElementById('questions-container');
+        questionsContainer.innerHTML = '';
+        currentStructure.questions.forEach((q, idx) => {
+          questionsContainer.appendChild(renderMcqQuestion(q, idx));
+        });
+        updateStructure();
+      };
+
+      optionRow.appendChild(optionLabel);
+      optionRow.appendChild(optionInput);
+      optionRow.appendChild(correctCheckbox);
+      optionRow.appendChild(deleteBtn);
+      optionsContainer.appendChild(optionRow);
+    });
+    optionsContainer.appendChild(addOptionBtn);
+    updateStructure();
+  };
+  optionsContainer.appendChild(addOptionBtn);
+
+  // Question options section
+  const questionOptionsDiv = document.createElement('div');
+  questionOptionsDiv.className = 'validation-options';
+  questionOptionsDiv.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+
+  const shuffleLabel = document.createElement('label');
+  shuffleLabel.className = 'input-checkbox';
+  const shuffleInput = document.createElement('input');
+  shuffleInput.type = 'checkbox';
+  shuffleInput.checked = question.shuffleOptions !== false; // Default to true
+  shuffleInput.onchange = () => {
+    question.shuffleOptions = shuffleInput.checked;
+    updateStructure();
+  };
+  const shuffleBox = document.createElement('span');
+  shuffleBox.className = 'input-checkbox-box';
+  const shuffleCheckmark = document.createElement('span');
+  shuffleCheckmark.className = 'input-checkbox-checkmark';
+  shuffleBox.appendChild(shuffleCheckmark);
+  const shuffleText = document.createElement('span');
+  shuffleText.className = 'input-checkbox-label';
+  shuffleText.textContent = 'Shuffle options';
+  shuffleLabel.appendChild(shuffleInput);
+  shuffleLabel.appendChild(shuffleBox);
+  shuffleLabel.appendChild(shuffleText);
+  questionOptionsDiv.appendChild(shuffleLabel);
+
+  // Explain answer checkbox
+  const explainLabel = document.createElement('label');
+  explainLabel.className = 'input-checkbox';
+  const explainInput = document.createElement('input');
+  explainInput.type = 'checkbox';
+  explainInput.checked = question.explainAnswer || false;
+  explainInput.onchange = () => {
+    question.explainAnswer = explainInput.checked;
+    updateStructure();
+  };
+  const explainBox = document.createElement('span');
+  explainBox.className = 'input-checkbox-box';
+  const explainCheckmark = document.createElement('span');
+  explainCheckmark.className = 'input-checkbox-checkmark';
+  explainBox.appendChild(explainCheckmark);
+  const explainText = document.createElement('span');
+  explainText.className = 'input-checkbox-label';
+  explainText.textContent = 'Explain your answer';
+  explainLabel.appendChild(explainInput);
+  explainLabel.appendChild(explainBox);
+  explainLabel.appendChild(explainText);
+  questionOptionsDiv.appendChild(explainLabel);
+
+  container.appendChild(header);
+  container.appendChild(questionTextArea);
+  container.appendChild(optionsLabel);
+  container.appendChild(optionsContainer);
+  container.appendChild(questionOptionsDiv);
+
+  return container;
 }
 
 // Initialize editor
@@ -616,241 +1203,279 @@ async function initEditor() {
     currentStructure.type = questionType;
   }
   
-  if (markdown && markdown.trim()) {
-    const parsed = parseMarkdownToStructure(markdown);
-    // Merge parsed structure but keep the type from server
-    currentStructure.questions = parsed.questions;
-    currentStructure.content = parsed.content;
-    // Use server-provided type, not parsed type
-  }
-
-  // Ensure at least one question exists
-  if (currentStructure.questions.length === 0) {
-    currentStructure.questions.push({
-      text: '',
-      correctAnswer: '',
-      validation: { kind: 'string', options: {} }
-    });
-  }
-
-  // Render questions
-  const questionsContainer = document.getElementById('questions-container');
-  questionsContainer.innerHTML = '';
-  currentStructure.questions.forEach((q, index) => {
-    questionsContainer.appendChild(renderQuestion(q, index));
-  });
-
-  // Handle add question
-  document.getElementById('add-question-btn').onclick = () => {
-    const newQuestion = {
-      text: '',
-      correctAnswer: '',
-      validation: { kind: 'string', options: {} }
-    };
-    currentStructure.questions.push(newQuestion);
-    const index = currentStructure.questions.length - 1;
-    questionsContainer.appendChild(renderQuestion(newQuestion, index));
-    updateStructure();
-  };
-
-  // Handle content type change
-  const contentTypeDropdownContainer = document.getElementById('content-type-dropdown');
-  contentTypeDropdownContainer.style.width = '240px';
-  const contentInputGroup = document.getElementById('content-input-group');
-  const contentInputContainer = document.getElementById('content-input-container');
-  const contentLabel = document.getElementById('content-label');
-  let contentInput = null;
-  let contentTypeDropdown = null;
-  let openUrlButton = null;
-
-  function createContentInput(type, value) {
-    // Clear container
-    contentInputContainer.innerHTML = '';
-    
-    if (type === 'url') {
-      // Create text input for URL
-      contentInput = document.createElement('input');
-      contentInput.type = 'text';
-      contentInput.id = 'content-input';
-      contentInput.className = 'input';
-      contentInput.placeholder = 'https://example.com';
-      contentInput.value = value || '';
-      
-      contentInputContainer.appendChild(contentInput);
-      
-      contentInput.oninput = debounce(() => {
-        if (currentStructure.content) {
-          currentStructure.content.value = contentInput.value;
-          updateStructure();
-        }
-        // Update button state if it exists
-        if (openUrlButton) {
-          const urlValue = contentInput.value.trim();
-          openUrlButton.disabled = !urlValue || !/^https?:\/\//i.test(urlValue);
-        }
-      }, 300);
-    } else {
-      // Create textarea for markdown
-      contentInput = document.createElement('textarea');
-      contentInput.id = 'content-input';
-      contentInput.className = 'form-textarea';
-      contentInput.placeholder = 'Enter markdown content...';
-      contentInput.value = value || '';
-      
-      contentInputContainer.appendChild(contentInput);
-      
-      // Set up input handler
-      contentInput.oninput = debounce(() => {
-        if (currentStructure.content) {
-          currentStructure.content.value = contentInput.value;
-          updateStructure();
-        }
-      }, 300);
-    }
-  }
+  // Check if this is MCQ or Text Input
+  isMcqMode = questionType && /^multiple choice$/i.test(questionType);
   
-  // Create icon button to open URL (placed next to label)
-  function createOpenUrlButton() {
-    // Remove existing button if any
-    if (openUrlButton) {
-      openUrlButton.remove();
+  if (isMcqMode) {
+    // MCQ editor
+    if (markdown && markdown.trim()) {
+      const parsed = parseMcqMarkdownToStructure(markdown);
+      currentStructure.questions = parsed.questions;
     }
-    
-    // Only create button if content type is URL
-    if (contentTypeDropdown && contentTypeDropdown.getValue() === 'url') {
-      openUrlButton = document.createElement('button');
-      openUrlButton.type = 'button';
-      openUrlButton.className = 'button button-text';
-      openUrlButton.style.padding = 'var(--UI-Spacing-spacing-xs)';
-      openUrlButton.style.minWidth = 'auto';
-      openUrlButton.style.display = 'inline-flex';
-      openUrlButton.style.alignItems = 'center';
-      openUrlButton.style.justifyContent = 'center';
-      openUrlButton.style.verticalAlign = 'middle';
-      openUrlButton.style.lineHeight = '1';
-      openUrlButton.setAttribute('aria-label', 'Open URL in new tab');
-      
-      // Create external link icon SVG
-      const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      iconSvg.setAttribute('width', '16');
-      iconSvg.setAttribute('height', '16');
-      iconSvg.setAttribute('viewBox', '0 0 16 16');
-      iconSvg.setAttribute('fill', 'none');
-      iconSvg.style.display = 'block';
-      
-      const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path1.setAttribute('d', 'M10 2H4C3.44772 2 3 2.44772 3 3V12C3 12.5523 3.44772 13 4 13H13C13.5523 13 14 12.5523 14 12V6');
-      path1.setAttribute('stroke', 'currentColor');
-      path1.setAttribute('stroke-width', '1.5');
-      path1.setAttribute('stroke-linecap', 'round');
-      path1.setAttribute('stroke-linejoin', 'round');
-      
-      const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path2.setAttribute('d', 'M11 1H14V4');
-      path2.setAttribute('stroke', 'currentColor');
-      path2.setAttribute('stroke-width', '1.5');
-      path2.setAttribute('stroke-linecap', 'round');
-      path2.setAttribute('stroke-linejoin', 'round');
-      
-      const path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path3.setAttribute('d', 'M6 10L14 2');
-      path3.setAttribute('stroke', 'currentColor');
-      path3.setAttribute('stroke-width', '1.5');
-      path3.setAttribute('stroke-linecap', 'round');
-      path3.setAttribute('stroke-linejoin', 'round');
-      
-      iconSvg.appendChild(path1);
-      iconSvg.appendChild(path2);
-      iconSvg.appendChild(path3);
-      openUrlButton.appendChild(iconSvg);
-      
-      // Update button state
-      const updateButtonState = () => {
-        if (contentInput && openUrlButton) {
-          const urlValue = contentInput.value.trim();
-          openUrlButton.disabled = !urlValue || !/^https?:\/\//i.test(urlValue);
-        }
+
+    // Ensure at least one question exists
+    if (currentStructure.questions.length === 0) {
+      currentStructure.questions.push({
+        text: '',
+        options: [
+          { label: 'A', text: '', correct: false },
+          { label: 'B', text: '', correct: false },
+          { label: 'C', text: '', correct: false },
+          { label: 'D', text: '', correct: false }
+        ],
+        isMultiSelect: false,
+        explainAnswer: false,
+        shuffleOptions: true
+      });
+    }
+
+    // Hide content section for MCQ
+    document.querySelector('.editor-section-title').style.display = 'none';
+    document.getElementById('content-type-dropdown').parentElement.style.display = 'none';
+    document.getElementById('content-input-group').style.display = 'none';
+
+    // Render questions
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = '';
+    currentStructure.questions.forEach((q, index) => {
+      questionsContainer.appendChild(renderMcqQuestion(q, index));
+    });
+
+    // Handle add question
+    document.getElementById('add-question-btn').onclick = () => {
+      const newQuestion = {
+        text: '',
+        options: [
+          { label: 'A', text: '', correct: false },
+          { label: 'B', text: '', correct: false },
+          { label: 'C', text: '', correct: false },
+          { label: 'D', text: '', correct: false }
+        ],
+        isMultiSelect: false,
+        explainAnswer: false,
+        shuffleOptions: true
       };
-      
-      // Open URL in new tab when button is clicked
-      openUrlButton.onclick = (e) => {
-        e.preventDefault();
-        if (contentInput) {
-          const urlValue = contentInput.value.trim();
-          if (urlValue && /^https?:\/\//i.test(urlValue)) {
-            window.open(urlValue, '_blank', 'noopener,noreferrer');
-          }
-        }
+      currentStructure.questions.push(newQuestion);
+      const index = currentStructure.questions.length - 1;
+      questionsContainer.appendChild(renderMcqQuestion(newQuestion, index));
+      updateStructure();
+    };
+
+  } else {
+    // Text Input editor (existing code)
+    if (markdown && markdown.trim()) {
+      const parsed = parseMarkdownToStructure(markdown);
+      currentStructure.questions = parsed.questions;
+      currentStructure.content = parsed.content;
+    }
+
+    // Ensure at least one question exists
+    if (currentStructure.questions.length === 0) {
+      currentStructure.questions.push({
+        text: '',
+        correctAnswer: '',
+        validation: { kind: 'string', options: {} }
+      });
+    }
+
+    // Render questions
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = '';
+    currentStructure.questions.forEach((q, index) => {
+      questionsContainer.appendChild(renderQuestion(q, index));
+    });
+
+    // Handle add question
+    document.getElementById('add-question-btn').onclick = () => {
+      const newQuestion = {
+        text: '',
+        correctAnswer: '',
+        validation: { kind: 'string', options: {} }
       };
+      currentStructure.questions.push(newQuestion);
+      const index = currentStructure.questions.length - 1;
+      questionsContainer.appendChild(renderQuestion(newQuestion, index));
+      updateStructure();
+    };
+
+    // Handle content type change (existing code)
+    const contentTypeDropdownContainer = document.getElementById('content-type-dropdown');
+    contentTypeDropdownContainer.style.width = '240px';
+    const contentInputGroup = document.getElementById('content-input-group');
+    const contentInputContainer = document.getElementById('content-input-container');
+    const contentLabel = document.getElementById('content-label');
+    let contentInput = null;
+    let contentTypeDropdown = null;
+    let openUrlButton = null;
+
+    function createContentInput(type, value) {
+      contentInputContainer.innerHTML = '';
       
-      // Insert button after the label - they'll be inline since label is inline-flex
-      contentLabel.parentNode.insertBefore(openUrlButton, contentLabel.nextSibling);
-      
-      // Set initial state
-      updateButtonState();
-      
-      // Update button state when input changes
-      if (contentInput) {
-        const originalOnInput = contentInput.oninput;
+      if (type === 'url') {
+        contentInput = document.createElement('input');
+        contentInput.type = 'text';
+        contentInput.id = 'content-input';
+        contentInput.className = 'input';
+        contentInput.placeholder = 'https://example.com';
+        contentInput.value = value || '';
+        contentInputContainer.appendChild(contentInput);
+        
         contentInput.oninput = debounce(() => {
-          if (originalOnInput) originalOnInput();
-          updateButtonState();
+          if (currentStructure.content) {
+            currentStructure.content.value = contentInput.value;
+            updateStructure();
+          }
+          if (openUrlButton) {
+            const urlValue = contentInput.value.trim();
+            openUrlButton.disabled = !urlValue || !/^https?:\/\//i.test(urlValue);
+          }
+        }, 300);
+      } else {
+        contentInput = document.createElement('textarea');
+        contentInput.id = 'content-input';
+        contentInput.className = 'form-textarea';
+        contentInput.placeholder = 'Enter markdown content...';
+        contentInput.value = value || '';
+        contentInputContainer.appendChild(contentInput);
+        
+        contentInput.oninput = debounce(() => {
+          if (currentStructure.content) {
+            currentStructure.content.value = contentInput.value;
+            updateStructure();
+          }
         }, 300);
       }
     }
-  }
+    
+    function createOpenUrlButton() {
+      if (openUrlButton) {
+        openUrlButton.remove();
+      }
+      
+      if (contentTypeDropdown && contentTypeDropdown.getValue() === 'url') {
+        openUrlButton = document.createElement('button');
+        openUrlButton.type = 'button';
+        openUrlButton.className = 'button button-text';
+        openUrlButton.style.padding = 'var(--UI-Spacing-spacing-xs)';
+        openUrlButton.style.minWidth = 'auto';
+        openUrlButton.style.display = 'inline-flex';
+        openUrlButton.style.alignItems = 'center';
+        openUrlButton.style.justifyContent = 'center';
+        openUrlButton.style.verticalAlign = 'middle';
+        openUrlButton.style.lineHeight = '1';
+        openUrlButton.setAttribute('aria-label', 'Open URL in new tab');
+        
+        const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        iconSvg.setAttribute('width', '16');
+        iconSvg.setAttribute('height', '16');
+        iconSvg.setAttribute('viewBox', '0 0 16 16');
+        iconSvg.setAttribute('fill', 'none');
+        iconSvg.style.display = 'block';
+        
+        const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path1.setAttribute('d', 'M10 2H4C3.44772 2 3 2.44772 3 3V12C3 12.5523 3.44772 13 4 13H13C13.5523 13 14 12.5523 14 12V6');
+        path1.setAttribute('stroke', 'currentColor');
+        path1.setAttribute('stroke-width', '1.5');
+        path1.setAttribute('stroke-linecap', 'round');
+        path1.setAttribute('stroke-linejoin', 'round');
+        
+        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path2.setAttribute('d', 'M11 1H14V4');
+        path2.setAttribute('stroke', 'currentColor');
+        path2.setAttribute('stroke-width', '1.5');
+        path2.setAttribute('stroke-linecap', 'round');
+        path2.setAttribute('stroke-linejoin', 'round');
+        
+        const path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path3.setAttribute('d', 'M6 10L14 2');
+        path3.setAttribute('stroke', 'currentColor');
+        path3.setAttribute('stroke-width', '1.5');
+        path3.setAttribute('stroke-linecap', 'round');
+        path3.setAttribute('stroke-linejoin', 'round');
+        
+        iconSvg.appendChild(path1);
+        iconSvg.appendChild(path2);
+        iconSvg.appendChild(path3);
+        openUrlButton.appendChild(iconSvg);
+        
+        const updateButtonState = () => {
+          if (contentInput && openUrlButton) {
+            const urlValue = contentInput.value.trim();
+            openUrlButton.disabled = !urlValue || !/^https?:\/\//i.test(urlValue);
+          }
+        };
+        
+        openUrlButton.onclick = (e) => {
+          e.preventDefault();
+          if (contentInput) {
+            const urlValue = contentInput.value.trim();
+            if (urlValue && /^https?:\/\//i.test(urlValue)) {
+              window.open(urlValue, '_blank', 'noopener,noreferrer');
+            }
+          }
+        };
+        
+        contentLabel.parentNode.insertBefore(openUrlButton, contentLabel.nextSibling);
+        updateButtonState();
+        
+        if (contentInput) {
+          const originalOnInput = contentInput.oninput;
+          contentInput.oninput = debounce(() => {
+            if (originalOnInput) originalOnInput();
+            updateButtonState();
+          }, 300);
+        }
+      }
+    }
 
-  contentTypeDropdown = new Dropdown(contentTypeDropdownContainer, {
-    items: [
-      { value: 'none', label: 'None' },
-      { value: 'markdown', label: 'Markdown' },
-      { value: 'url', label: 'URL' }
-    ],
-    selectedValue: currentStructure.content ? currentStructure.content.type : 'none',
-    growToFit: false,
-    onSelect: (value) => {
-      if (value === 'none') {
-        contentInputGroup.style.display = 'none';
-        currentStructure.content = null;
-        // Remove button if it exists
-        if (openUrlButton) {
-          openUrlButton.remove();
-          openUrlButton = null;
-        }
-      } else {
-        contentInputGroup.style.display = 'block';
-        contentLabel.textContent = value === 'url' ? 'URL' : 'Markdown Content';
-        
-        const currentValue = currentStructure.content ? currentStructure.content.value : '';
-        if (!currentStructure.content) {
-          currentStructure.content = { type: value, value: '' };
-        } else {
-          currentStructure.content.type = value;
-        }
-        
-        createContentInput(value, currentValue);
-        
-        // Create or remove button based on type
-        if (value === 'url') {
-          createOpenUrlButton();
-        } else {
+    contentTypeDropdown = new Dropdown(contentTypeDropdownContainer, {
+      items: [
+        { value: 'none', label: 'None' },
+        { value: 'markdown', label: 'Markdown' },
+        { value: 'url', label: 'URL' }
+      ],
+      selectedValue: currentStructure.content ? currentStructure.content.type : 'none',
+      growToFit: false,
+      onSelect: (value) => {
+        if (value === 'none') {
+          contentInputGroup.style.display = 'none';
+          currentStructure.content = null;
           if (openUrlButton) {
             openUrlButton.remove();
             openUrlButton = null;
           }
+        } else {
+          contentInputGroup.style.display = 'block';
+          contentLabel.textContent = value === 'url' ? 'URL' : 'Markdown Content';
+          
+          const currentValue = currentStructure.content ? currentStructure.content.value : '';
+          if (!currentStructure.content) {
+            currentStructure.content = { type: value, value: '' };
+          } else {
+            currentStructure.content.type = value;
+          }
+          
+          createContentInput(value, currentValue);
+          
+          if (value === 'url') {
+            createOpenUrlButton();
+          } else {
+            if (openUrlButton) {
+              openUrlButton.remove();
+              openUrlButton = null;
+            }
+          }
         }
+        updateStructure();
       }
-      updateStructure();
-    }
-  });
+    });
 
-  // Set initial content state
-  if (currentStructure.content) {
-    contentTypeDropdown.setValue(currentStructure.content.type);
-    // Trigger the onSelect handler to set up the input
-    const handler = contentTypeDropdown.config.onSelect;
-    if (handler) {
-      handler(currentStructure.content.type);
+    if (currentStructure.content) {
+      contentTypeDropdown.setValue(currentStructure.content.type);
+      const handler = contentTypeDropdown.config.onSelect;
+      if (handler) {
+        handler(currentStructure.content.type);
+      }
     }
   }
 }
