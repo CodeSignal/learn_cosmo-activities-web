@@ -1,62 +1,31 @@
 __Type__
 
-Text Input
+Multiple Choice
 
 __Summary__
 
-0/4 correct
+0/1 correct
 
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: No answer selected
-   - Correct Answer: Holy Grail
-   - Result: ✗ Incorrect
-
-2. **Question 2**
-   - Selected Answer: No answer selected
-   - Correct Answer: 3
-   - Result: ✗ Incorrect
-
-3. **Question 3**
-   - Selected Answer: No answer selected
-   - Correct Answer: 5280
-   - Result: ✗ Incorrect
-
-4. **Question 4**
-   - Selected Answer: No answer selected
-   - Correct Answer: 4.5
+   - Selected Answer: D
+   - Correct Answer: B
    - Result: ✗ Incorrect
 
 __Practice Question__
 
-What is your quest?
+Let's test your understanding! Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-__Correct Answers__
+C. Her brand image is too positive
+D. She needs a better logo
+B. Her actual brand doesn't match her identity
+A. Her brand identity is wrong
 
-- Holy Grail [kind: string] [options: fuzzy=0.3,multiLine=true]
+__Suggested Answers__
 
-__Practice Question__
-
-How many feet in a yard?
-
-__Correct Answers__
-
-- 3 [kind: string] [options: precision=0]
-
-__Practice Question__
-
-How many feet in a mile?
-
-__Correct Answers__
-
-- 5280 [kind: numeric-with-units] [options: precision=0,units=ft]
-
-__Practice Question__
-
-How much is coffee?
-
-__Correct Answers__
-
-- 4.5 [kind: numeric-with-currency]
+- C
+- D
+- B - Correct
+- A
 

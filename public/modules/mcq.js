@@ -24,6 +24,9 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
   // Track selected answers per question
   const selectedAnswers = {};
   
+  // Track explanations per question
+  const explanations = {};
+  
   // Track validation state
   let isValidating = false;
   
@@ -36,6 +39,8 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
     } else {
       selectedAnswers[q.id] = [];
     }
+    // Initialize explanations (not persisted in answers, but we'll track them)
+    explanations[q.id] = '';
   });
   
   // Render all questions
@@ -161,6 +166,35 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
     });
     
     questionEl.appendChild(optionsEl);
+    
+    // Add explanation textarea if enabled
+    if (question.explainAnswer) {
+      const explainContainer = document.createElement('div');
+      explainContainer.className = 'mcq-explain-container';
+      
+      const explainLabel = document.createElement('label');
+      explainLabel.className = 'mcq-explain-label body-large';
+      explainLabel.textContent = 'Explain your answer';
+      explainLabel.setAttribute('for', `explain-${question.id}`);
+      explainContainer.appendChild(explainLabel);
+      
+      const explainTextarea = document.createElement('textarea');
+      explainTextarea.id = `explain-${question.id}`;
+      explainTextarea.className = 'input mcq-explain-textarea';
+      explainTextarea.placeholder = 'Enter your explanation...';
+      explainTextarea.rows = 4;
+      explainTextarea.value = explanations[question.id] || '';
+      explainTextarea.setAttribute('aria-label', 'Explain your answer');
+      
+      // Update explanation on input
+      explainTextarea.addEventListener('input', () => {
+        explanations[question.id] = explainTextarea.value;
+        updateResultsAndPost();
+      });
+      
+      explainContainer.appendChild(explainTextarea);
+      questionEl.appendChild(explainContainer);
+    }
     
     // Add "Next" button for multi-select questions (not on last question)
     if (question.isMultiSelect && qIdx < mcq.questions.length - 1) {
@@ -402,11 +436,18 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
       const correct = q.options.filter(opt => opt.correct).map(opt => opt.label);
       const isCorrect = arraysEqual(selected.sort(), correct.sort());
       
-      return {
+      const result = {
         text: `Question ${idx + 1}`,
         selected: selected.length > 0 ? selected.join(', ') : '',
         correct: correct.join(', ')
       };
+      
+      // Add explanation if enabled and provided
+      if (q.explainAnswer && explanations[q.id]) {
+        result.explanation = explanations[q.id];
+      }
+      
+      return result;
     });
     
     // Count answered questions

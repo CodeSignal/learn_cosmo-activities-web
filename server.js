@@ -278,6 +278,7 @@ function buildActivityFromMarkdown(markdownText) {
     let currentSection = null;
     let questionBuffer = [];
     let answerBuffer = [];
+    let explainAnswerBuffer = [];
     
     // Deterministic shuffle using text as seed
     function seededShuffle(array, seed) {
@@ -338,31 +339,49 @@ function buildActivityFromMarkdown(markdownText) {
       currentQuestion.options = options;
     }
     
+    function processExplainAnswer() {
+      if (!currentQuestion) return;
+      
+      // Parse explain answer section - check if it contains "true", "yes", or "enabled"
+      const explainText = explainAnswerBuffer.map(t => t.raw || t.text || '').join('\n').trim().toLowerCase();
+      currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+    }
+    
     function processAnswers() {
-      if (!currentQuestion || answerBuffer.length === 0) return;
+      if (!currentQuestion) return;
       
-      const answerItems = readListItems(answerBuffer);
-      const correctAnswers = new Set();
+      // Process explain answer first if buffer exists (even if no answers yet)
+      if (explainAnswerBuffer.length > 0) {
+        processExplainAnswer();
+      } else {
+        currentQuestion.explainAnswer = false;
+      }
       
-      answerItems.forEach(item => {
-        const trimmed = item.trim();
-        // Match patterns like "A", "A - Correct", "B - Correct", etc.
-        const match = trimmed.match(/^([A-Z])\s*(?:-?\s*(?:Correct)?)?$/i);
-        if (match) {
-          const label = match[1].toUpperCase();
-          if (trimmed.toLowerCase().includes('correct')) {
-            correctAnswers.add(label);
+      // Process answers if buffer has content
+      if (answerBuffer.length > 0) {
+        const answerItems = readListItems(answerBuffer);
+        const correctAnswers = new Set();
+        
+        answerItems.forEach(item => {
+          const trimmed = item.trim();
+          // Match patterns like "A", "A - Correct", "B - Correct", etc.
+          const match = trimmed.match(/^([A-Z])\s*(?:-?\s*(?:Correct)?)?$/i);
+          if (match) {
+            const label = match[1].toUpperCase();
+            if (trimmed.toLowerCase().includes('correct')) {
+              correctAnswers.add(label);
+            }
           }
-        }
-      });
-      
-      // Mark correct options
-      currentQuestion.options.forEach(opt => {
-        opt.correct = correctAnswers.has(opt.label);
-      });
-      
-      // Determine if multi-select
-      currentQuestion.isMultiSelect = correctAnswers.size > 1;
+        });
+        
+        // Mark correct options
+        currentQuestion.options.forEach(opt => {
+          opt.correct = correctAnswers.has(opt.label);
+        });
+        
+        // Determine if multi-select
+        currentQuestion.isMultiSelect = correctAnswers.size > 1;
+      }
       
       // Shuffle options using deterministic seed based on question and option text
       const seed = generateSeed(currentQuestion.text, currentQuestion.options);
@@ -387,10 +406,11 @@ function buildActivityFromMarkdown(markdownText) {
             }
             
             // Start new question
-            currentQuestion = { id: questions.length, text: '', options: [], isMultiSelect: false };
+            currentQuestion = { id: questions.length, text: '', options: [], isMultiSelect: false, explainAnswer: false };
             currentSection = 'question';
             questionBuffer = [];
             answerBuffer = [];
+            explainAnswerBuffer = [];
             continue;
           } else if (sectionName === 'Suggested Answers') {
             // Process current question text
@@ -398,6 +418,13 @@ function buildActivityFromMarkdown(markdownText) {
               processQuestion();
               currentSection = 'answers';
               answerBuffer = [];
+            }
+            continue;
+          } else if (sectionName === 'Explain Your Answer' || sectionName === 'Explain your answer') {
+            // Switch to explain section - answers will be processed when we hit the next question or end
+            if (currentQuestion && currentSection === 'answers') {
+              currentSection = 'explain';
+              explainAnswerBuffer = [];
             }
             continue;
           } else if (sectionName === 'Type') {
@@ -412,6 +439,8 @@ function buildActivityFromMarkdown(markdownText) {
         questionBuffer.push(token);
       } else if (currentSection === 'answers' && currentQuestion) {
         answerBuffer.push(token);
+      } else if (currentSection === 'explain' && currentQuestion) {
+        explainAnswerBuffer.push(token);
       }
     }
     
@@ -1198,7 +1227,12 @@ const server = http.createServer((req, res) => {
             } else {
               isCorrect = result.selected === result.correct;
             }
-            markdown += `   - Result: ${isCorrect ? '✓ Correct' : '✗ Incorrect'}\n\n`;
+            markdown += `   - Result: ${isCorrect ? '✓ Correct' : '✗ Incorrect'}\n`;
+            // Add explanation if present (for MCQ questions with explainAnswer enabled)
+            if (result.explanation) {
+              markdown += `   - Explanation: ${result.explanation}\n`;
+            }
+            markdown += '\n';
           });
 
           if (/^fill in the blanks$/i.test(activity.type)) {

@@ -1,40 +1,23 @@
 __Type__
 
-Text Input
+Multiple Choice
 
 __Practice Question__
 
-What is your quest?
+Let's test your understanding! Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-__Correct Answers__
+A. Her brand identity is wrong  
+B. Her actual brand doesn't match her identity  
+C. Her brand image is too positive  
+D. She needs a better logo
 
-- Holy Grail [kind: string] [options: fuzzy=0.3,multiLine=true]
+__Suggested Answers__
 
-__Practice Question__
+- A  
+- B - Correct  
+- C  
+- D
 
-How many feet in a yard?
+__Explain Your Answer__
 
-__Correct Answers__
-
-- 3 [kind: string] [options: precision=0]
-
-__Practice Question__
-
-How many feet in a mile?
-
-__Correct Answers__
-
-- 5280 [kind: numeric-with-units] [options: precision=0,units=ft]
-
-__Practice Question__
-
-How much is coffee?
-
-__Correct Answers__
-
-- 4.5 [kind: numeric-with-currency]
-
-__Content__
-
-https://example.com/documentation
-
+true

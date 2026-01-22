@@ -222,3 +222,19 @@
   /* Button styles are handled by design system button classes */
 }
 
+.mcq-explain-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--UI-Spacing-spacing-xs, 8px);
+  margin-top: var(--UI-Spacing-spacing-ms, 16px);
+}
+
+.mcq-explain-label {
+  color: var(--Colors-Text-Body-Strong);
+}
+
+/* Textarea styles are inherited from .input class via text-input.css */
+.mcq-explain-textarea {
+  width: 100%;
+}
+
