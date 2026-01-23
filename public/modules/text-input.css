@@ -153,6 +153,8 @@
 .text-input-field-wrapper {
   position: relative;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .text-input-field-wrapper-currency::before {
@@ -171,11 +173,32 @@
 
 .text-input-field-wrapper-currency .text-input-field {
   padding-left: calc(var(--UI-Spacing-spacing-ms, 16px) + 1ch + var(--UI-Spacing-spacing-xs, 8px));
+  box-sizing: border-box;
+}
+
+.text-input-field-wrapper-units::after {
+  content: attr(data-units);
+  position: absolute;
+  right: var(--UI-Spacing-spacing-ms, 16px);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--Colors-Text-Body-Default);
+  font-family: "Work Sans", sans-serif;
+  font-size: var(--Fonts-Body-Default-md);
+  font-weight: 400;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.text-input-field-wrapper-units .text-input-field {
+  padding-right: calc(var(--UI-Spacing-spacing-ms, 16px) + 2ch + var(--UI-Spacing-spacing-xs, 8px));
+  box-sizing: border-box;
 }
 
 .text-input-field {
   width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
   scroll-margin-top: 2rem;
   scroll-margin-bottom: 2rem;
 }

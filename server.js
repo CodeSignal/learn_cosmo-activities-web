@@ -1125,47 +1125,43 @@ const server = http.createServer((req, res) => {
           const precision = options.precision !== undefined ? options.precision : 2;
           const units = options.units || [];
           
-          // Extract numeric value and unit from user answer
-          const userMatch = String(userAnswer).trim().match(/^([\d.]+)\s*(.*)$/);
-          if (!userMatch) {
+          // Escape unit symbols for regex (handle special regex characters)
+          const escapedUnits = units.map(u => u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+          const unitsPattern = escapedUnits.length > 0 ? escapedUnits.join('|') : '';
+          
+          // Remove unit symbols and any whitespace from user answer (similar to currency)
+          let userStr = String(userAnswer).trim();
+          if (unitsPattern) {
+            // Remove unit symbols (could be at start or end, with or without space)
+            const unitRegex = new RegExp(`^\\s*(${unitsPattern})\\s*|\\s*(${unitsPattern})\\s*$`, 'gi');
+            userStr = userStr.replace(unitRegex, '');
+            userStr = userStr.trim();
+          }
+          
+          // Remove unit symbols from correct answer
+          let correctStr = String(correctAnswer).trim();
+          if (unitsPattern) {
+            const unitRegex = new RegExp(`^\\s*(${unitsPattern})\\s*|\\s*(${unitsPattern})\\s*$`, 'gi');
+            correctStr = correctStr.replace(unitRegex, '');
+            correctStr = correctStr.trim();
+          }
+          
+          // Normalize decimal separators: replace comma with period
+          // This allows both "4.50" and "4,50" to be accepted
+          userStr = userStr.replace(',', '.');
+          correctStr = correctStr.replace(',', '.');
+          
+          // Parse numeric values (parseFloat handles trailing zeros automatically: 4.50 = 4.5)
+          const userValue = parseFloat(userStr);
+          const correctValue = parseFloat(correctStr);
+          
+          if (isNaN(userValue) || isNaN(correctValue)) {
             return false;
           }
           
-          const userValue = parseFloat(userMatch[1]);
-          const userUnit = userMatch[2].trim().toLowerCase();
-          
-          // Extract numeric value and unit from correct answer
-          const correctMatch = String(correctAnswer).trim().match(/^([\d.]+)\s*(.*)$/);
-          if (!correctMatch) {
-            return false;
-          }
-          
-          const correctValue = parseFloat(correctMatch[1]);
-          const correctUnit = correctMatch[2].trim().toLowerCase();
-          
-          // Check if units match (case insensitive, and check against allowed units)
-          if (units.length > 0) {
-            // If units are specified, check if user unit matches any allowed unit
-            const userUnitMatches = units.some(u => u.toLowerCase() === userUnit);
-            const correctUnitMatches = units.some(u => u.toLowerCase() === correctUnit);
-            
-            if (!userUnitMatches || !correctUnitMatches) {
-              return false;
-            }
-            
-            // If both match, check if they match each other
-            if (userUnit !== correctUnit) {
-              return false;
-            }
-          } else {
-            // If no units specified, just check if they match
-            if (userUnit !== correctUnit) {
-              return false;
-            }
-          }
-          
-          // Check numeric value
-          return validateTextInputNumeric(userValue, correctValue, { threshold, precision });
+          // Compare numeric values directly (parseFloat normalizes trailing zeros)
+          // Use threshold to allow small differences
+          return Math.abs(userValue - correctValue) <= threshold;
         }
         
         function validateTextInputNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
