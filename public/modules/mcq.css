@@ -86,30 +86,8 @@
   line-height: 1.82;
 }
 
-.mcq-question-text blockquote {
-  margin: var(--UI-Spacing-spacing-ms, 16px) 0;
-  padding: var(--UI-Spacing-spacing-ms, 16px) var(--UI-Spacing-spacing-mxl, 24px);
-  padding-left: var(--UI-Spacing-spacing-mxl, 24px);
-  border-left: 4px solid var(--Colors-Stroke-Strong);
-  background: var(--Colors-Backgrounds-Main-Medium);
-  border-radius: var(--UI-Radius-radius-s, 8px);
-  color: var(--Colors-Text-Body-Strong);
-}
-
-.mcq-question-text blockquote p {
-  margin: 0;
-}
-
-.mcq-question-text blockquote p:not(:last-child) {
-  margin-bottom: var(--UI-Spacing-spacing-xs, 8px);
-}
-
-@media (prefers-color-scheme: dark) {
-  .mcq-question-text blockquote {
-    background: var(--Colors-Backgrounds-Main-Strong);
-    border-left-color: var(--Colors-Stroke-Default);
-  }
-}
+/* Blockquote styles are provided by design-system/typography/typography.css */
+/* No overrides needed - blockquotes will use the design system styles */
 
 .mcq-options {
   display: flex;

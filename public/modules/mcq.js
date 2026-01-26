@@ -1,4 +1,5 @@
 import toolbar from '../components/toolbar.js';
+import { detectQuoteBlockquotes } from '../design-system/typography/typography.js';
 
 export function initMcq({ activity, state, postResults, persistedAnswers = null }) {
   const elContainer = document.getElementById('activity-container');
@@ -231,6 +232,9 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
     
     elQuestions.appendChild(questionEl);
   });
+  
+  // Detect and style blockquotes that start with quotes
+  detectQuoteBlockquotes(elMcq);
   
   function findCenteredQuestionIndex() {
     const viewportCenter = window.innerHeight / 2 + window.scrollY;
