@@ -208,7 +208,30 @@
   /* Typography from .body-large class */
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-large */
   color: var(--Colors-Text-Body-Default);
-  white-space: pre-wrap;
+  /* white-space: pre-wrap is removed to allow proper markdown HTML rendering */
+  /* Plain text will still display correctly without pre-wrap */
+}
+
+.mcq-option-text img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+  margin: 0 0.25em;
+}
+
+.mcq-option-text p {
+  margin: 0;
+  display: inline;
+}
+
+.mcq-option-text p:not(:last-child) {
+  margin-bottom: 0.5em;
+  display: block;
+}
+
+.mcq-option-text strong {
+  font-weight: 600; /* Ensure bold text is visible */
 }
 
 .mcq-option-label {

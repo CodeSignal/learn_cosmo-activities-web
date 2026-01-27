@@ -92,7 +92,12 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
       
       const optionText = document.createElement('span');
       optionText.className = 'mcq-option-text body-large';
-      optionText.textContent = option.text;
+      // Support markdown HTML if available, fallback to plain text for backward compatibility
+      if (option.textHtml) {
+        optionText.innerHTML = option.textHtml;
+      } else {
+        optionText.textContent = option.text;
+      }
       
       const optionLabel = document.createElement('span');
       optionLabel.className = 'mcq-option-label';

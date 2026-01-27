@@ -147,3 +147,17 @@ __Suggested Answers__
 - B
 - C
 - D
+
+__Practice Question__
+
+What is this a picture of? 
+
+![puppies or fried chicken?](https://external-preview.redd.it/aQB61LcZkR3c_VA2hAlaHHoh2SbqNSAH5kq3bKhhZJQ.png?auto=webp&s=c5087efe3d13d38b61b08b362be03447ad711d55)
+
+A. **Fried Chicken** <img src="https://www.shutterstock.com/image-vector/fried-chicken-thighs-icon-vector-260nw-2265589891.jpg" alt="fried chicken" width="60" height="60">
+B. **Puppies** <img src="https://i.etsystatic.com/16421349/r/il/fb1260/2833517377/il_fullxfull.2833517377_o00w.jpg" alt="puppy" width="60" height="60">
+
+__Suggested Answers__
+
+- A - Correct
+- B - Correct

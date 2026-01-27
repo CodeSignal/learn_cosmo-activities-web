@@ -326,9 +326,14 @@ function buildActivityFromMarkdown(markdownText) {
         const label = match[1];
         const text = match[2].trim();
         optionMap.set(label, text);
+        
+        // Parse markdown to HTML for rendering (supports images, bold, etc.)
+        const textHtml = marked.parse(text);
+        
         options.push({
           label: label,
-          text: text,
+          text: text, // Keep raw text for backward compatibility
+          textHtml: textHtml, // Add HTML version for rendering
           correct: false // Will be set from Suggested Answers
         });
       }
