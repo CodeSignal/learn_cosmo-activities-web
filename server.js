@@ -142,6 +142,28 @@ function parseAnswersFromMarkdown(markdownText) {
   
   if (/^multiple choice$/i.test(type)) {
     // Parse MCQ responses: "Selected Answer: D" or "Selected Answer: B, D"
+    // Also parse explanations if present: "Explanation: ..." (comes after Result line)
+    const explanations = {};
+    // First, parse explanations separately since they come after the Result line
+    // Use a more specific regex that matches each question block individually
+    // Split by question number pattern, then check each block for explanation
+    const questionBlocks = responsesText.split(/(?=\d+\.\s*\*\*[^*]+\*\*)/);
+    questionBlocks.forEach(block => {
+      const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
+      if (questionMatch) {
+        const questionNumber = parseInt(questionMatch[1], 10);
+        const explanationMatch = block.match(/Explanation:\s*([^\n]+)/);
+        if (explanationMatch) {
+          const questionIndex = questionNumber - 1; // Convert to 0-indexed
+          const explanationStr = explanationMatch[1].trim();
+          if (explanationStr) {
+            explanations[questionIndex] = explanationStr;
+          }
+        }
+      }
+    });
+    
+    // Then parse selected answers
     const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
     let match;
     while ((match = responseRegex.exec(responsesText)) !== null) {
@@ -156,6 +178,8 @@ function parseAnswersFromMarkdown(markdownText) {
         answers[questionIndex] = selectedAnswers;
       }
     }
+    // Return both answers and explanations
+    return { answers, type, explanations };
   } else if (/^fill in the blanks$/i.test(type)) {
     // Parse FIB responses: "Selected Answer: [value]"
     const responseRegex = /(\d+)\.\s*\*\*Blank (\d+)\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
@@ -925,18 +949,58 @@ const server = http.createServer((req, res) => {
   // API: /api/answers
   if (pathname === '/api/answers') {
     const answerFile = path.join(DATA_DIR, 'answer.md');
-    fs.readFile(answerFile, 'utf8', (err, data) => {
+    const activityFile = path.join(DATA_DIR, 'question.md');
+    
+    // Read both answer.md and question.md to map result indices to question IDs
+    fs.readFile(answerFile, 'utf8', (err, answerData) => {
       if (err) {
         // If file doesn't exist, return empty answers
-        respondJson(res, 200, { answers: null, type: null });
+        respondJson(res, 200, { answers: null, type: null, explanations: null });
         return;
       }
-      try {
-        const { answers, type } = parseAnswersFromMarkdown(data);
-        respondJson(res, 200, { answers, type });
-      } catch (e) {
-        respondJson(res, 500, { error: 'Failed to parse answers' });
-      }
+      
+      // Also read activity to map indices to question IDs
+      fs.readFile(activityFile, 'utf8', (err, activityData) => {
+        if (err) {
+          // If activity file doesn't exist, just return parsed answers without mapping
+          try {
+            const parsed = parseAnswersFromMarkdown(answerData);
+            const { answers, type, explanations } = parsed;
+            respondJson(res, 200, { answers, type, explanations: explanations || null });
+          } catch (e) {
+            respondJson(res, 500, { error: 'Failed to parse answers' });
+          }
+          return;
+        }
+        
+        try {
+          const parsed = parseAnswersFromMarkdown(answerData);
+          let { answers, type, explanations } = parsed;
+          
+          // For MCQ, map result indices to question IDs
+          if (/^multiple choice$/i.test(type) && explanations) {
+            const activity = buildActivityFromMarkdown(activityData);
+            if (activity && activity.mcq && activity.mcq.questions) {
+              // Map explanations from result index to question ID
+              // Result indices (0, 1, 2, 3...) should match question IDs (0, 1, 2, 3...)
+              // since questions are created sequentially
+              const mappedExplanations = {};
+              Object.keys(explanations).forEach(resultIndex => {
+                const idx = parseInt(resultIndex, 10);
+                if (idx >= 0 && idx < activity.mcq.questions.length) {
+                  const questionId = activity.mcq.questions[idx].id;
+                  mappedExplanations[questionId] = explanations[resultIndex];
+                }
+              });
+              explanations = mappedExplanations;
+            }
+          }
+          
+          respondJson(res, 200, { answers, type, explanations: explanations || null });
+        } catch (e) {
+          respondJson(res, 500, { error: 'Failed to parse answers' });
+        }
+      });
     });
     return;
   }

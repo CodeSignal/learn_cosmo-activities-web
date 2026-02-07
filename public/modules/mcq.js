@@ -1,7 +1,7 @@
 import toolbar from '../components/toolbar.js';
 import { detectQuoteBlockquotes } from '../design-system/typography/typography.js';
 
-export function initMcq({ activity, state, postResults, persistedAnswers = null }) {
+export function initMcq({ activity, state, postResults, persistedAnswers = null, persistedExplanations = null }) {
   const elContainer = document.getElementById('activity-container');
   const mcq = activity.mcq;
   
@@ -40,8 +40,12 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
     } else {
       selectedAnswers[q.id] = [];
     }
-    // Initialize explanations (not persisted in answers, but we'll track them)
-    explanations[q.id] = '';
+    // Initialize explanations from persisted explanations if available
+    if (persistedExplanations && persistedExplanations[q.id] !== undefined) {
+      explanations[q.id] = persistedExplanations[q.id];
+    } else {
+      explanations[q.id] = '';
+    }
   });
   
   // Render all questions
@@ -161,8 +165,9 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
         updateSelection(question.id, option.label, input.checked);
         
         // For radio questions, center the selected question and auto-scroll after a short delay
-        // Only do this if there are multiple questions
-        if (!question.isMultiSelect && input.checked && mcq.questions.length > 1) {
+        // Only do this if there are multiple questions AND explainAnswer is not enabled
+        // (If explainAnswer is enabled, user needs to type explanation, so don't auto-scroll)
+        if (!question.isMultiSelect && input.checked && mcq.questions.length > 1 && !question.explainAnswer) {
           const questionEl = elQuestions.querySelector(`[data-question-id="${question.id}"]`);
           const questionIndex = parseInt(questionEl.getAttribute('data-question-index'), 10);
           
@@ -201,6 +206,9 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
       explainTextarea.value = explanations[question.id] || '';
       explainTextarea.setAttribute('aria-label', 'Explain your answer');
       
+      // Sync explanation value to our tracking object on load (in case it was set before listener)
+      explanations[question.id] = explainTextarea.value;
+      
       // Update explanation on input
       explainTextarea.addEventListener('input', () => {
         explanations[question.id] = explainTextarea.value;
@@ -211,8 +219,8 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
       questionEl.appendChild(explainContainer);
     }
     
-    // Add "Next" button for multi-select questions (not on last question)
-    if (question.isMultiSelect && qIdx < mcq.questions.length - 1) {
+    // Add "Next" button for multi-select questions or questions with explainAnswer (not on last question)
+    if ((question.isMultiSelect || question.explainAnswer) && qIdx < mcq.questions.length - 1) {
       const nextButtonContainer = document.createElement('div');
       nextButtonContainer.className = 'mcq-next-button-container';
       
@@ -375,6 +383,15 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
           }
         });
         
+        // Enable/disable next button for explainAnswer questions based on selection
+        if (question.explainAnswer) {
+          const nextButton = questionEl.querySelector('.mcq-next-button');
+          if (nextButton) {
+            const hasSelection = selectedAnswers[questionId].length > 0;
+            // Disable if no answer selected
+            nextButton.disabled = !hasSelection;
+          }
+        }
       }
     }
     
@@ -460,9 +477,16 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null 
         correct: correct.join(', ')
       };
       
-      // Add explanation if enabled and provided
-      if (q.explainAnswer && explanations[q.id]) {
-        result.explanation = explanations[q.id];
+      // Add explanation if enabled and has content
+      // Also sync from textarea in case it was updated directly
+      if (q.explainAnswer) {
+        const explainTextarea = document.getElementById(`explain-${q.id}`);
+        if (explainTextarea) {
+          explanations[q.id] = explainTextarea.value;
+        }
+        if (explanations[q.id] && explanations[q.id].trim()) {
+          result.explanation = explanations[q.id];
+        }
       }
       
       return result;

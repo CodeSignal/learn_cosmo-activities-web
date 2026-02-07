@@ -18,6 +18,10 @@ __Suggested Answers__
 - C
 - D
 
+__Explain Your Answer__
+
+true
+
 __Practice Question__
 
 This question demonstrates **bold text**, *italic text*, and multiple paragraphs.

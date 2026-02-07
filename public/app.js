@@ -73,16 +73,16 @@ import toolbar from './components/toolbar.js';
       const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`);
       const data = await res.json();
-      return { answers: data.answers || null, type: data.type || null };
+      return { answers: data.answers || null, type: data.type || null, explanations: data.explanations || null };
     } catch (error) {
       console.error('Error loading answers:', error);
-      return { answers: null, type: null };
+      return { answers: null, type: null, explanations: null };
     }
   }
 
   function validatePersistedAnswers(activity, persistedData) {
     if (!persistedData || !persistedData.answers || !persistedData.type) {
-      return null;
+      return { answers: null, explanations: null };
     }
 
     // Check that types match
@@ -91,7 +91,7 @@ import toolbar from './components/toolbar.js';
     
     if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType) && !/^matching$/i.test(currentType) && !/^text input$/i.test(currentType)) {
       // Only validate MCQ, FIB, Matching, and Text Input for now
-      return null;
+      return { answers: null, explanations: null };
     }
 
     // Type must match exactly
@@ -102,14 +102,14 @@ import toolbar from './components/toolbar.js';
       (/^text input$/i.test(currentType) && /^text input$/i.test(persistedType));
 
     if (!typeMatches) {
-      return null;
+      return { answers: null, explanations: null };
     }
 
     // Validate structure matches
     if (/^multiple choice$/i.test(currentType)) {
       // For MCQ: validate that question IDs exist and match
       if (!activity.mcq || !activity.mcq.questions) {
-        return null;
+        return { answers: null, explanations: null };
       }
       const validQuestionIds = new Set(activity.mcq.questions.map(q => q.id));
       const persistedQuestionIds = Object.keys(persistedData.answers).map(id => parseInt(id, 10));
@@ -117,7 +117,7 @@ import toolbar from './components/toolbar.js';
       // All persisted question IDs must exist in current questions
       const allIdsValid = persistedQuestionIds.every(id => validQuestionIds.has(id));
       if (!allIdsValid) {
-        return null;
+        return { answers: null, explanations: null };
       }
       
       // Return only answers for valid question IDs
@@ -127,11 +127,23 @@ import toolbar from './components/toolbar.js';
           validatedAnswers[id] = persistedData.answers[id];
         }
       });
-      return validatedAnswers;
+      
+      // Also validate and return explanations if present
+      const validatedExplanations = {};
+      if (persistedData.explanations) {
+        Object.keys(persistedData.explanations).forEach(id => {
+          const questionId = parseInt(id, 10);
+          if (validQuestionIds.has(questionId)) {
+            validatedExplanations[questionId] = persistedData.explanations[id];
+          }
+        });
+      }
+      
+      return { answers: validatedAnswers, explanations: validatedExplanations };
     } else if (/^fill in the blanks$/i.test(currentType)) {
       // For FIB: validate that blank indices exist
       if (!activity.fib || !activity.fib.blanks) {
-        return null;
+        return { answers: null, explanations: null };
       }
       const validBlankIndices = new Set(activity.fib.blanks.map(b => b.index));
       const persistedBlankIndices = Object.keys(persistedData.answers).map(idx => parseInt(idx, 10));
@@ -139,7 +151,7 @@ import toolbar from './components/toolbar.js';
       // All persisted blank indices must exist in current blanks
       const allIndicesValid = persistedBlankIndices.every(idx => validBlankIndices.has(idx));
       if (!allIndicesValid) {
-        return null;
+        return { answers: null, explanations: null };
       }
       
       // Return only answers for valid blank indices
@@ -149,11 +161,11 @@ import toolbar from './components/toolbar.js';
           validatedAnswers[idx] = persistedData.answers[idx];
         }
       });
-      return validatedAnswers;
+      return { answers: validatedAnswers, explanations: null };
     } else if (/^matching$/i.test(currentType)) {
       // For Matching: validate that item indices exist
       if (!activity.matching || !activity.matching.items) {
-        return null;
+        return { answers: null, explanations: null };
       }
       const validItemIndices = new Set(activity.matching.items.map((item, idx) => idx));
       const persistedItemIndices = Object.keys(persistedData.answers).map(idx => parseInt(idx, 10));
@@ -161,7 +173,7 @@ import toolbar from './components/toolbar.js';
       // All persisted item indices must exist in current items
       const allIndicesValid = persistedItemIndices.every(idx => validItemIndices.has(idx));
       if (!allIndicesValid) {
-        return null;
+        return { answers: null, explanations: null };
       }
       
       // Return only answers for valid item indices
@@ -171,11 +183,11 @@ import toolbar from './components/toolbar.js';
           validatedAnswers[idx] = persistedData.answers[idx];
         }
       });
-      return validatedAnswers;
+      return { answers: validatedAnswers, explanations: null };
     } else if (/^text input$/i.test(currentType)) {
       // For Text Input: validate that question IDs exist
       if (!activity.textInput || !activity.textInput.questions) {
-        return null;
+        return { answers: null, explanations: null };
       }
       const validQuestionIds = new Set(activity.textInput.questions.map(q => q.id));
       const persistedQuestionIds = Object.keys(persistedData.answers).map(id => parseInt(id, 10));
@@ -183,7 +195,7 @@ import toolbar from './components/toolbar.js';
       // All persisted question IDs must exist in current questions
       const allIdsValid = persistedQuestionIds.every(id => validQuestionIds.has(id));
       if (!allIdsValid) {
-        return null;
+        return { answers: null, explanations: null };
       }
       
       // Return only answers for valid question IDs
@@ -193,13 +205,13 @@ import toolbar from './components/toolbar.js';
           validatedAnswers[id] = persistedData.answers[id];
         }
       });
-      return validatedAnswers;
+      return { answers: validatedAnswers, explanations: null };
     }
 
-    return null;
+    return { answers: null, explanations: null };
   }
 
-  function initActivity(activity, persistedAnswers = null) {
+  function initActivity(activity, persistedAnswers = null, persistedExplanations = null) {
     if (/^fill in the blanks$/i.test(activity.type)) {
       currentActivity = initFib({ activity, state, postResults, persistedAnswers });
     } else if (/^sort into boxes$/i.test(activity.type)) {
@@ -215,7 +227,8 @@ import toolbar from './components/toolbar.js';
         activity, 
         state, 
         postResults,
-        persistedAnswers
+        persistedAnswers,
+        persistedExplanations
       });
       // Store validation function reference
       if (currentActivity && typeof currentActivity.validate === 'function') {
@@ -412,8 +425,11 @@ import toolbar from './components/toolbar.js';
       reset();
       
       // Validate persisted answers match current activity
-      const validatedAnswers = validatePersistedAnswers(activity, persistedData);
-      initActivity(activity, validatedAnswers);
+      const validated = validatePersistedAnswers(activity, persistedData);
+      // For backward compatibility, handle both old format (just answers) and new format ({ answers, explanations })
+      const persistedAnswers = validated && validated.answers ? validated.answers : validated;
+      const persistedExplanations = validated && validated.explanations ? validated.explanations : null;
+      initActivity(activity, persistedAnswers, persistedExplanations);
       bindRestart();
       
       // Initialize scroll indicator
