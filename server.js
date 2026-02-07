@@ -398,6 +398,15 @@ function buildActivityFromMarkdown(markdownText) {
       } else {
         currentQuestion.shuffleOptions = true; // Default to shuffling
       }
+      
+      // Check for multi-select mode (any vs all)
+      // Default is 'all' - must select all correct answers
+      // 'any' means any correct answer is sufficient
+      if (optionsText.includes('any') || optionsText.includes('multi-select mode: any') || optionsText.includes('mode: any')) {
+        currentQuestion.multiSelectMode = 'any';
+      } else {
+        currentQuestion.multiSelectMode = 'all'; // Default
+      }
     }
     
     function processAnswers() {
@@ -415,6 +424,7 @@ function buildActivityFromMarkdown(markdownText) {
         processQuestionOptions();
       } else {
         currentQuestion.shuffleOptions = true; // Default to shuffling
+        currentQuestion.multiSelectMode = 'all'; // Default multi-select mode
       }
       
       // Process answers if buffer has content
@@ -468,7 +478,7 @@ function buildActivityFromMarkdown(markdownText) {
             }
             
             // Start new question
-            currentQuestion = { id: questions.length, text: '', options: [], isMultiSelect: false, explainAnswer: false, shuffleOptions: true };
+            currentQuestion = { id: questions.length, text: '', options: [], isMultiSelect: false, explainAnswer: false, shuffleOptions: true, multiSelectMode: 'all' };
             currentSection = 'question';
             questionBuffer = [];
             answerBuffer = [];
@@ -1088,6 +1098,14 @@ const server = http.createServer((req, res) => {
         // Format results as markdown
         const activity = data.activity;
         
+        // Helper function for array comparison
+        function arraysEqual(a, b) {
+          if (a.length !== b.length) return false;
+          const sortedA = [...a].sort();
+          const sortedB = [...b].sort();
+          return sortedA.every((val, idx) => val === sortedB[idx]);
+        }
+        
         // Calculate Levenshtein distance between two strings
         function levenshteinDistance(str1, str2) {
           const len1 = str1.length;
@@ -1301,7 +1319,25 @@ const server = http.createServer((req, res) => {
         // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact string match
         const correctCount = data.results.filter(result => {
           if (activity && /^multiple choice$/i.test(activity.type)) {
-            // For MCQ, compare sorted comma-separated values
+            // For MCQ, check based on multi-select mode
+            const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+            if (activity.mcq && activity.mcq.questions && activity.mcq.questions[questionIndex]) {
+              const question = activity.mcq.questions[questionIndex];
+              const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean);
+              const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean);
+              
+              // Check if "any" mode is enabled
+              if (question.isMultiSelect && question.multiSelectMode === 'any') {
+                // For "any" mode: at least one correct answer selected, and no incorrect answers
+                const hasCorrectAnswer = selected.some(sel => correct.includes(sel));
+                const hasIncorrectAnswer = selected.some(sel => !correct.includes(sel));
+                return hasCorrectAnswer && !hasIncorrectAnswer && selected.length > 0;
+              } else {
+                // For "all" mode (default): must match exactly
+                return arraysEqual(selected.sort(), correct.sort());
+              }
+            }
+            // Fallback to exact match if question not found
             const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
             const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
             return selected === correct;
@@ -1354,13 +1390,38 @@ const server = http.createServer((req, res) => {
             markdown += `${index + 1}. **${result.text}**\n`;
             markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
             markdown += `   - Correct Answer: ${result.correct}\n`;
-            // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact match
+            // For MCQ, compare based on multi-select mode; for Text Input, use validation logic; for others, exact match
             let isCorrect = false;
             let isValidateLater = false;
             if (activity && /^multiple choice$/i.test(activity.type)) {
-              const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
-              const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
-              isCorrect = selected === correct;
+              const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+              if (activity.mcq && activity.mcq.questions && activity.mcq.questions[questionIndex]) {
+                const question = activity.mcq.questions[questionIndex];
+                const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean);
+                const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean);
+                
+                // Add Multi Mode line if question has multiple correct answers
+                if (question.isMultiSelect) {
+                  const multiMode = question.multiSelectMode === 'any' ? 'any' : 'all';
+                  markdown += `   - Multi Mode: ${multiMode}\n`;
+                }
+                
+                // Check if "any" mode is enabled
+                if (question.isMultiSelect && question.multiSelectMode === 'any') {
+                  // For "any" mode: at least one correct answer selected, and no incorrect answers
+                  const hasCorrectAnswer = selected.some(sel => correct.includes(sel));
+                  const hasIncorrectAnswer = selected.some(sel => !correct.includes(sel));
+                  isCorrect = hasCorrectAnswer && !hasIncorrectAnswer && selected.length > 0;
+                } else {
+                  // For "all" mode (default): must match exactly
+                  isCorrect = arraysEqual(selected.sort(), correct.sort());
+                }
+              } else {
+                // Fallback to exact match if question not found
+                const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
+                const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
+                isCorrect = selected === correct;
+              }
             } else if (activity && /^text input$/i.test(activity.type)) {
               // For Text Input, use validation logic based on question validation options
               const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;

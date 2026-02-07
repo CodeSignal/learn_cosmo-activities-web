@@ -450,7 +450,18 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
     mcq.questions.forEach(q => {
       const selected = selectedAnswers[q.id] || [];
       const correct = q.options.filter(opt => opt.correct).map(opt => opt.label);
-      const isCorrect = arraysEqual(selected.sort(), correct.sort());
+      
+      let isCorrect = false;
+      if (q.isMultiSelect && q.multiSelectMode === 'any') {
+        // For "any" mode: check if at least one selected answer is correct
+        // Also ensure no incorrect answers are selected
+        const hasCorrectAnswer = selected.some(sel => correct.includes(sel));
+        const hasIncorrectAnswer = selected.some(sel => !correct.includes(sel));
+        isCorrect = hasCorrectAnswer && !hasIncorrectAnswer && selected.length > 0;
+      } else {
+        // For "all" mode (default): must match exactly
+        isCorrect = arraysEqual(selected.sort(), correct.sort());
+      }
       
       const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
       if (questionEl) {
@@ -469,12 +480,25 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
     state.results = mcq.questions.map((q, idx) => {
       const selected = selectedAnswers[q.id] || [];
       const correct = q.options.filter(opt => opt.correct).map(opt => opt.label);
-      const isCorrect = arraysEqual(selected.sort(), correct.sort());
+      
+      let isCorrect = false;
+      if (q.isMultiSelect && q.multiSelectMode === 'any') {
+        // For "any" mode: check if at least one selected answer is correct
+        // Also ensure no incorrect answers are selected
+        const hasCorrectAnswer = selected.some(sel => correct.includes(sel));
+        const hasIncorrectAnswer = selected.some(sel => !correct.includes(sel));
+        isCorrect = hasCorrectAnswer && !hasIncorrectAnswer && selected.length > 0;
+      } else {
+        // For "all" mode (default): must match exactly
+        isCorrect = arraysEqual(selected.sort(), correct.sort());
+      }
       
       const result = {
         text: `Question ${idx + 1}`,
         selected: selected.length > 0 ? selected.join(', ') : '',
-        correct: correct.join(', ')
+        correct: correct.join(', '),
+        isCorrect: isCorrect,
+        multiSelectMode: q.multiSelectMode || 'all'
       };
       
       // Add explanation if enabled and has content

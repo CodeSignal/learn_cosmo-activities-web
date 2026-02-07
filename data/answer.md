@@ -4,50 +4,56 @@ Multiple Choice
 
 __Summary__
 
-1/8 correct
+0/9 correct
 
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: A
-   - Correct Answer: B
+   - Selected Answer: D
+   - Correct Answer: A
    - Result: ✗ Incorrect
-   - Explanation: face
 
 2. **Question 2**
-   - Selected Answer: C
+   - Selected Answer: No answer selected
    - Correct Answer: A
    - Result: ✗ Incorrect
 
 3. **Question 3**
-   - Selected Answer: B, C
+   - Selected Answer: No answer selected
    - Correct Answer: A, B, D
+   - Multi Mode: all
    - Result: ✗ Incorrect
 
 4. **Question 4**
-   - Selected Answer: B
-   - Correct Answer: B
-   - Result: ✓ Correct
-   - Explanation: abcdefg
+   - Selected Answer: A, B, D
+   - Correct Answer: A, B
+   - Multi Mode: any
+   - Result: ✗ Incorrect
 
 5. **Question 5**
-   - Selected Answer: C
-   - Correct Answer: A
+   - Selected Answer: No answer selected
+   - Correct Answer: B
    - Result: ✗ Incorrect
 
 6. **Question 6**
    - Selected Answer: No answer selected
-   - Correct Answer: B
+   - Correct Answer: A
    - Result: ✗ Incorrect
 
 7. **Question 7**
    - Selected Answer: No answer selected
-   - Correct Answer: A
+   - Correct Answer: B
    - Result: ✗ Incorrect
 
 8. **Question 8**
    - Selected Answer: No answer selected
+   - Correct Answer: A
+   - Result: ✗ Incorrect
+
+9. **Question 9**
+   - Selected Answer: No answer selected
    - Correct Answer: A, B
+   - Multi Mode: all
    - Result: ✗ Incorrect
 
 __Practice Question__
@@ -61,9 +67,9 @@ C. Berlin
 
 __Suggested Answers__
 
-- A
+- A - Correct
 - D
-- B - Correct
+- B
 - C
 
 __Practice Question__
@@ -108,6 +114,22 @@ __Suggested Answers__
 - B - Correct
 - C
 - D - Correct
+
+__Practice Question__
+
+This is a multi-select question with "any" mode enabled. Select any correct answer to get credit. Which of the following are valid programming languages?
+
+A. Python
+D. CSS
+B. JavaScript
+C. HTML
+
+__Suggested Answers__
+
+- A - Correct
+- D
+- B - Correct
+- C
 
 __Practice Question__
 

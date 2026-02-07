@@ -58,6 +58,26 @@ __Suggested Answers__
 
 __Practice Question__
 
+This is a multi-select question with "any" mode enabled. Select any correct answer to get credit. Which of the following are valid programming languages?
+
+A. Python
+B. JavaScript
+C. HTML
+D. CSS
+
+__Question Options__
+
+any
+
+__Suggested Answers__
+
+- A - Correct
+- B - Correct
+- C
+- D
+
+__Practice Question__
+
 This question has "Explain Your Answer" enabled, so users can provide additional context.
 
 What is the main advantage of using version control systems?

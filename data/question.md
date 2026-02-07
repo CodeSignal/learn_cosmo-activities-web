@@ -13,14 +13,10 @@ D. Madrid
 
 __Suggested Answers__
 
-- A
-- B - Correct
+- A - Correct
+- B
 - C
 - D
-
-__Explain Your Answer__
-
-true
 
 __Practice Question__
 
@@ -59,6 +55,26 @@ __Suggested Answers__
 - B - Correct
 - C
 - D - Correct
+
+__Practice Question__
+
+This is a multi-select question with "any" mode enabled. Select any correct answer to get credit. Which of the following are valid programming languages?
+
+A. Python
+B. JavaScript
+C. HTML
+D. CSS
+
+__Question Options__
+
+any
+
+__Suggested Answers__
+
+- A - Correct
+- B - Correct
+- C
+- D
 
 __Practice Question__
 
@@ -121,7 +137,7 @@ D. Commit directly to main
 
 __Question Options__
 
-shuffle=false
+don't shuffle
 
 __Suggested Answers__
 
@@ -165,3 +181,4 @@ __Suggested Answers__
 
 - A - Correct
 - B - Correct
+

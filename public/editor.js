@@ -674,6 +674,14 @@ function parseMcqMarkdownToStructure(markdown) {
             if (optionsText.includes('shuffle=false') || optionsText.includes('don\'t shuffle') || optionsText.includes('dont shuffle') || optionsText === 'no shuffle') {
               currentQuestion.shuffleOptions = false;
             }
+            // Check for multi-select mode
+            if (optionsText.includes('any') || optionsText.includes('multi-select mode: any') || optionsText.includes('mode: any')) {
+              currentQuestion.multiSelectMode = 'any';
+            } else {
+              currentQuestion.multiSelectMode = 'all';
+            }
+          } else {
+            currentQuestion.multiSelectMode = 'all';
           }
           structure.questions.push(currentQuestion);
         }
@@ -684,7 +692,8 @@ function parseMcqMarkdownToStructure(markdown) {
           options: [],
           isMultiSelect: false,
           explainAnswer: false,
-          shuffleOptions: true
+          shuffleOptions: true,
+          multiSelectMode: 'all'
         };
         questionBuffer = [];
         answerBuffer = [];
@@ -847,9 +856,17 @@ function mcqStructureToMarkdown(structure) {
     });
     markdown += '\n';
     
-    // Add question options if shuffle is disabled
-    if (q.shuffleOptions === false) {
-      markdown += `__Question Options__\n\ndon't shuffle\n\n`;
+    // Add question options if shuffle is disabled or multi-select mode is "any"
+    const hasOptions = q.shuffleOptions === false || (q.multiSelectMode === 'any');
+    if (hasOptions) {
+      markdown += `__Question Options__\n\n`;
+      if (q.shuffleOptions === false) {
+        markdown += `don't shuffle\n`;
+      }
+      if (q.multiSelectMode === 'any') {
+        markdown += `any\n`;
+      }
+      markdown += '\n';
     }
     
     // Add suggested answers
@@ -977,6 +994,10 @@ function renderMcqQuestion(question, index) {
       // Update isMultiSelect based on number of correct answers
       const correctCount = question.options.filter(opt => opt.correct).length;
       question.isMultiSelect = correctCount > 1;
+      // Update multi-select mode checkbox visibility dynamically
+      if (container.updateMultiSelectModeVisibility) {
+        container.updateMultiSelectModeVisibility();
+      }
       updateStructure();
     };
 
@@ -1020,6 +1041,7 @@ function renderMcqQuestion(question, index) {
       currentStructure.questions.forEach((q, idx) => {
         questionsContainer.appendChild(renderMcqQuestion(q, idx));
       });
+      // Note: updateMultiSelectModeVisibility will be called automatically after re-render
       updateStructure();
     };
 
@@ -1078,6 +1100,10 @@ function renderMcqQuestion(question, index) {
         opt.correct = checkboxInput.checked;
         const correctCount = question.options.filter(o => o.correct).length;
         question.isMultiSelect = correctCount > 1;
+        // Update multi-select mode checkbox visibility dynamically
+        if (container.updateMultiSelectModeVisibility) {
+          container.updateMultiSelectModeVisibility();
+        }
         updateStructure();
       };
 
@@ -1131,6 +1157,10 @@ function renderMcqQuestion(question, index) {
       optionsContainer.appendChild(optionRow);
     });
     optionsContainer.appendChild(addOptionBtn);
+    // Update multi-select mode checkbox visibility after re-rendering options
+    if (container.updateMultiSelectModeVisibility) {
+      container.updateMultiSelectModeVisibility();
+    }
     updateStructure();
   };
   optionsContainer.appendChild(addOptionBtn);
@@ -1185,6 +1215,56 @@ function renderMcqQuestion(question, index) {
   explainLabel.appendChild(explainText);
   questionOptionsDiv.appendChild(explainLabel);
 
+  // Multi-select mode checkbox container (created but may be hidden)
+  const modeLabel = document.createElement('label');
+  modeLabel.className = 'input-checkbox';
+  modeLabel.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+  modeLabel.style.display = 'none'; // Hidden by default
+  
+  const modeInput = document.createElement('input');
+  modeInput.type = 'checkbox';
+  modeInput.checked = question.multiSelectMode === 'any';
+  modeInput.onchange = () => {
+    question.multiSelectMode = modeInput.checked ? 'any' : 'all';
+    updateStructure();
+  };
+  
+  const modeBox = document.createElement('span');
+  modeBox.className = 'input-checkbox-box';
+  const modeCheckmark = document.createElement('span');
+  modeCheckmark.className = 'input-checkbox-checkmark';
+  modeBox.appendChild(modeCheckmark);
+  
+  const modeText = document.createElement('span');
+  modeText.className = 'input-checkbox-label';
+  modeText.textContent = 'Any Correct Answer is Sufficient';
+  
+  modeLabel.appendChild(modeInput);
+  modeLabel.appendChild(modeBox);
+  modeLabel.appendChild(modeText);
+  questionOptionsDiv.appendChild(modeLabel);
+  
+  // Function to update multi-select mode checkbox visibility
+  function updateMultiSelectModeVisibility() {
+    const correctCount = question.options.filter(opt => opt.correct).length;
+    if (correctCount > 1) {
+      modeLabel.style.display = '';
+      question.isMultiSelect = true;
+    } else {
+      modeLabel.style.display = 'none';
+      question.isMultiSelect = false;
+      // Reset to 'all' mode when no longer multi-select
+      question.multiSelectMode = 'all';
+      modeInput.checked = false;
+    }
+  }
+  
+  // Initial check
+  updateMultiSelectModeVisibility();
+  
+  // Store the update function on the container so we can call it when options change
+  container.updateMultiSelectModeVisibility = updateMultiSelectModeVisibility;
+
   container.appendChild(header);
   container.appendChild(questionTextArea);
   container.appendChild(optionsLabel);
@@ -1225,7 +1305,8 @@ async function initEditor() {
         ],
         isMultiSelect: false,
         explainAnswer: false,
-        shuffleOptions: true
+        shuffleOptions: true,
+        multiSelectMode: 'all'
       });
     }
 
@@ -1253,7 +1334,8 @@ async function initEditor() {
         ],
         isMultiSelect: false,
         explainAnswer: false,
-        shuffleOptions: true
+        shuffleOptions: true,
+        multiSelectMode: 'all'
       };
       currentStructure.questions.push(newQuestion);
       const index = currentStructure.questions.length - 1;
