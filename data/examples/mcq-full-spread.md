@@ -181,3 +181,99 @@ __Suggested Answers__
 
 - A - Correct
 - B - Correct
+
+__Practice Question__
+
+This question demonstrates inline LaTeX math equations. What is the value of $x$ when $2x + 5 = 15$?
+
+A. $x = 3$
+B. $x = 5$
+C. $x = 7$
+D. $x = 10$
+
+__Suggested Answers__
+
+- A
+- B - Correct
+- C
+- D
+
+__Practice Question__
+
+This question shows math equations in the options. Which formula represents the area of a circle?
+
+A. $A = \pi r^2$
+B. $A = 2\pi r$
+C. $A = \pi d$
+D. $A = r^2$
+
+__Suggested Answers__
+
+- A - Correct
+- B
+- C
+- D
+
+__Practice Question__
+
+This question combines multiple math concepts. If $f(x) = x^2 + 3x - 2$, what is $f(2)$?
+
+A. $f(2) = 8$
+B. $f(2) = 10$
+C. $f(2) = 12$
+D. $f(2) = 14$
+
+__Suggested Answers__
+
+- A - Correct
+- B
+- C
+- D
+
+__Practice Question__
+
+This question demonstrates math in both the question and options. Solve for $y$: $3y - 7 = 14$
+
+A. $y = 5$
+B. $y = 7$
+C. $y = 9$
+D. $y = 11$
+
+__Suggested Answers__
+
+- A
+- B - Correct
+- C
+- D
+
+__Practice Question__
+
+This question shows more complex math expressions. What is the derivative of $f(x) = x^3 + 2x^2 - 5x + 1$?
+
+A. $f'(x) = 3x^2 + 4x - 5$
+B. $f'(x) = x^2 + 2x - 5$
+C. $f'(x) = 3x^2 + 2x - 5$
+D. $f'(x) = 3x^3 + 4x^2 - 5x$
+
+__Suggested Answers__
+
+- A - Correct
+- B
+- C
+- D
+
+__Practice Question__
+
+This question demonstrates math with fractions and exponents. Simplify: $\frac{2^3 \cdot 3^2}{2^2 \cdot 3}$
+
+A. $\frac{2}{3}$
+B. $2 \cdot 3 = 6$
+C. $\frac{8 \cdot 9}{4 \cdot 3} = 6$
+D. $2^2 \cdot 3 = 12$
+
+__Suggested Answers__
+
+- A
+- B - Correct
+- C - Correct
+- D

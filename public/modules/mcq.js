@@ -1,5 +1,6 @@
 import toolbar from '../components/toolbar.js';
 import { detectQuoteBlockquotes } from '../design-system/typography/typography.js';
+import { renderMath } from '../utils/katex-render.js';
 
 export function initMcq({ activity, state, postResults, persistedAnswers = null, persistedExplanations = null }) {
   const elContainer = document.getElementById('activity-container');
@@ -70,6 +71,8 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
     questionTextEl.className = 'mcq-question-text body-xlarge';
     if (question.textHtml) {
       questionTextEl.innerHTML = question.textHtml;
+      // Render LaTeX math expressions
+      renderMath(questionTextEl);
     } else {
       questionTextEl.textContent = question.text;
     }
@@ -99,6 +102,8 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
       // Support markdown HTML if available, fallback to plain text for backward compatibility
       if (option.textHtml) {
         optionText.innerHTML = option.textHtml;
+        // Render LaTeX math expressions
+        renderMath(optionText);
       } else {
         optionText.textContent = option.text;
       }

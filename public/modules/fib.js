@@ -1,4 +1,5 @@
 import toolbar from '../components/toolbar.js';
+import { renderMath } from '../utils/katex-render.js';
 
 export function initFib({ activity, state, postResults, persistedAnswers = null }) {
   const elContainer = document.getElementById('activity-container');
@@ -25,6 +26,8 @@ export function initFib({ activity, state, postResults, persistedAnswers = null 
 
   // Content HTML is provided by server with embedded blank spans
   elFibContent.innerHTML = fib.htmlWithPlaceholders;
+  // Render LaTeX math expressions
+  renderMath(elFibContent);
 
   // Build dropdowns in each blank and synchronize options across all blanks
   const blanks = Array.from(elFibContent.querySelectorAll('.blank')).sort((a, b) => {

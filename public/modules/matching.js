@@ -1,4 +1,5 @@
 import HorizontalCards from '../design-system/components/horizontal-cards/horizontal-cards.js';
+import { renderMath } from '../utils/katex-render.js';
 import toolbar from '../components/toolbar.js';
 
 export function initMatching({ activity, state, postResults, persistedAnswers = null }) {

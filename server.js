@@ -663,6 +663,13 @@ function buildActivityFromMarkdown(markdownText) {
       // Extract question text
       const questionText = questionBuffer.map(t => t.raw || t.text || '').join('\n').trim();
       currentQuestion.text = questionText;
+      
+      // Parse markdown to HTML for rendering (supports LaTeX, images, bold, etc.)
+      if (currentQuestion.text) {
+        currentQuestion.textHtml = marked.parse(currentQuestion.text);
+      } else {
+        currentQuestion.textHtml = '';
+      }
     }
     
     function parseValidationOptions(answerText) {
@@ -1054,6 +1061,7 @@ const server = http.createServer((req, res) => {
   <link rel="stylesheet" href="/design-system/colors/colors.css" />
   <link rel="stylesheet" href="/design-system/typography/typography.css" />
   <link rel="stylesheet" href="/design-system/spacing/spacing.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
   <style>
     body {
       margin: 0;
@@ -1072,10 +1080,30 @@ const server = http.createServer((req, res) => {
 </head>
 <body>
   <div class="body-medium">${html}</div>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\\\[', right: '\\\\]', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\\\(', right: '\\\\)', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    });
+  </script>
 </body>
 </html>`;
         
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.writeHead(200, { 
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store'
+        });
         res.end(fullHtml);
       } catch (e) {
         respondJson(res, 400, { error: 'Invalid request' });

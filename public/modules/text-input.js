@@ -1,5 +1,6 @@
 import toolbar from '../components/toolbar.js';
 import SplitPanel from '../design-system/components/split-panel/split-panel.js';
+import { renderMath } from '../utils/katex-render.js';
 
 export function initTextInput({ activity, state, postResults, persistedAnswers = null }) {
   const elContainer = document.getElementById('activity-container');
@@ -420,10 +421,20 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     legend.textContent = `Question ${qIdx + 1}`;
     questionEl.appendChild(legend);
     
-    // Question text
+    // Question text (support markdown HTML if available, fallback to plain text)
     const questionTextEl = document.createElement('div');
     questionTextEl.className = 'text-input-question-text body-xlarge';
-    questionTextEl.textContent = question.text;
+    if (question.textHtml) {
+      questionTextEl.innerHTML = question.textHtml;
+      // Render LaTeX math expressions
+      renderMath(questionTextEl);
+    } else if (question.text) {
+      // Even if textHtml is not available, set as HTML to allow LaTeX rendering
+      // The text might contain LaTeX that needs to be rendered
+      questionTextEl.innerHTML = question.text;
+      // Render LaTeX math expressions
+      renderMath(questionTextEl);
+    }
     questionEl.appendChild(questionTextEl);
     
     // Input container
