@@ -532,6 +532,16 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
       selectedAnswers[q.id] = [];
     });
     
+    // Clear all explanations
+    mcq.questions.forEach(q => {
+      explanations[q.id] = '';
+      // Also clear the textarea if it exists
+      const explainTextarea = document.getElementById(`explain-${q.id}`);
+      if (explainTextarea) {
+        explainTextarea.value = '';
+      }
+    });
+    
     // Uncheck all inputs
     elQuestions.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
       input.checked = false;

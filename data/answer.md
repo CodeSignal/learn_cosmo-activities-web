@@ -9,8 +9,8 @@ __Summary__
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: D
-   - Correct Answer: A
+   - Selected Answer: No answer selected
+   - Correct Answer: B
    - Result: ✗ Incorrect
 
 2. **Question 2**
@@ -25,7 +25,7 @@ __Responses__
    - Result: ✗ Incorrect
 
 4. **Question 4**
-   - Selected Answer: A, B, D
+   - Selected Answer: No answer selected
    - Correct Answer: A, B
    - Multi Mode: any
    - Result: ✗ Incorrect
@@ -67,9 +67,9 @@ C. Berlin
 
 __Suggested Answers__
 
-- A - Correct
+- A
 - D
-- B
+- B - Correct
 - C
 
 __Practice Question__

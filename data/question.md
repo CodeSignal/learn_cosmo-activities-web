@@ -13,8 +13,8 @@ D. Madrid
 
 __Suggested Answers__
 
-- A - Correct
-- B
+- A
+- B - Correct
 - C
 - D
 
@@ -137,7 +137,7 @@ D. Commit directly to main
 
 __Question Options__
 
-don't shuffle
+shuffle=false
 
 __Suggested Answers__
 
@@ -181,4 +181,3 @@ __Suggested Answers__
 
 - A - Correct
 - B - Correct
-
