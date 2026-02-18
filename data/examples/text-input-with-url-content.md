@@ -4,7 +4,7 @@ Text Input
 
 __Content__
 
-https://example.com/documentation [openInNewTab]
+https://example.com/documentation [openInNewTab] [contentWidth: 30%]
 
 __Practice Question__
 

@@ -113,12 +113,20 @@ function parseMarkdownToStructure(markdown) {
   if (contentBuffer.length > 0) {
     const contentText = contentBuffer.join('\n').trim();
     if (contentText) {
-      if (/^https?:\/\//i.test(contentText)) {
-        const openInNewTab = /\[openInNewTab\]/i.test(contentText);
-        const url = contentText.replace(/\s+\[openInNewTab\]\s*$/im, '').trim();
+      const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
+      const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
+      const contentWithoutWidth = contentWidthMatch
+        ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '').trim()
+        : contentText;
+
+      if (/^https?:\/\//i.test(contentWithoutWidth)) {
+        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+        const url = contentWithoutWidth.replace(/\s+\[openInNewTab\]\s*$/im, '').trim();
         structure.content = { type: 'url', value: url, openInNewTab: !!openInNewTab };
+        if (contentWidth) structure.content.contentWidth = contentWidth;
       } else {
-        structure.content = { type: 'markdown', value: contentText };
+        structure.content = { type: 'markdown', value: contentWithoutWidth };
+        if (contentWidth) structure.content.contentWidth = contentWidth;
       }
     }
   }
@@ -239,8 +247,11 @@ function structureToMarkdown(structure) {
   // Add content if present
   if (structure.content && structure.content.value) {
     let contentValue = structure.content.value;
-    if (structure.content.type === 'url' && structure.content.openInNewTab) {
-      contentValue += ' [openInNewTab]';
+    if (structure.content.type === 'url') {
+      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
+      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
+    } else {
+      if (structure.content.contentWidth) contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
     }
     markdown += `__Content__\n\n${contentValue}\n\n`;
   }
@@ -1420,7 +1431,7 @@ async function initEditor() {
     let contentTypeDropdown = null;
     let openUrlButton = null;
 
-    function createContentInput(type, value, openInNewTab = false) {
+    function createContentInput(type, value, openInNewTab = false, contentWidth = '') {
       contentInputContainer.innerHTML = '';
       
       if (type === 'url') {
@@ -1469,6 +1480,31 @@ async function initEditor() {
         openInNewTabLabel.appendChild(openInNewTabBox);
         openInNewTabLabel.appendChild(openInNewTabText);
         contentInputContainer.appendChild(openInNewTabLabel);
+
+        // Content panel width (for URL)
+        const contentWidthGroup = document.createElement('div');
+        contentWidthGroup.className = 'form-group';
+        contentWidthGroup.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+        const contentWidthLabel = document.createElement('label');
+        contentWidthLabel.className = 'form-label';
+        contentWidthLabel.textContent = 'Content panel width (e.g. 40% or 280px)';
+        contentWidthLabel.htmlFor = 'content-width-input';
+        const contentWidthInput = document.createElement('input');
+        contentWidthInput.type = 'text';
+        contentWidthInput.id = 'content-width-input';
+        contentWidthInput.className = 'input';
+        contentWidthInput.placeholder = '40%';
+        contentWidthInput.value = contentWidth || '';
+        contentWidthInput.style.width = '120px';
+        contentWidthInput.oninput = debounce(() => {
+          if (currentStructure.content) {
+            currentStructure.content.contentWidth = contentWidthInput.value.trim() || undefined;
+            updateStructure();
+          }
+        }, 300);
+        contentWidthGroup.appendChild(contentWidthLabel);
+        contentWidthGroup.appendChild(contentWidthInput);
+        contentInputContainer.appendChild(contentWidthGroup);
       } else {
         contentInput = document.createElement('textarea');
         contentInput.id = 'content-input';
@@ -1483,6 +1519,31 @@ async function initEditor() {
             updateStructure();
           }
         }, 300);
+
+        // Content panel width (for markdown)
+        const contentWidthGroup = document.createElement('div');
+        contentWidthGroup.className = 'form-group';
+        contentWidthGroup.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+        const contentWidthLabel = document.createElement('label');
+        contentWidthLabel.className = 'form-label';
+        contentWidthLabel.textContent = 'Content panel width (e.g. 40% or 280px)';
+        contentWidthLabel.htmlFor = 'content-width-input';
+        const contentWidthInput = document.createElement('input');
+        contentWidthInput.type = 'text';
+        contentWidthInput.id = 'content-width-input';
+        contentWidthInput.className = 'input';
+        contentWidthInput.placeholder = '40%';
+        contentWidthInput.value = contentWidth || '';
+        contentWidthInput.style.width = '120px';
+        contentWidthInput.oninput = debounce(() => {
+          if (currentStructure.content) {
+            currentStructure.content.contentWidth = contentWidthInput.value.trim() || undefined;
+            updateStructure();
+          }
+        }, 300);
+        contentWidthGroup.appendChild(contentWidthLabel);
+        contentWidthGroup.appendChild(contentWidthInput);
+        contentInputContainer.appendChild(contentWidthGroup);
       }
     }
     
@@ -1594,7 +1655,7 @@ async function initEditor() {
             currentStructure.content.type = value;
           }
           
-          createContentInput(value, currentValue, currentStructure.content?.openInNewTab);
+          createContentInput(value, currentValue, currentStructure.content?.openInNewTab, currentStructure.content?.contentWidth);
           
           if (value === 'url') {
             createOpenUrlButton();

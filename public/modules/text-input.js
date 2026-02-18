@@ -27,13 +27,44 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
       </div>
     `;
     
+    // Parse contentWidth for initial split (e.g. "20%", "280px")
+    const contentWidthRaw = textInput.content?.contentWidth;
+    let initialSplitPercent = 40;
+    let contentWidthPx = null;
+    if (contentWidthRaw) {
+      const match = String(contentWidthRaw).trim().match(/^(\d+(?:\.\d+)?)\s*(%|px)?$/i);
+      if (match) {
+        const value = parseFloat(match[1]);
+        const unit = (match[2] || '%').toLowerCase();
+        if (unit === '%') {
+          initialSplitPercent = Math.max(20, Math.min(80, value));
+        } else if (unit === 'px') {
+          contentWidthPx = value;
+        }
+      }
+    }
+
     // Initialize split panel
     const splitPanelContainer = document.getElementById('text-input-split-panel');
     splitPanel = new SplitPanel(splitPanelContainer, {
-      initialSplit: 40,
+      initialSplit: initialSplitPercent,
       minLeft: 20,
       minRight: 30,
     });
+
+    // If contentWidth was in pixels, set split after layout
+    if (contentWidthPx != null) {
+      const applyPxSplit = () => {
+        const rect = splitPanelContainer.getBoundingClientRect();
+        if (rect.width > 0) {
+          const percent = Math.max(20, Math.min(80, (contentWidthPx / rect.width) * 100));
+          splitPanel.setSplit(percent, true);
+        }
+      };
+      requestAnimationFrame(() => {
+        requestAnimationFrame(applyPxSplit);
+      });
+    }
     
     // Get panel references
     const leftPanel = splitPanel.getLeftPanel();

@@ -23,6 +23,8 @@ This section provides context and details to help you answer the questions below
 
 > Note: All answers are case-insensitive unless otherwise specified.
 
+[contentWidth: 35%]
+
 __Practice Question__
 
 What is the capital of France?

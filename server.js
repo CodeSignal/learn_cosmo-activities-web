@@ -820,16 +820,25 @@ function buildActivityFromMarkdown(markdownText) {
     if (contentBuffer.length > 0) {
       const contentText = contentBuffer.map(t => t.raw || t.text || '').join('\n').trim();
       if (contentText) {
+        // Parse contentWidth option: [contentWidth: 20%] or [contentWidth: 280px]
+        const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
+        const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
+        const contentWithoutWidth = contentWidthMatch
+          ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '').trim()
+          : contentText;
+
         // Check if it's a URL (starts with http:// or https://)
-        if (/^https?:\/\//i.test(contentText)) {
-          const lines = contentText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        if (/^https?:\/\//i.test(contentWithoutWidth)) {
+          const lines = contentWithoutWidth.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
           const firstLine = lines[0] || '';
-          const openInNewTab = /\[openInNewTab\]/i.test(contentText);
+          const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
           const url = firstLine.replace(/\s+\[openInNewTab\]\s*$/i, '').trim();
           content = { url, openInNewTab: !!openInNewTab };
+          if (contentWidth) content.contentWidth = contentWidth;
         } else {
           // Treat as markdown content
-          content = { markdown: contentText };
+          content = { markdown: contentWithoutWidth };
+          if (contentWidth) content.contentWidth = contentWidth;
         }
       }
     }

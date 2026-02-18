@@ -2,64 +2,40 @@ __Type__
 
 Text Input
 
-__Heading__
-
-# These are your questions!
-Answer the following questions. You may use the content panel for reference. **Accept the formats indicated** in each question (e.g., case, units, or approximate values).
-
 __Practice Question__
 
-What is the capital of France? (Accept any case variation)
+What is the capital of France?
 
 __Correct Answers__
 
-- Paris [kind: string] [options: caseSensitive=false,fuzzy=false]
+- Paris [kind: string] [options: caseSensitive=false]
 
 __Practice Question__
 
-What is the approximate value of π? (Accept values within 0.1)
+What is 2 + 2?
 
 __Correct Answers__
 
-- 3.14 [kind: numeric] [options: threshold=0.1,precision=2]
+- 4 [kind: numeric] [options: threshold=0.01,precision=2]
 
-__Practice Question__
+__Content__
 
-How many kilograms are in 1000 grams? (Include unit)
+# Additional Information
 
-__Correct Answers__
+This section provides context and details to help you answer the questions below.
 
-- 1 kg [kind: numeric-with-units] [options: threshold=0.01,precision=2,units=kg]
+## Key Concepts
 
-__Practice Question__
+- **Capital City**: The city that serves as the seat of government
+- **Mathematical Operations**: Basic arithmetic including addition, subtraction, multiplication, and division
 
-What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with punctuation, spacing, and minor spelling errors)
+## Tips
 
-__Correct Answers__
+1. Read each question carefully
+2. Consider the context provided
+3. Check your spelling before submitting
 
-- Don't Repeat Yourself [kind: string] [options: caseSensitive=false,fuzzy=true]
+---
 
-__Practice Question__
-
-Spell the word "accommodation" (Accept minor spelling errors)
-
-__Correct Answers__
-
-- accommodation [kind: string] [options: caseSensitive=false,fuzzy=0.7]
-
-__Practice Question__
-
-What is the price of a coffee? (Enter amount in dollars)
-
-__Correct Answers__
-
-- 4.50 [kind: numeric-with-currency] [options: threshold=0.01,precision=2,currency=$]
-
-__Practice Question__
-
-Describe your approach to solving this problem. (This will be reviewed later and is not part of the score)
-
-__Correct Answers__
-
--  [kind: validate-later]
+> Note: All answers are case-insensitive unless otherwise specified.
 
