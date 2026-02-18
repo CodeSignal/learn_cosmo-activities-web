@@ -1,6 +1,12 @@
 /* ===== ACTIVITY-SPECIFIC STYLES ===== */
 /* This file contains only styles specific to the learning activities */
 
+html *, body * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 /* ===== PAGE LAYOUT ===== */
 html, body {
   height: 100%;

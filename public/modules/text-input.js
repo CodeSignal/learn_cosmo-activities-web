@@ -460,11 +460,15 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     questionEl.setAttribute('data-question-id', question.id);
     questionEl.setAttribute('data-question-index', qIdx.toString());
     
+    // Question details (legend + text)
+    const detailsEl = document.createElement('div');
+    detailsEl.className = 'text-input-details';
+
     // Question legend (Question 1, Question 2, etc.)
     const legend = document.createElement('div');
     legend.className = 'text-input-legend heading-xsmall';
     legend.textContent = `Question ${qIdx + 1}`;
-    questionEl.appendChild(legend);
+    detailsEl.appendChild(legend);
     
     // Question text (support markdown HTML if available, fallback to plain text)
     const questionTextEl = document.createElement('div');
@@ -480,7 +484,9 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
       // Render LaTeX math expressions
       renderMath(questionTextEl);
     }
-    questionEl.appendChild(questionTextEl);
+    detailsEl.appendChild(questionTextEl);
+
+    questionEl.appendChild(detailsEl);
     
     // Input container
     const inputContainer = document.createElement('div');
