@@ -822,7 +822,11 @@ function buildActivityFromMarkdown(markdownText) {
       if (contentText) {
         // Check if it's a URL (starts with http:// or https://)
         if (/^https?:\/\//i.test(contentText)) {
-          content = { url: contentText };
+          const lines = contentText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+          const firstLine = lines[0] || '';
+          const openInNewTab = /\[openInNewTab\]/i.test(contentText);
+          const url = firstLine.replace(/\s+\[openInNewTab\]\s*$/i, '').trim();
+          content = { url, openInNewTab: !!openInNewTab };
         } else {
           // Treat as markdown content
           content = { markdown: contentText };

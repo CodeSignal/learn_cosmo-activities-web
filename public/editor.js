@@ -114,7 +114,9 @@ function parseMarkdownToStructure(markdown) {
     const contentText = contentBuffer.join('\n').trim();
     if (contentText) {
       if (/^https?:\/\//i.test(contentText)) {
-        structure.content = { type: 'url', value: contentText };
+        const openInNewTab = /\[openInNewTab\]/i.test(contentText);
+        const url = contentText.replace(/\s+\[openInNewTab\]\s*$/im, '').trim();
+        structure.content = { type: 'url', value: url, openInNewTab: !!openInNewTab };
       } else {
         structure.content = { type: 'markdown', value: contentText };
       }
@@ -236,7 +238,11 @@ function structureToMarkdown(structure) {
 
   // Add content if present
   if (structure.content && structure.content.value) {
-    markdown += `__Content__\n\n${structure.content.value}\n\n`;
+    let contentValue = structure.content.value;
+    if (structure.content.type === 'url' && structure.content.openInNewTab) {
+      contentValue += ' [openInNewTab]';
+    }
+    markdown += `__Content__\n\n${contentValue}\n\n`;
   }
 
   return markdown;
@@ -1414,7 +1420,7 @@ async function initEditor() {
     let contentTypeDropdown = null;
     let openUrlButton = null;
 
-    function createContentInput(type, value) {
+    function createContentInput(type, value, openInNewTab = false) {
       contentInputContainer.innerHTML = '';
       
       if (type === 'url') {
@@ -1436,6 +1442,33 @@ async function initEditor() {
             openUrlButton.disabled = !urlValue || !/^https?:\/\//i.test(urlValue);
           }
         }, 300);
+
+        // Open in new tab checkbox
+        const openInNewTabLabel = document.createElement('label');
+        openInNewTabLabel.className = 'input-checkbox';
+        openInNewTabLabel.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+        openInNewTabLabel.style.display = 'flex';
+        const openInNewTabInput = document.createElement('input');
+        openInNewTabInput.type = 'checkbox';
+        openInNewTabInput.checked = openInNewTab;
+        openInNewTabInput.onchange = () => {
+          if (currentStructure.content) {
+            currentStructure.content.openInNewTab = openInNewTabInput.checked;
+            updateStructure();
+          }
+        };
+        const openInNewTabBox = document.createElement('span');
+        openInNewTabBox.className = 'input-checkbox-box';
+        const openInNewTabCheckmark = document.createElement('span');
+        openInNewTabCheckmark.className = 'input-checkbox-checkmark';
+        openInNewTabBox.appendChild(openInNewTabCheckmark);
+        const openInNewTabText = document.createElement('span');
+        openInNewTabText.className = 'input-checkbox-label';
+        openInNewTabText.textContent = 'Show "Open in new tab" button in toolbar';
+        openInNewTabLabel.appendChild(openInNewTabInput);
+        openInNewTabLabel.appendChild(openInNewTabBox);
+        openInNewTabLabel.appendChild(openInNewTabText);
+        contentInputContainer.appendChild(openInNewTabLabel);
       } else {
         contentInput = document.createElement('textarea');
         contentInput.id = 'content-input';
@@ -1561,7 +1594,7 @@ async function initEditor() {
             currentStructure.content.type = value;
           }
           
-          createContentInput(value, currentValue);
+          createContentInput(value, currentValue, currentStructure.content?.openInNewTab);
           
           if (value === 'url') {
             createOpenUrlButton();

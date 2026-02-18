@@ -813,12 +813,30 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     },
     enabled: true
   });
+
+  // Register "Open in new tab" tool when URL-based content opts in via [openInNewTab]
+  const contentUrl = textInput.content?.url;
+  const showOpenInNewTab = textInput.content?.openInNewTab === true;
+  if (hasContent && contentUrl && showOpenInNewTab) {
+    toolbar.registerTool('text-input-open-url', {
+      icon: 'icon-globe-bold',
+      title: 'Open content in new tab',
+      onClick: (e) => {
+        e.preventDefault();
+        window.open(contentUrl, '_blank', 'noopener,noreferrer');
+      },
+      enabled: true
+    });
+  }
   
   // Add static top padding to position first question near the top
   elQuestions.style.paddingTop = '2rem';
   
   return {
     cleanup: () => {
+      if (hasContent && contentUrl && showOpenInNewTab) {
+        toolbar.unregisterTool('text-input-open-url');
+      }
       toolbar.unregisterTool('text-input-clear-all');
       if (splitPanel) {
         splitPanel.destroy();
