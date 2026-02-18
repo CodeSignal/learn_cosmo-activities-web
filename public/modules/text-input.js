@@ -408,6 +408,20 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     }
   }
   
+  // Optional heading section (instructions for the questions)
+  const hasHeading = textInput.heading && (textInput.heading.html || textInput.heading.markdown);
+  if (hasHeading) {
+    const headingEl = document.createElement('div');
+    headingEl.className = 'text-input-heading box non-interactive input-group text-input-question-text body-xlarge';
+    if (textInput.heading.html) {
+      headingEl.innerHTML = textInput.heading.html;
+    } else {
+      headingEl.textContent = textInput.heading.markdown;
+    }
+    renderMath(headingEl);
+    elQuestions.appendChild(headingEl);
+  }
+
   // Render all questions
   textInput.questions.forEach((question, qIdx) => {
     const questionEl = document.createElement('div');

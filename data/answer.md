@@ -1,90 +1,101 @@
 __Type__
 
-Fill In The Blanks
+Text Input
 
 __Summary__
 
-0/8 correct
+0/7 correct
 
 __Responses__
 
-1. **Blank 1**
+1. **Question 1**
    - Selected Answer: No answer selected
-   - Correct Answer: quadratic equation
+   - Correct Answer: Paris
    - Result: ✗ Incorrect
 
-2. **Blank 2**
+2. **Question 2**
    - Selected Answer: No answer selected
-   - Correct Answer: hypotenuse
+   - Correct Answer: 3.14
    - Result: ✗ Incorrect
 
-3. **Blank 3**
+3. **Question 3**
    - Selected Answer: No answer selected
-   - Correct Answer: power rule
+   - Correct Answer: 1 kg
    - Result: ✗ Incorrect
 
-4. **Blank 4**
+4. **Question 4**
    - Selected Answer: No answer selected
-   - Correct Answer: antiderivative
+   - Correct Answer: Don't Repeat Yourself
    - Result: ✗ Incorrect
 
-5. **Blank 5**
+5. **Question 5**
    - Selected Answer: No answer selected
-   - Correct Answer: calculus
+   - Correct Answer: accommodation
    - Result: ✗ Incorrect
 
-6. **Blank 6**
+6. **Question 6**
    - Selected Answer: No answer selected
-   - Correct Answer: radius
+   - Correct Answer: 4.50
    - Result: ✗ Incorrect
 
-7. **Blank 7**
+7. **Question 7**
    - Selected Answer: No answer selected
-   - Correct Answer: 0
+   - Correct Answer: [kind: validate-later]
    - Result: ✗ Incorrect
 
-8. **Blank 8**
-   - Selected Answer: No answer selected
-   - Correct Answer: Gauss
-   - Result: ✗ Incorrect
+__Practice Question__
 
-__Markdown With Blanks__
+What is the capital of France? (Accept any case variation)
 
-Fill in the blanks with the correct mathematical expressions
+__Correct Answers__
 
+- Paris [kind: string] [options: caseSensitive=false,fuzzy=false]
 
+__Practice Question__
 
-> **Problem 1:** The quadratic formula states that for an equation $ax^2 + bx + c = 0$, the solutions are given by $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$. This formula is used to find the roots of a [[blank:quadratic equation]].
+What is the approximate value of π? (Accept values within 0.1)
 
+__Correct Answers__
 
-> **Problem 2:** The Pythagorean theorem states that in a right triangle, $a^2 + b^2 = c^2$, where $c$ is the length of the [[blank:hypotenuse]].
+- 3.14 [kind: numeric] [options: threshold=0.1,precision=2]
 
+__Practice Question__
 
-> **Problem 3:** The derivative of $f(x) = x^n$ is $f'(x) = nx^{n-1}$. This is known as the [[blank:power rule]].
+How many kilograms are in 1000 grams? (Include unit)
 
+__Correct Answers__
 
-> **Problem 4:** The integral $\int x^n \, dx = \frac{x^{n+1}}{n+1} + C$ (for $n \neq -1$) represents the [[blank:antiderivative]] of $x^n$.
+- 1 kg [kind: numeric-with-units] [options: threshold=0.01,precision=2,units=kg]
 
+__Practice Question__
 
-> **Problem 5:** The limit $\lim_{x \to 0} \frac{\sin(x)}{x} = 1$ is a fundamental result in [[blank:calculus]].
+What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with punctuation, spacing, and minor spelling errors)
 
+__Correct Answers__
 
-> **Problem 6:** The formula for the area of a circle is $A = \pi r^2$, where $r$ represents the [[blank:radius]].
+- Don't Repeat Yourself [kind: string] [options: caseSensitive=false,fuzzy=true]
 
+__Practice Question__
 
-> **Problem 7:** Euler's identity $e^{i\pi} + 1 = 0$ connects five fundamental mathematical constants: $e$, $i$, $\pi$, $1$, and [[blank:0]].
+Spell the word "accommodation" (Accept minor spelling errors)
 
+__Correct Answers__
 
-> **Problem 8:** The sum of the first $n$ natural numbers is given by $S_n = \frac{n(n+1)}{2}$. This formula was discovered by [[blank:Gauss]].
+- accommodation [kind: string] [options: caseSensitive=false,fuzzy=0.7]
 
-__Suggested Answers__
+__Practice Question__
 
-- antiderivative
-- Gauss
-- radius
-- calculus
-- 0
-- power rule
-- hypotenuse
-- quadratic equation
+What is the price of a coffee? (Enter amount in dollars)
+
+__Correct Answers__
+
+- 4.50 [kind: numeric-with-currency] [options: threshold=0.01,precision=2,currency=$]
+
+__Practice Question__
+
+Describe your approach to solving this problem. (This will be reviewed later and is not part of the score)
+
+__Correct Answers__
+
+- [kind: validate-later] [kind: string]
 

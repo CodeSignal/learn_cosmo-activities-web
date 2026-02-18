@@ -2,6 +2,10 @@ __Type__
 
 Text Input
 
+__Heading__
+
+Answer the following questions. You may use the content panel for reference. **Accept the formats indicated** in each question (e.g., case, units, or approximate values).
+
 __Practice Question__
 
 What is the capital of France? (Accept any case variation)

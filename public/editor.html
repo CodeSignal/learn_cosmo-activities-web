@@ -186,7 +186,7 @@
   <div class="editor-container">
     <span class="save-status hidden" id="save-status"></span>
 
-    <h2 class="editor-section-title">Content Panel</h2>
+    <h2 class="editor-section-title" id="content-panel-title">Content Panel</h2>
     <div class="form-group">
       <label class="form-label" for="content-type">Content Type</label>
       <div id="content-type-dropdown"></div>
@@ -194,6 +194,11 @@
     <div class="form-group" id="content-input-group" style="display: none;">
       <label class="form-label" id="content-label" for="content-input">Content</label>
       <div id="content-input-container"></div>
+    </div>
+
+    <h2 class="editor-section-title" id="heading-title" style="margin-top: var(--UI-Spacing-spacing-xl);">Heading (optional)</h2>
+    <div class="form-group" id="heading-input-group">
+      <textarea id="heading-input" class="form-textarea" placeholder="Optional instructions for how to proceed with the questions..." rows="4"></textarea>
     </div>
 
     <h2 class="editor-section-title" style="margin-top: var(--UI-Spacing-spacing-xl);">Questions</h2>

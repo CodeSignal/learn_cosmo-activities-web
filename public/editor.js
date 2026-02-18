@@ -14,6 +14,7 @@ function parseMarkdownToStructure(markdown) {
   let questionBuffer = [];
   let answerBuffer = [];
   let contentBuffer = [];
+  let headingBuffer = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -58,6 +59,9 @@ function parseMarkdownToStructure(markdown) {
       } else if (sectionName === 'Content') {
         currentSection = 'content';
         contentBuffer = [];
+      } else if (sectionName === 'Heading') {
+        currentSection = 'heading';
+        headingBuffer = [];
       } else {
         currentSection = null;
       }
@@ -73,6 +77,16 @@ function parseMarkdownToStructure(markdown) {
       answerBuffer.push(line);
     } else if (currentSection === 'content') {
       contentBuffer.push(line);
+    } else if (currentSection === 'heading') {
+      headingBuffer.push(line);
+    }
+  }
+
+  // Process heading
+  if (headingBuffer.length > 0) {
+    const headingText = headingBuffer.join('\n').trim();
+    if (headingText) {
+      structure.heading = { value: headingText };
     }
   }
 
@@ -190,6 +204,11 @@ function parseAnswerLine(answerLine) {
 // Convert structure back to markdown
 function structureToMarkdown(structure) {
   let markdown = `__Type__\n\n${structure.type}\n\n`;
+
+  // Add heading if present
+  if (structure.heading && structure.heading.value) {
+    markdown += `__Heading__\n\n${structure.heading.value}\n\n`;
+  }
 
   // Add questions
   structure.questions.forEach((q, index) => {
@@ -1310,10 +1329,12 @@ async function initEditor() {
       });
     }
 
-    // Hide content section for MCQ
-    document.querySelector('.editor-section-title').style.display = 'none';
+    // Hide content and heading sections for MCQ
+    document.getElementById('content-panel-title').style.display = 'none';
+    document.getElementById('heading-title').style.display = 'none';
     document.getElementById('content-type-dropdown').parentElement.style.display = 'none';
     document.getElementById('content-input-group').style.display = 'none';
+    document.getElementById('heading-input-group').style.display = 'none';
 
     // Render questions
     const questionsContainer = document.getElementById('questions-container');
@@ -1349,6 +1370,9 @@ async function initEditor() {
       const parsed = parseMarkdownToStructure(markdown);
       currentStructure.questions = parsed.questions;
       currentStructure.content = parsed.content;
+      currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
+    } else if (!currentStructure.heading) {
+      currentStructure.heading = { value: '' };
     }
 
     // Ensure at least one question exists
@@ -1559,6 +1583,17 @@ async function initEditor() {
         handler(currentStructure.content.type);
       }
     }
+
+    // Wire up heading input
+    const headingInput = document.getElementById('heading-input');
+    headingInput.value = currentStructure.heading?.value || '';
+    headingInput.oninput = debounce(() => {
+      if (!currentStructure.heading) {
+        currentStructure.heading = { value: '' };
+      }
+      currentStructure.heading.value = headingInput.value;
+      updateStructure();
+    }, 300);
   }
 }
 

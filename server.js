@@ -656,6 +656,7 @@ function buildActivityFromMarkdown(markdownText) {
     let answerBuffer = [];
     let contentSection = null;
     let contentBuffer = [];
+    let headingBuffer = [];
     
     function processQuestion() {
       if (!currentQuestion || questionBuffer.length === 0) return;
@@ -781,6 +782,10 @@ function buildActivityFromMarkdown(markdownText) {
             // Skip type section
             currentSection = null;
             continue;
+          } else if (sectionName === 'Heading') {
+            currentSection = 'heading';
+            headingBuffer = [];
+            continue;
           } else if (sectionName === 'Content') {
             // Start content section
             currentSection = 'content';
@@ -796,6 +801,8 @@ function buildActivityFromMarkdown(markdownText) {
         answerBuffer.push(token);
       } else if (currentSection === 'content') {
         contentBuffer.push(token);
+      } else if (currentSection === 'heading') {
+        headingBuffer.push(token);
       }
     }
     
@@ -823,7 +830,16 @@ function buildActivityFromMarkdown(markdownText) {
       }
     }
     
-    return { type, question: null, textInput: { questions, content } };
+    // Process heading section if present
+    let heading = null;
+    if (headingBuffer.length > 0) {
+      const headingText = headingBuffer.map(t => t.raw || t.text || '').join('\n').trim();
+      if (headingText) {
+        heading = { markdown: headingText, html: marked.parse(headingText) };
+      }
+    }
+    
+    return { type, question: null, textInput: { questions, content, heading } };
   }
 
   const labels = readListItems(sections.get('Labels'));
