@@ -21,6 +21,9 @@ Fill in the blanks
 > **Situation 5:** You want to check in after a teammate mentioned an important event.  
 > **Best Response:** [[blank:How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?]]
 
+__QuestionStyle__
+boxed
+
 __Suggested Answers__
 
 - That sounds tough—do you want to talk more about it?

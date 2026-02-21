@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev:reload": "browser-sync start --proxy \"http://localhost:3000\" --files \"**/*.css, **/*.html, **/*.js\""
   },
   "keywords": [],
   "author": "",
@@ -13,5 +14,8 @@
   "dependencies": {
     "marked": "^4.3.0",
     "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.3"
   }
 }

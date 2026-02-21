@@ -20,7 +20,8 @@
   gap: var(--UI-Spacing-spacing-ms, 16px);
   padding: 1.5rem;
   padding-bottom: 0;
-  max-width: 800px;
+  width: 100%;
+  max-width: 720px;
   margin: 0 auto;
   scroll-padding-top: 2rem;
   scroll-padding-bottom: 2rem;
@@ -80,7 +81,7 @@
 /* When in split-panel mode, use same padding as non-split-panel to limit scrolling */
 .text-input-questions-wrapper .text-input-questions {
   padding-bottom: 45vh;
-  max-width: 800px;
+  max-width: 720px;
   margin: 0 auto;
   width: 100%;
 }
@@ -88,7 +89,7 @@
 .text-input-question {
   display: flex;
   flex-direction: column;
-  gap: var(--UI-Spacing-spacing-mxs);
+  gap: var(--UI-Spacing-spacing-ms);
   transition: border-color 0.2s ease;
   width: 100%;
   max-width: 100%;
@@ -136,12 +137,17 @@
   /* Typography from .body-xxlarge class */
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-xlarge */
   color: var(--Colors-Text-Body-Default);
-  margin-bottom: var(--UI-Spacing-spacing-xs, 8px);
-  line-height: 1.82;
+  /* margin-bottom: var(--UI-Spacing-spacing-xs, 8px); */
 }
 
 .text-input-question-text + .text-input-container {
   margin-top: var(--UI-Spacing-spacing-xs, 8px);
+}
+
+.text-input-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--UI-Spacing-spacing-mxs, 12px)
 }
 
 .text-input-legend {
@@ -149,7 +155,6 @@
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .heading-small */
   color: var(--Colors-Text-Body-Strong);
   padding: 0;
-  line-height: 1.35;
 }
 
 .text-input-container {

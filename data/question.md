@@ -1,41 +1,23 @@
 __Type__
 
-Text Input
+Multiple Choice
 
 __Practice Question__
 
-What is the capital of France?
+Let's test your understanding! Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-__Correct Answers__
+A. Her brand identity is wrong  
+B. Her actual brand doesn't match her identity  
+C. Her brand image is too positive  
+D. She needs a better logo
 
-- Paris [kind: string] [options: caseSensitive=false]
+__Suggested Answers__
 
-__Practice Question__
+- A  
+- B - Correct  
+- C  
+- D
 
-What is 2 + 2?
+__Explain Your Answer__
 
-__Correct Answers__
-
-- 4 [kind: numeric] [options: threshold=0.01,precision=2]
-
-__Content__
-
-# Additional Information
-
-This section provides context and details to help you answer the questions below.
-
-## Key Concepts
-
-- **Capital City**: The city that serves as the seat of government
-- **Mathematical Operations**: Basic arithmetic including addition, subtraction, multiplication, and division
-
-## Tips
-
-1. Read each question carefully
-2. Consider the context provided
-3. Check your spelling before submitting
-
----
-
-> Note: All answers are case-insensitive unless otherwise specified.
-
+true

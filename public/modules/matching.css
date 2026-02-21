@@ -37,6 +37,7 @@
 .matching {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   background: var(--Colors-Backgrounds-Main-Default);
   padding: var(--UI-Spacing-spacing-mxl);
   min-height: calc(100vh - 120px);
