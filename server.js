@@ -98,9 +98,19 @@ function parseSectionsFromTokens(tokens) {
     if (token.type === 'paragraph') {
       const text = (token.text || '').trim();
       const m = text.match(/^__([^_]+)__\s*$/);
+      const mWithContent = text.match(/^__([^_]+)__\s*\n([\s\S]*)$/);
       if (m) {
         flush();
         current = m[1].trim();
+        continue;
+      }
+      if (mWithContent) {
+        flush();
+        current = mWithContent[1].trim();
+        const rest = mWithContent[2].trim();
+        if (rest) {
+          buffer.push({ type: 'paragraph', raw: rest, text: rest });
+        }
         continue;
       }
     }
@@ -290,7 +300,10 @@ function buildActivityFromMarkdown(markdownText) {
     // Render markdown to HTML for prompt and content
     const promptHtml = prompt ? marked.parse(prompt) : '';
     const contentHtml = marked.parse(contentWithBlankSpans);
-    return { type, question, fib: { raw: fibMarkdown, prompt, promptHtml, content, htmlWithPlaceholders: contentHtml, blanks, choices } };
+    // Parse QuestionStyle (e.g. "boxed", "bordered") from __QuestionStyle__ section
+    const questionStyleTokens = sections.get('QuestionStyle') || [];
+    const questionStyle = ((questionStyleTokens.map(t => t.raw || t.text).join('\n') || '').trim()).toLowerCase() || null;
+    return { type, question, fib: { raw: fibMarkdown, prompt, promptHtml, content, htmlWithPlaceholders: contentHtml, blanks, choices, questionStyle: questionStyle || undefined } };
   }
 
   if (/^multiple choice$/i.test(type)) {
