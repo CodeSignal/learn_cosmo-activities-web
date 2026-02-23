@@ -68,7 +68,7 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
     
     // Question text (support markdown HTML if available, fallback to plain text for backward compatibility)
     const questionTextEl = document.createElement('div');
-    questionTextEl.className = 'mcq-question-text body-xlarge';
+    questionTextEl.className = 'mcq-question-text body-large';
     if (question.textHtml) {
       questionTextEl.innerHTML = question.textHtml;
       // Render LaTeX math expressions

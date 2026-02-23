@@ -1,41 +1,33 @@
 __Type__
 
-Text Input
+Fill In The Blanks
 
-__Practice Question__
+__Markdown With Blanks__
 
-What is the capital of France?
+Fill in the blanks
 
-__Correct Answers__
+> **Situation 1:** A teammate says they're feeling stressed and overwhelmed.  
+> **Best Response:** [[blank:That sounds tough. Do you want to talk more about it?]]
 
-- Paris [kind: string] [options: caseSensitive=false]
+> **Situation 2:** A teammate suggests a new way to do something that you hadn't considered.  
+> **Best Response:** [[blank:I hadn’t thought of it that way. Can you tell me more?]]
 
-__Practice Question__
+> **Situation 3:** You notice a teammate seems quieter than usual.  
+> **Best Response:** [[blank:You seem a bit quiet today. Is everything okay?]]
 
-What is 2 + 2?
+> **Situation 4:** A teammate helps you finish a report on time.  
+> **Best Response:** [[blank:Thanks for helping me with that report! I really appreciated it.]]
 
-__Correct Answers__
+> **Situation 5:** You want to check in after a teammate mentioned an important event.  
+> **Best Response:** [[blank:How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?]]
 
-- 4 [kind: numeric] [options: threshold=0.01,precision=2]
+__QuestionStyle__
+boxed
 
-__Content__
+__Suggested Answers__
 
-# Additional Information
-
-This section provides context and details to help you answer the questions below.
-
-## Key Concepts
-
-- **Capital City**: The city that serves as the seat of government
-- **Mathematical Operations**: Basic arithmetic including addition, subtraction, multiplication, and division
-
-## Tips
-
-1. Read each question carefully
-2. Consider the context provided
-3. Check your spelling before submitting
-
----
-
-> Note: All answers are case-insensitive unless otherwise specified.
-
+- That sounds tough—do you want to talk more about it?
+- I hadn’t thought of it that way. Can you tell me more?
+- You seem a bit quiet today. Is everything okay?
+- Thanks for helping me with that report! I really appreciated it.
+- How did it go? How did it go? How did it go? How did it go? How did it go? How did it go? How did it go?

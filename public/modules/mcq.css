@@ -33,7 +33,7 @@
 .mcq-question {
   display: flex;
   flex-direction: column;
-  gap: var(--UI-Spacing-spacing-ms, 16px);
+  gap: var(--UI-Spacing-spacing-mxl, 24px);
   transition: border-color 0.2s ease, opacity 0.3s ease;
 }
 
@@ -82,12 +82,11 @@
   /* Typography from .body-xxlarge class */
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .body-xlarge */
   color: var(--Colors-Text-Body-Default);
-  margin-bottom: var(--UI-Spacing-spacing-xs, 8px);
-  line-height: 1.82;
 }
 
 /* Blockquote styles are provided by design-system/typography/typography.css */
 /* No overrides needed - blockquotes will use the design system styles */
+/* Specific blockquotes styles were added to style.css, there were no blockquote style coming from the DS */
 
 .mcq-options {
   display: flex;
@@ -102,7 +101,6 @@
   /* Typography from .heading-small class */
   /* font-family, font-size, font-style, font-weight, line-height, letter-spacing handled by .heading-small */
   color: var(--Colors-Text-Body-Strong);
-  margin-bottom: var(--UI-Spacing-spacing-xs, 8px);
   padding: 0;
   line-height: 1.35;
 }
@@ -252,7 +250,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--UI-Spacing-spacing-xs, 8px);
-  margin-top: var(--UI-Spacing-spacing-ms, 16px);
+  margin-top: var(--UI-Spacing-spacing-mxl, 24px);
 }
 
 .mcq-explain-label {

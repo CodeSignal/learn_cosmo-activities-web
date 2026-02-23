@@ -11,7 +11,7 @@ export function initFib({ activity, state, postResults, persistedAnswers = null 
       <div class="fib-header">
         <h2 class="fib-heading heading-xsmall"></h2>
       </div>
-      <div id="fib-content" class="fib-content body-xlarge"></div>
+      <div id="fib-content" class="fib-content body-large"></div>
     </div>
   `;
   
@@ -28,6 +28,22 @@ export function initFib({ activity, state, postResults, persistedAnswers = null 
   elFibContent.innerHTML = fib.htmlWithPlaceholders;
   // Render LaTeX math expressions
   renderMath(elFibContent);
+
+  // Wrap each question (p containing a blank) in div.fib-question
+  const questionParagraphs = Array.from(elFibContent.querySelectorAll('p')).filter((p) => p.querySelector('.blank'));
+  const wrappers = [];
+  const questionStyleClass = fib.questionStyle ? ' ' + String(fib.questionStyle).trim() : '';
+  questionParagraphs.forEach((p) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'fib-question' + questionStyleClass;
+    p.parentNode.insertBefore(wrapper, p);
+    wrapper.appendChild(p);
+    wrappers.push(wrapper);
+  });
+  while (elFibContent.firstChild) {
+    elFibContent.removeChild(elFibContent.firstChild);
+  }
+  wrappers.forEach((w) => elFibContent.appendChild(w));
 
   // Build dropdowns in each blank and synchronize options across all blanks
   const blanks = Array.from(elFibContent.querySelectorAll('.blank')).sort((a, b) => {
