@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev:reload": "browser-sync start --proxy \"http://localhost:3000\" --files \"**/*.css, **/*.html, **/*.js\""
+    "dev:reload": "concurrently \"node server.js\" \"browser-sync start --proxy http://localhost:3000 --files '**/*.css, **/*.html, **/*.js, data/question.md' --ignore node_modules\""
   },
   "keywords": [],
   "author": "",
@@ -16,6 +16,7 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
-    "browser-sync": "^3.0.3"
+    "browser-sync": "^3.0.3",
+    "concurrently": "^9.1.0"
   }
 }
