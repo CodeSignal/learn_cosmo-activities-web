@@ -17,6 +17,7 @@ export function renderMath(element, options = {}) {
       { left: '$', right: '$', display: false },
       { left: '\\(', right: '\\)', display: false }
     ],
+    ignoredClasses: ['no-math'],
     throwOnError: false,
     errorColor: '#cc0000',
     ...options

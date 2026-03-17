@@ -120,6 +120,15 @@ function parseSectionsFromTokens(tokens) {
   return sections;
 }
 
+/**
+ * Preprocess markdown to escape \$ as literal dollar signs (not LaTeX).
+ * Replaces \$ with <span class="no-math">$</span> so KaTeX skips them.
+ */
+function escapeMathDollars(markdown) {
+  if (!markdown || typeof markdown !== 'string') return markdown;
+  return markdown.replace(/\\\$/g, '<span class="no-math">$</span>');
+}
+
 function readListItems(sectionTokens) {
   const items = [];
   for (const t of sectionTokens || []) {
@@ -298,8 +307,8 @@ function buildActivityFromMarkdown(markdownText) {
       [choices[i], choices[j]] = [choices[j], choices[i]];
     }
     // Render markdown to HTML for prompt and content
-    const promptHtml = prompt ? marked.parse(prompt) : '';
-    const contentHtml = marked.parse(contentWithBlankSpans);
+    const promptHtml = prompt ? marked.parse(escapeMathDollars(prompt)) : '';
+    const contentHtml = marked.parse(escapeMathDollars(contentWithBlankSpans));
     // Parse QuestionStyle (e.g. "boxed", "bordered") from __QuestionStyle__ section
     const questionStyleTokens = sections.get('QuestionStyle') || [];
     const questionStyle = ((questionStyleTokens.map(t => t.raw || t.text).join('\n') || '').trim()).toLowerCase() || null;
@@ -365,7 +374,7 @@ function buildActivityFromMarkdown(markdownText) {
         optionMap.set(label, text);
         
         // Parse markdown to HTML for rendering (supports images, bold, etc.)
-        const textHtml = marked.parse(text);
+        const textHtml = marked.parse(escapeMathDollars(text));
         
         options.push({
           label: label,
@@ -383,7 +392,7 @@ function buildActivityFromMarkdown(markdownText) {
       
       // Parse markdown to HTML for rendering (supports multiple paragraphs, blockquotes, etc.)
       if (currentQuestion.text) {
-        currentQuestion.textHtml = marked.parse(currentQuestion.text);
+        currentQuestion.textHtml = marked.parse(escapeMathDollars(currentQuestion.text));
       } else {
         currentQuestion.textHtml = '';
       }
@@ -605,7 +614,7 @@ function buildActivityFromMarkdown(markdownText) {
         const textBeforeBlank = itemLine.replace(/\[\[blank:[^\]]+\]\]/gi, '').trim();
         
         // Render text without blank to HTML
-        const textHtml = marked.parse(textBeforeBlank);
+        const textHtml = marked.parse(escapeMathDollars(textBeforeBlank));
         
         items.push({
           index: idx++,
@@ -643,7 +652,7 @@ function buildActivityFromMarkdown(markdownText) {
     }
     
     // Render markdown to HTML for prompt
-    const promptHtml = prompt ? marked.parse(prompt) : '';
+    const promptHtml = prompt ? marked.parse(escapeMathDollars(prompt)) : '';
     
     return { 
       type, 
@@ -680,7 +689,7 @@ function buildActivityFromMarkdown(markdownText) {
       
       // Parse markdown to HTML for rendering (supports LaTeX, images, bold, etc.)
       if (currentQuestion.text) {
-        currentQuestion.textHtml = marked.parse(currentQuestion.text);
+        currentQuestion.textHtml = marked.parse(escapeMathDollars(currentQuestion.text));
       } else {
         currentQuestion.textHtml = '';
       }
@@ -861,7 +870,7 @@ function buildActivityFromMarkdown(markdownText) {
     if (headingBuffer.length > 0) {
       const headingText = headingBuffer.map(t => t.raw || t.text || '').join('\n').trim();
       if (headingText) {
-        heading = { markdown: headingText, html: marked.parse(headingText) };
+        heading = { markdown: headingText, html: marked.parse(escapeMathDollars(headingText)) };
       }
     }
     
