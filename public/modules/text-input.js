@@ -773,14 +773,19 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     
     // Check each question and mark incorrect ones
     textInput.questions.forEach(q => {
-      // Skip validation for "validate-later" type
+      const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
+
+      // Skip validation for "validate-later" type and clear any stale error UI.
       if (q.validation && q.validation.kind === 'validate-later') {
+        if (questionEl) {
+          questionEl.classList.remove('text-input-question-incorrect');
+          removeErrorIcon(questionEl);
+        }
         return;
       }
       
       const isCorrect = validateAnswer(q);
       
-      const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
       if (questionEl) {
         if (isCorrect === false) {
           questionEl.classList.add('text-input-question-incorrect');
@@ -890,4 +895,3 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     validate: validateAnswers
   };
 }
-

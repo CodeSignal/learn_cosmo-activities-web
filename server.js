@@ -702,11 +702,52 @@ function buildActivityFromMarkdown(markdownText) {
       // "Hello World [kind: string] [options: caseInsensitive=true,fuzzy=false]"
       // "42.5 [kind: numeric] [options: threshold=0.01,precision=2]"
       // "100 kg [kind: numeric-with-units] [options: threshold=0.1,precision=1,units=kg,g]"
-      
-      const validationMatch = answerText.match(/^(.+?)(?:\s+\[kind:\s*([^\]]+)\])?(?:\s+\[options:\s*([^\]]+)\])?$/);
+
+      const trimmedAnswer = answerText.trim();
+      const startsWithKind = trimmedAnswer.startsWith('[kind:');
+      let validationMatch;
+
+      if (startsWithKind) {
+        // Support empty correct-answer entries such as "[kind: validate-later]".
+        validationMatch = trimmedAnswer.match(/^\[kind:\s*([^\]]+)\](?:\s+\[options:\s*([^\]]+)\])?$/);
+        if (validationMatch) {
+          const kind = validationMatch[1] ? validationMatch[1].trim() : 'string';
+          const optionsText = validationMatch[2] ? validationMatch[2].trim() : '';
+          const options = {};
+
+          if (optionsText) {
+            const optionPairs = optionsText.split(',');
+            optionPairs.forEach(pair => {
+              const [key, value] = pair.split('=').map(s => s.trim());
+              if (key && value !== undefined) {
+                if (value === 'true') {
+                  options[key] = true;
+                } else if (value === 'false') {
+                  options[key] = false;
+                } else if (!isNaN(value)) {
+                  options[key] = parseFloat(value);
+                } else {
+                  options[key] = value;
+                }
+              }
+            });
+          }
+
+          return {
+            correctAnswer: '',
+            validation: {
+              kind,
+              options
+            }
+          };
+        }
+      } else {
+        validationMatch = trimmedAnswer.match(/^(.+?)(?:\s+\[kind:\s*([^\]]+)\])?(?:\s+\[options:\s*([^\]]+)\])?$/);
+      }
+
       if (!validationMatch) {
         return {
-          correctAnswer: answerText.trim(),
+          correctAnswer: trimmedAnswer,
           validation: {}
         };
       }
@@ -1690,5 +1731,4 @@ wss.on('connection', (ws, req) => {
     clients.delete(ws);
   });
 });
-
 
