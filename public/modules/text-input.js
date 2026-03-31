@@ -413,9 +413,9 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     const correctAnswer = question.correctAnswer;
     const validation = question.validation || {};
     
-    // Skip validation for "validate-later" type
+    // "validate-later" still requires a response, but any non-empty value is accepted.
     if (validation.kind === 'validate-later') {
-      return null;
+      return userAnswer.trim() ? null : false;
     }
     
     if (!userAnswer.trim()) {
@@ -774,15 +774,6 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     // Check each question and mark incorrect ones
     textInput.questions.forEach(q => {
       const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
-
-      // Skip validation for "validate-later" type and clear any stale error UI.
-      if (q.validation && q.validation.kind === 'validate-later') {
-        if (questionEl) {
-          questionEl.classList.remove('text-input-question-incorrect');
-          removeErrorIcon(questionEl);
-        }
-        return;
-      }
       
       const isCorrect = validateAnswer(q);
       

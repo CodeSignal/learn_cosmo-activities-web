@@ -733,6 +733,10 @@ function buildActivityFromMarkdown(markdownText) {
             });
           }
 
+          if (kind === 'numeric-with-units' && typeof options.units === 'string') {
+            options.units = options.units.split(',').map(u => u.trim()).filter(Boolean);
+          }
+
           return {
             correctAnswer: '',
             validation: {
@@ -1731,4 +1735,3 @@ wss.on('connection', (ws, req) => {
     clients.delete(ws);
   });
 });
-
