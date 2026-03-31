@@ -698,51 +698,48 @@ function buildActivityFromMarkdown(markdownText) {
     function parseValidationOptions(answerText) {
       // Parse validation options from answer text
       // Format: "answer [kind: string|numeric|numeric-with-units] [options: key=value,key=value]"
+      // Also handles empty answers: "[kind: validate-later]"
       // Examples:
       // "Hello World [kind: string] [options: caseInsensitive=true,fuzzy=false]"
       // "42.5 [kind: numeric] [options: threshold=0.01,precision=2]"
       // "100 kg [kind: numeric-with-units] [options: threshold=0.1,precision=1,units=kg,g]"
-      
-      const validationMatch = answerText.match(/^(.+?)(?:\s+\[kind:\s*([^\]]+)\])?(?:\s+\[options:\s*([^\]]+)\])?$/);
+
+      const trimmedAnswer = answerText.trim();
+      const startsWithKind = trimmedAnswer.startsWith('[kind:');
+
+      let validationMatch;
+      if (startsWithKind) {
+        validationMatch = trimmedAnswer.match(/^\[kind:\s*([^\]]+)\](?:\s+\[options:\s*([^\]]+)\])?$/);
+        if (validationMatch) {
+          const kind = validationMatch[1] ? validationMatch[1].trim() : 'string';
+          return {
+            correctAnswer: '',
+            validation: {
+              kind,
+              options: parseValidationOptionsText(validationMatch[2] || '', kind)
+            }
+          };
+        }
+      } else {
+        validationMatch = trimmedAnswer.match(/^(.+?)(?:\s+\[kind:\s*([^\]]+)\])?(?:\s+\[options:\s*([^\]]+)\])?$/);
+      }
+
       if (!validationMatch) {
         return {
-          correctAnswer: answerText.trim(),
-          validation: {}
+          correctAnswer: trimmedAnswer,
+          validation: { kind: 'string', options: {} }
         };
       }
-      
-      const correctAnswer = validationMatch[1].trim();
-      const kind = validationMatch[2] ? validationMatch[2].trim() : 'string';
-      const optionsText = validationMatch[3] ? validationMatch[3].trim() : '';
-      
-      // Parse options
-      const options = {};
-      if (optionsText) {
-        const optionPairs = optionsText.split(',');
-        optionPairs.forEach(pair => {
-          const [key, value] = pair.split('=').map(s => s.trim());
-          if (key && value !== undefined) {
-            // Convert string booleans and numbers
-            if (value === 'true') {
-              options[key] = true;
-            } else if (value === 'false') {
-              options[key] = false;
-            } else if (!isNaN(value)) {
-              options[key] = parseFloat(value);
-            } else {
-              options[key] = value;
-            }
-          }
-        });
-      }
-      
-      // Parse units if present (comma-separated list)
-      if (kind === 'numeric-with-units' && options.units) {
-        if (typeof options.units === 'string') {
-          options.units = options.units.split(',').map(u => u.trim()).filter(Boolean);
-        }
-      }
-      
+
+      const correctAnswer = startsWithKind ? '' : validationMatch[1].trim();
+      const kind = (startsWithKind ? validationMatch[1] : validationMatch[2])
+        ? (startsWithKind ? validationMatch[1].trim() : validationMatch[2].trim())
+        : 'string';
+      const optionsText = (startsWithKind ? validationMatch[2] : validationMatch[3])
+        ? (startsWithKind ? validationMatch[2] : validationMatch[3].trim())
+        : '';
+      const options = parseValidationOptionsText(optionsText, kind);
+
       return {
         correctAnswer,
         validation: {
@@ -751,21 +748,51 @@ function buildActivityFromMarkdown(markdownText) {
         }
       };
     }
+
+    function parseValidationOptionsText(optionsText, kind = 'string') {
+      const options = {};
+      if (!optionsText) {
+        return options;
+      }
+
+      const optionPairs = optionsText.match(/(?:[^\s,][^=]*=[^,]+(?:,(?!\s*[A-Za-z_][\w-]*=)[^,]+)*)/g) || [];
+      optionPairs.forEach(pair => {
+        const [key, ...valueParts] = pair.split('=');
+        const value = valueParts.join('=').trim();
+        if (!key || value === '') {
+          return;
+        }
+
+        const trimmedKey = key.trim();
+        if (value === 'true') {
+          options[trimmedKey] = true;
+        } else if (value === 'false') {
+          options[trimmedKey] = false;
+        } else if (!isNaN(value)) {
+          options[trimmedKey] = parseFloat(value);
+        } else {
+          options[trimmedKey] = value;
+        }
+      });
+
+      if (kind === 'numeric-with-units' && typeof options.units === 'string') {
+        options.units = options.units.split(',').map(u => u.trim()).filter(Boolean);
+      }
+
+      return options;
+    }
     
     function processAnswers() {
       if (!currentQuestion || answerBuffer.length === 0) return;
       
       const answerItems = readListItems(answerBuffer);
-      
-      // For text-input, we expect a single correct answer per question
-      // But we support multiple answers in case of multiple correct answers
+
       if (answerItems.length > 0) {
-        // Use the first answer as the correct answer
-        const answerText = answerItems[0].trim();
-        const { correctAnswer, validation } = parseValidationOptions(answerText);
-        
-        currentQuestion.correctAnswer = correctAnswer;
-        currentQuestion.validation = validation;
+        currentQuestion.acceptedAnswers = answerItems.map(answerText => parseValidationOptions(answerText.trim()));
+
+        const firstAcceptedAnswer = currentQuestion.acceptedAnswers[0];
+        currentQuestion.correctAnswer = firstAcceptedAnswer.correctAnswer;
+        currentQuestion.validation = firstAcceptedAnswer.validation;
       }
       
       // Add to questions array
@@ -787,7 +814,7 @@ function buildActivityFromMarkdown(markdownText) {
             }
             
             // Start new question
-            currentQuestion = { id: questions.length, text: '', correctAnswer: '', validation: {} };
+            currentQuestion = { id: questions.length, text: '', correctAnswer: '', acceptedAnswers: [], validation: {} };
             currentSection = 'question';
             questionBuffer = [];
             answerBuffer = [];
@@ -1365,34 +1392,98 @@ const server = http.createServer((req, res) => {
           // Use threshold to allow small differences
           return Math.abs(userValue - correctValue) <= threshold;
         }
+
+        function getTextInputAcceptedAnswers(question) {
+          if (Array.isArray(question.acceptedAnswers) && question.acceptedAnswers.length > 0) {
+            return question.acceptedAnswers;
+          }
+
+          return [{
+            correctAnswer: question.correctAnswer || '',
+            validation: question.validation || {}
+          }];
+        }
+
+        function getPrimaryTextInputAnswer(question) {
+          return getTextInputAcceptedAnswers(question)[0] || {
+            correctAnswer: question.correctAnswer || '',
+            validation: question.validation || {}
+          };
+        }
+
+        function isValidateLaterTextInputQuestion(question) {
+          const primaryAnswer = getPrimaryTextInputAnswer(question);
+          return (primaryAnswer.validation || {}).kind === 'validate-later';
+        }
+
+        function validateAcceptedTextInputAnswer(userAnswer, acceptedAnswer) {
+          const validation = acceptedAnswer.validation || {};
+          const options = validation.options || {};
+          
+          switch (validation.kind) {
+            case 'string':
+              return validateTextInputString(userAnswer, acceptedAnswer.correctAnswer, options);
+            case 'numeric':
+              return validateTextInputNumeric(userAnswer, acceptedAnswer.correctAnswer, options);
+            case 'numeric-with-units':
+              return validateTextInputNumericWithUnits(userAnswer, acceptedAnswer.correctAnswer, options);
+            case 'numeric-with-currency':
+              return validateTextInputNumericWithCurrency(userAnswer, acceptedAnswer.correctAnswer, options);
+            default:
+              return validateTextInputString(userAnswer, acceptedAnswer.correctAnswer, { caseSensitive: false });
+          }
+        }
+
+        function serializeTextInputAcceptedAnswer(acceptedAnswer) {
+          const validation = acceptedAnswer.validation || {};
+          let answerStr = acceptedAnswer.correctAnswer || '';
+
+          if (validation.kind) {
+            answerStr += `${answerStr ? ' ' : ''}[kind: ${validation.kind}]`;
+          }
+
+          if (validation.options && Object.keys(validation.options).length > 0) {
+            const optionsStr = Object.entries(validation.options)
+              .map(([key, value]) => Array.isArray(value) ? `${key}=${value.join(',')}` : `${key}=${value}`)
+              .join(',');
+            answerStr += `${answerStr ? ' ' : ''}[options: ${optionsStr}]`;
+          }
+
+          return answerStr;
+        }
+
+        function formatTextInputAcceptedAnswersForDisplay(question) {
+          const displayAnswers = getTextInputAcceptedAnswers(question)
+            .map(acceptedAnswer => {
+              if (acceptedAnswer.correctAnswer) {
+                return acceptedAnswer.correctAnswer;
+              }
+
+              const kind = (acceptedAnswer.validation || {}).kind;
+              return kind ? `[kind: ${kind}]` : '';
+            })
+            .filter(Boolean);
+
+          return displayAnswers.join('; ');
+        }
         
         function validateTextInputAnswer(question, userAnswer) {
-          const validation = question.validation || {};
-          
           // Skip validation for "validate-later" type - return null to exclude from scoring
-          if (validation.kind === 'validate-later') {
+          if (isValidateLaterTextInputQuestion(question)) {
             return null;
           }
           
           if (!userAnswer || !userAnswer.trim()) {
             return false;
           }
-          
-          const options = validation.options || {};
-          
-          switch (validation.kind) {
-            case 'string':
-              return validateTextInputString(userAnswer, question.correctAnswer, options);
-            case 'numeric':
-              return validateTextInputNumeric(userAnswer, question.correctAnswer, options);
-            case 'numeric-with-units':
-              return validateTextInputNumericWithUnits(userAnswer, question.correctAnswer, options);
-            case 'numeric-with-currency':
-              return validateTextInputNumericWithCurrency(userAnswer, question.correctAnswer, options);
-            default:
-              // Default to exact string match (case-insensitive)
-              return validateTextInputString(userAnswer, question.correctAnswer, { caseSensitive: false });
-          }
+
+          return getTextInputAcceptedAnswers(question).some(acceptedAnswer => {
+            if ((acceptedAnswer.validation || {}).kind === 'validate-later') {
+              return false;
+            }
+
+            return validateAcceptedTextInputAnswer(userAnswer, acceptedAnswer);
+          });
         }
         
         // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact string match
@@ -1442,7 +1533,7 @@ const server = http.createServer((req, res) => {
             const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
             if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
               const question = activity.textInput.questions[questionIndex];
-              return question.validation && question.validation.kind === 'validate-later';
+              return isValidateLaterTextInputQuestion(question);
             }
             return false;
           }).length;
@@ -1468,11 +1559,11 @@ const server = http.createServer((req, res) => {
           data.results.forEach((result, index) => {
             markdown += `${index + 1}. **${result.text}**\n`;
             markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
-            markdown += `   - Correct Answer: ${result.correct}\n`;
             // For MCQ, compare based on multi-select mode; for Text Input, use validation logic; for others, exact match
             let isCorrect = false;
             let isValidateLater = false;
             if (activity && /^multiple choice$/i.test(activity.type)) {
+              markdown += `   - Correct Answer: ${result.correct}\n`;
               const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
               if (activity.mcq && activity.mcq.questions && activity.mcq.questions[questionIndex]) {
                 const question = activity.mcq.questions[questionIndex];
@@ -1506,7 +1597,8 @@ const server = http.createServer((req, res) => {
               const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
               if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
                 const question = activity.textInput.questions[questionIndex];
-                isValidateLater = question.validation && question.validation.kind === 'validate-later';
+                markdown += `   - Correct Answer: ${formatTextInputAcceptedAnswersForDisplay(question) || result.correct}\n`;
+                isValidateLater = isValidateLaterTextInputQuestion(question);
                 if (isValidateLater) {
                   // Skip validation for validate-later questions
                 } else {
@@ -1515,9 +1607,11 @@ const server = http.createServer((req, res) => {
                 }
               } else {
                 // Fallback to simple string comparison if question not found
+                markdown += `   - Correct Answer: ${result.correct}\n`;
                 isCorrect = result.selected === result.correct;
               }
             } else {
+              markdown += `   - Correct Answer: ${result.correct}\n`;
               isCorrect = result.selected === result.correct;
             }
             
@@ -1574,23 +1668,9 @@ const server = http.createServer((req, res) => {
               activity.textInput.questions.forEach((q, qIdx) => {
                 markdown += `__Practice Question__\n\n${q.text}\n\n`;
                 markdown += `__Correct Answers__\n\n`;
-                // Build answer string with validation options
-                let answerStr = q.correctAnswer;
-                if (q.validation && q.validation.kind) {
-                  answerStr += ` [kind: ${q.validation.kind}]`;
-                  if (q.validation.options && Object.keys(q.validation.options).length > 0) {
-                    const optionsStr = Object.entries(q.validation.options)
-                      .map(([key, value]) => {
-                        if (Array.isArray(value)) {
-                          return `${key}=${value.join(',')}`;
-                        }
-                        return `${key}=${value}`;
-                      })
-                      .join(',');
-                    answerStr += ` [options: ${optionsStr}]`;
-                  }
-                }
-                markdown += `- ${answerStr}\n`;
+                getTextInputAcceptedAnswers(q).forEach(acceptedAnswer => {
+                  markdown += `- ${serializeTextInputAcceptedAnswer(acceptedAnswer)}\n`;
+                });
                 markdown += '\n';
               });
             }
@@ -1690,5 +1770,3 @@ wss.on('connection', (ws, req) => {
     clients.delete(ws);
   });
 });
-
-

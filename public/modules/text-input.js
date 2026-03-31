@@ -407,36 +407,74 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     // Use threshold to allow small differences
     return Math.abs(userValue - correctValue) <= threshold;
   }
+
+  function getAcceptedAnswers(question) {
+    if (Array.isArray(question.acceptedAnswers) && question.acceptedAnswers.length > 0) {
+      return question.acceptedAnswers;
+    }
+
+    return [{
+      correctAnswer: question.correctAnswer || '',
+      validation: question.validation || {}
+    }];
+  }
+
+  function getPrimaryAcceptedAnswer(question) {
+    return getAcceptedAnswers(question)[0] || {
+      correctAnswer: question.correctAnswer || '',
+      validation: question.validation || {}
+    };
+  }
+
+  function isValidateLaterQuestion(question) {
+    const primaryAnswer = getPrimaryAcceptedAnswer(question);
+    return (primaryAnswer.validation || {}).kind === 'validate-later';
+  }
+
+  function validateAcceptedAnswer(userAnswer, acceptedAnswer) {
+    const validation = acceptedAnswer.validation || {};
+    const options = validation.options || {};
+
+    switch (validation.kind) {
+      case 'string':
+        return validateString(userAnswer, acceptedAnswer.correctAnswer, options);
+      case 'numeric':
+        return validateNumeric(userAnswer, acceptedAnswer.correctAnswer, options);
+      case 'numeric-with-units':
+        return validateNumericWithUnits(userAnswer, acceptedAnswer.correctAnswer, options);
+      case 'numeric-with-currency':
+        return validateNumericWithCurrency(userAnswer, acceptedAnswer.correctAnswer, options);
+      default:
+        return validateString(userAnswer, acceptedAnswer.correctAnswer, { caseSensitive: false });
+    }
+  }
+
+  function formatAcceptedAnswersForDisplay(question) {
+    return getAcceptedAnswers(question)
+      .map(answer => answer.correctAnswer)
+      .filter(Boolean)
+      .join('; ');
+  }
   
   function validateAnswer(question) {
     const userAnswer = userAnswers[question.id] || '';
-    const correctAnswer = question.correctAnswer;
-    const validation = question.validation || {};
     
     // Skip validation for "validate-later" type
-    if (validation.kind === 'validate-later') {
+    if (isValidateLaterQuestion(question)) {
       return null;
     }
     
     if (!userAnswer.trim()) {
       return false;
     }
-    
-    const options = validation.options || {};
-    
-    switch (validation.kind) {
-      case 'string':
-        return validateString(userAnswer, correctAnswer, options);
-      case 'numeric':
-        return validateNumeric(userAnswer, correctAnswer, options);
-      case 'numeric-with-units':
-        return validateNumericWithUnits(userAnswer, correctAnswer, options);
-      case 'numeric-with-currency':
-        return validateNumericWithCurrency(userAnswer, correctAnswer, options);
-      default:
-        // Default to exact string match (case-insensitive)
-        return validateString(userAnswer, correctAnswer, { caseSensitive: false });
-    }
+
+    return getAcceptedAnswers(question).some(acceptedAnswer => {
+      if ((acceptedAnswer.validation || {}).kind === 'validate-later') {
+        return false;
+      }
+
+      return validateAcceptedAnswer(userAnswer, acceptedAnswer);
+    });
   }
   
   // Optional heading section (instructions for the questions)
@@ -774,7 +812,7 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     // Check each question and mark incorrect ones
     textInput.questions.forEach(q => {
       // Skip validation for "validate-later" type
-      if (q.validation && q.validation.kind === 'validate-later') {
+      if (isValidateLaterQuestion(q)) {
         return;
       }
       
@@ -797,13 +835,13 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     // Include all questions in results, including "validate-later"
     state.results = textInput.questions.map((q, idx) => {
       const userAnswer = userAnswers[q.id] || '';
-      const isValidateLater = q.validation && q.validation.kind === 'validate-later';
+      const isValidateLater = isValidateLaterQuestion(q);
       const isCorrect = isValidateLater ? null : validateAnswer(q);
       
       return {
         text: `Question ${idx + 1}`,
         selected: userAnswer,
-        correct: q.correctAnswer,
+        correct: formatAcceptedAnswersForDisplay(q) || q.correctAnswer,
         validateLater: isValidateLater
       };
     });
@@ -812,7 +850,7 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     state.index = Object.entries(userAnswers).filter(([questionId, answer]) => {
       const question = textInput.questions.find(q => q.id === parseInt(questionId, 10));
       return answer && answer.trim().length > 0 && 
-             !(question && question.validation && question.validation.kind === 'validate-later');
+             !(question && isValidateLaterQuestion(question));
     }).length;
     
     postResults();
@@ -890,4 +928,3 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     validate: validateAnswers
   };
 }
-
