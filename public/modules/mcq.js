@@ -169,22 +169,13 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
         clearValidation();
         updateSelection(question.id, option.label, input.checked);
         
-        // For radio questions, center the selected question and auto-scroll after a short delay
-        // Only do this if there are multiple questions AND explainAnswer is not enabled
-        // (If explainAnswer is enabled, user needs to type explanation, so don't auto-scroll)
+        // For radio questions, scroll to the next question (no "focus" / de-emphasis UI)
+        // Only if there are multiple questions AND explainAnswer is not enabled
         if (!question.isMultiSelect && input.checked && mcq.questions.length > 1 && !question.explainAnswer) {
-          const questionEl = elQuestions.querySelector(`[data-question-id="${question.id}"]`);
-          const questionIndex = parseInt(questionEl.getAttribute('data-question-index'), 10);
-          
-          // Center the currently selected question
-          centerQuestion(questionIndex);
-          
-          // Auto-scroll to next question after a brief delay (only if not last question)
-          const isLastQuestion = questionIndex === mcq.questions.length - 1;
-          if (!isLastQuestion) {
-            setTimeout(() => {
-              scrollToNextQuestion(questionIndex);
-            }, 300);
+          const qEl = elQuestions.querySelector(`[data-question-id="${question.id}"]`);
+          const questionIndex = parseInt(qEl.getAttribute('data-question-index'), 10);
+          if (questionIndex < mcq.questions.length - 1) {
+            scrollToNextQuestion(questionIndex);
           }
         }
       });
@@ -253,101 +244,13 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
   
   // Detect and style blockquotes that start with quotes
   detectQuoteBlockquotes(elMcq);
-  
-  function findCenteredQuestionIndex() {
-    const viewportCenter = window.innerHeight / 2 + window.scrollY;
-    let closestQuestionIndex = 0;
-    let minDistance = Infinity;
-    
-    for (let i = 0; i < elQuestions.children.length; i++) {
-      const questionEl = elQuestions.children[i];
-      const rect = questionEl.getBoundingClientRect();
-      const questionCenter = rect.top + rect.height / 2 + window.scrollY;
-      const distance = Math.abs(viewportCenter - questionCenter);
-      
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestQuestionIndex = i;
-      }
-    }
-    
-    return closestQuestionIndex;
-  }
-  
-  function updateQuestionOpacity(centeredQuestionIndex) {
-    for (let i = 0; i < elQuestions.children.length; i++) {
-      const questionEl = elQuestions.children[i];
-      if (i === centeredQuestionIndex) {
-        questionEl.classList.add('mcq-question-centered');
-      } else {
-        questionEl.classList.remove('mcq-question-centered');
-      }
-    }
-  }
-  
-  function updateDynamicPadding(centeredQuestionIndex) {
-    const viewportHeight = window.innerHeight;
-    
-    // Calculate padding based on position
-    const totalQuestions = mcq.questions.length;
-    const isFirstQuestion = centeredQuestionIndex === 0;
-    const isLastQuestion = centeredQuestionIndex === totalQuestions - 1;
-    
-    // Calculate how much padding is needed
-    let topPadding = 0;
-    let bottomPadding = 0;
-    
-    if (isFirstQuestion) {
-      // Need padding at top to center first question
-      const firstQuestionEl = elQuestions.children[0];
-      if (firstQuestionEl) {
-        const rect = firstQuestionEl.getBoundingClientRect();
-        const questionHeight = rect.height;
-        // Reduce padding slightly (multiply by 0.85) for better centering
-        const neededPadding = Math.max(0, (viewportHeight - questionHeight) / 2 * 0.85);
-        topPadding = neededPadding;
-      }
-    }
-    
-    if (isLastQuestion) {
-      // Need padding at bottom to center last question
-      const lastQuestionEl = elQuestions.children[totalQuestions - 1];
-      if (lastQuestionEl) {
-        const rect = lastQuestionEl.getBoundingClientRect();
-        const questionHeight = rect.height;
-        const neededPadding = Math.max(0, (viewportHeight - questionHeight) / 2);
-        bottomPadding = neededPadding;
-      }
-    }
-    
-    // Apply padding dynamically
-    elQuestions.style.paddingTop = `${topPadding}px`;
-    elQuestions.style.paddingBottom = `${bottomPadding}px`;
-  }
-  
-  function centerQuestion(questionIndex) {
-    const questionEl = elQuestions.children[questionIndex];
-    if (questionEl) {
-      updateDynamicPadding(questionIndex);
-      updateQuestionOpacity(questionIndex);
-      questionEl.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center',
-        inline: 'nearest'
-      });
-      // Update opacity and padding again after scroll animation completes
-      setTimeout(() => {
-        const centeredIndex = findCenteredQuestionIndex();
-        updateQuestionOpacity(centeredIndex);
-        updateDynamicPadding(centeredIndex);
-      }, 600);
-    }
-  }
-  
+
   function scrollToNextQuestion(currentQuestionIndex) {
     const nextQuestionIndex = currentQuestionIndex + 1;
-    if (nextQuestionIndex < mcq.questions.length) {
-      centerQuestion(nextQuestionIndex);
+    if (nextQuestionIndex >= mcq.questions.length) return;
+    const nextEl = elQuestions.children[nextQuestionIndex];
+    if (nextEl) {
+      nextEl.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
     }
   }
   
@@ -570,32 +473,9 @@ export function initMcq({ activity, state, postResults, persistedAnswers = null,
     enabled: true
   });
   
-  // Add scroll event listener to update opacity dynamically on manual scroll
-  let scrollTimeout;
-  function handleScroll() {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-      const centeredIndex = findCenteredQuestionIndex();
-      updateQuestionOpacity(centeredIndex);
-      updateDynamicPadding(centeredIndex);
-    }, 50); // Debounce scroll events
-  }
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  window.addEventListener('resize', handleScroll, { passive: true });
-  
-  // Initialize opacity and padding without scrolling on initial load
-  // Only update visual state, don't scroll - let page start at top
-  setTimeout(() => {
-    // Find the question that's currently centered (or first question if at top)
-    const centeredIndex = findCenteredQuestionIndex();
-    updateQuestionOpacity(centeredIndex);
-    updateDynamicPadding(centeredIndex);
-  }, 100);
-  
   return {
     cleanup: () => {
       toolbar.unregisterTool('mcq-clear-all');
-      window.removeEventListener('scroll', handleScroll);
       elContainer.innerHTML = '';
     },
     validate: validateAnswers

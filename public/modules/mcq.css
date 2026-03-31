@@ -26,19 +26,14 @@
 .mcq-questions {
   display: flex;
   flex-direction: column;
-  gap: 72px
-  /* Padding will be added dynamically via JavaScript */
+  gap: 72px;
 }
 
 .mcq-question {
   display: flex;
   flex-direction: column;
   gap: var(--UI-Spacing-spacing-mxl, 24px);
-  transition: border-color 0.2s ease, opacity 0.3s ease;
-}
-
-.mcq-question:not(.mcq-question-centered) {
-  opacity: 0.3;
+  transition: border-color 0.2s ease;
 }
 
 .mcq-question-incorrect {
