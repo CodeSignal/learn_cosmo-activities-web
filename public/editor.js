@@ -1,5 +1,26 @@
 import Dropdown from '/design-system/components/dropdown/dropdown.js';
 
+/** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string } | null} */
+function parseContentTextToStructure(contentText) {
+  if (!contentText || !String(contentText).trim()) return null;
+  const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
+  const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
+  const contentWithoutWidth = contentWidthMatch
+    ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '').trim()
+    : contentText;
+
+  if (/^https?:\/\//i.test(contentWithoutWidth)) {
+    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+    const url = contentWithoutWidth.replace(/\s+\[openInNewTab\]\s*$/im, '').trim();
+    const out = { type: 'url', value: url, openInNewTab: !!openInNewTab };
+    if (contentWidth) out.contentWidth = contentWidth;
+    return out;
+  }
+  const out = { type: 'markdown', value: contentWithoutWidth };
+  if (contentWidth) out.contentWidth = contentWidth;
+  return out;
+}
+
 // Parse markdown into editable structure
 function parseMarkdownToStructure(markdown) {
   const lines = markdown.split('\n');
@@ -109,25 +130,10 @@ function parseMarkdownToStructure(markdown) {
     }
   }
 
-  // Process content
   if (contentBuffer.length > 0) {
     const contentText = contentBuffer.join('\n').trim();
     if (contentText) {
-      const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
-      const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
-      const contentWithoutWidth = contentWidthMatch
-        ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '').trim()
-        : contentText;
-
-      if (/^https?:\/\//i.test(contentWithoutWidth)) {
-        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
-        const url = contentWithoutWidth.replace(/\s+\[openInNewTab\]\s*$/im, '').trim();
-        structure.content = { type: 'url', value: url, openInNewTab: !!openInNewTab };
-        if (contentWidth) structure.content.contentWidth = contentWidth;
-      } else {
-        structure.content = { type: 'markdown', value: contentWithoutWidth };
-        if (contentWidth) structure.content.contentWidth = contentWidth;
-      }
+      structure.content = parseContentTextToStructure(contentText);
     }
   }
 
@@ -659,7 +665,8 @@ function parseMcqMarkdownToStructure(markdown) {
   const lines = markdown.split('\n');
   const structure = {
     type: 'Multiple Choice',
-    questions: []
+    questions: [],
+    content: null
   };
 
   let currentSection = null;
@@ -668,6 +675,7 @@ function parseMcqMarkdownToStructure(markdown) {
   let answerBuffer = [];
   let explainAnswerBuffer = [];
   let questionOptionsBuffer = [];
+  let contentBuffer = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -675,6 +683,12 @@ function parseMcqMarkdownToStructure(markdown) {
 
     if (sectionMatch) {
       const sectionName = sectionMatch[1].trim();
+
+      if (currentSection === 'content' && contentBuffer.length > 0) {
+        const raw = contentBuffer.join('\n').trim();
+        if (raw) structure.content = parseContentTextToStructure(raw);
+        contentBuffer = [];
+      }
 
       // Handle section transitions and process previous section data
       if (sectionName === 'Type') {
@@ -799,6 +813,9 @@ function parseMcqMarkdownToStructure(markdown) {
         }
         currentSection = 'explain';
         explainAnswerBuffer = [];
+      } else if (sectionName === 'Content') {
+        currentSection = 'content';
+        contentBuffer = [];
       } else {
         currentSection = null;
       }
@@ -814,6 +831,8 @@ function parseMcqMarkdownToStructure(markdown) {
       explainAnswerBuffer.push(line);
     } else if (currentSection === 'questionOptions' && currentQuestion) {
       questionOptionsBuffer.push(line);
+    } else if (currentSection === 'content') {
+      contentBuffer.push(line);
     }
   }
 
@@ -876,6 +895,11 @@ function parseMcqMarkdownToStructure(markdown) {
     structure.questions.push(currentQuestion);
   }
 
+  if (contentBuffer.length > 0) {
+    const raw = contentBuffer.join('\n').trim();
+    if (raw) structure.content = parseContentTextToStructure(raw);
+  }
+
   return structure;
 }
 
@@ -918,6 +942,17 @@ function mcqStructureToMarkdown(structure) {
       markdown += `__Explain Your Answer__\n\ntrue\n\n`;
     }
   });
+
+  if (structure.content && structure.content.value) {
+    let contentValue = structure.content.value;
+    if (structure.content.type === 'url') {
+      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
+      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
+    } else {
+      if (structure.content.contentWidth) contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
+    }
+    markdown += `__Content__\n\n${contentValue}\n\n`;
+  }
 
   return markdown;
 }
@@ -1327,6 +1362,7 @@ async function initEditor() {
     if (markdown && markdown.trim()) {
       const parsed = parseMcqMarkdownToStructure(markdown);
       currentStructure.questions = parsed.questions;
+      currentStructure.content = parsed.content || null;
     }
 
     // Ensure at least one question exists
@@ -1346,11 +1382,8 @@ async function initEditor() {
       });
     }
 
-    // Hide content and heading sections for MCQ
-    document.getElementById('content-panel-title').style.display = 'none';
+    // Heading is text-input-only; side content panel is shared with Text Input
     document.getElementById('heading-title').style.display = 'none';
-    document.getElementById('content-type-dropdown').parentElement.style.display = 'none';
-    document.getElementById('content-input-group').style.display = 'none';
     document.getElementById('heading-input-group').style.display = 'none';
 
     // Render questions
@@ -1380,6 +1413,8 @@ async function initEditor() {
       questionsContainer.appendChild(renderMcqQuestion(newQuestion, index));
       updateStructure();
     };
+
+    wireContentEditorPanel();
 
   } else {
     // Text Input editor (existing code)
@@ -1421,8 +1456,29 @@ async function initEditor() {
       updateStructure();
     };
 
-    // Handle content type change (existing code)
+    wireContentEditorPanel();
+
+    // Wire up heading input
+    const headingInput = document.getElementById('heading-input');
+    headingInput.value = currentStructure.heading?.value || '';
+    headingInput.oninput = debounce(() => {
+      if (!currentStructure.heading) {
+        currentStructure.heading = { value: '' };
+      }
+      currentStructure.heading.value = headingInput.value;
+      updateStructure();
+    }, 300);
+  }
+}
+
+function wireContentEditorPanel() {
+    const contentPanelTitle = document.getElementById('content-panel-title');
+    if (contentPanelTitle) contentPanelTitle.style.display = '';
     const contentTypeDropdownContainer = document.getElementById('content-type-dropdown');
+    if (!contentTypeDropdownContainer) return;
+    if (contentTypeDropdownContainer.parentElement) {
+      contentTypeDropdownContainer.parentElement.style.display = '';
+    }
     contentTypeDropdownContainer.style.width = '240px';
     const contentInputGroup = document.getElementById('content-input-group');
     const contentInputContainer = document.getElementById('content-input-container');
@@ -1676,19 +1732,9 @@ async function initEditor() {
       if (handler) {
         handler(currentStructure.content.type);
       }
+    } else {
+      contentInputGroup.style.display = 'none';
     }
-
-    // Wire up heading input
-    const headingInput = document.getElementById('heading-input');
-    headingInput.value = currentStructure.heading?.value || '';
-    headingInput.oninput = debounce(() => {
-      if (!currentStructure.heading) {
-        currentStructure.heading = { value: '' };
-      }
-      currentStructure.heading.value = headingInput.value;
-      updateStructure();
-    }, 300);
-  }
 }
 
 // Initialize on load

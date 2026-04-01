@@ -1,0 +1,210 @@
+import toolbar from '../components/toolbar.js';
+import SplitPanel from '../design-system/components/split-panel/split-panel.js';
+
+const OPEN_URL_TOOL_ID = 'activity-content-open-url';
+
+/**
+ * When activity.content has url or markdown, builds split layout in container and returns
+ * the right panel as mainMount for module UI. Otherwise returns container unchanged.
+ */
+export function mountActivityContentShell({ container, content }) {
+  const hasUrl = !!(content && content.url);
+  const hasMarkdown = !!(content && content.markdown);
+  if (!hasUrl && !hasMarkdown) {
+    return { mainMount: container, cleanup: () => {} };
+  }
+
+  let splitPanel = null;
+  let blobUrl = null;
+  let cancelled = false;
+  let scrollPreventionCleanup = null;
+  let preventHorizontalScroll = null;
+
+  container.innerHTML = `
+    <div class="activity-with-side-content" data-activity-layout="split-content">
+      <div class="activity-content-split-root" id="activity-content-split-root"></div>
+    </div>
+  `;
+
+  const splitRoot = document.getElementById('activity-content-split-root');
+
+  const contentWidthRaw = content?.contentWidth;
+  let initialSplitPercent = 40;
+  let contentWidthPx = null;
+  if (contentWidthRaw) {
+    const match = String(contentWidthRaw).trim().match(/^(\d+(?:\.\d+)?)\s*(%|px)?$/i);
+    if (match) {
+      const value = parseFloat(match[1]);
+      const unit = (match[2] || '%').toLowerCase();
+      if (unit === '%') {
+        initialSplitPercent = Math.max(20, Math.min(80, value));
+      } else if (unit === 'px') {
+        contentWidthPx = value;
+      }
+    }
+  }
+
+  splitPanel = new SplitPanel(splitRoot, {
+    initialSplit: initialSplitPercent,
+    minLeft: 20,
+    minRight: 30,
+  });
+
+  if (contentWidthPx != null) {
+    const applyPxSplit = () => {
+      const rect = splitRoot.getBoundingClientRect();
+      if (rect.width > 0) {
+        const percent = Math.max(20, Math.min(80, (contentWidthPx / rect.width) * 100));
+        splitPanel.setSplit(percent, true);
+      }
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(applyPxSplit);
+    });
+  }
+
+  const leftPanel = splitPanel.getLeftPanel();
+  const rightPanel = splitPanel.getRightPanel();
+
+  const splitPanelContainerEl = splitPanel.container;
+  if (splitPanelContainerEl) {
+    splitPanelContainerEl.style.overflow = 'hidden';
+    splitPanelContainerEl.addEventListener('scroll', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      splitPanelContainerEl.scrollTop = 0;
+      splitPanelContainerEl.scrollLeft = 0;
+    }, { passive: false, capture: true });
+  }
+
+  leftPanel.className = 'activity-content-pane';
+  const iframe = document.createElement('iframe');
+  iframe.className = 'activity-content-iframe';
+  iframe.setAttribute('frameborder', '1');
+  leftPanel.appendChild(iframe);
+
+  rightPanel.className = 'activity-main-pane';
+  rightPanel.scrollLeft = 0;
+
+  preventHorizontalScroll = () => {
+    if (rightPanel.scrollLeft !== 0) {
+      rightPanel.scrollLeft = 0;
+    }
+  };
+  rightPanel.addEventListener('scroll', preventHorizontalScroll, { passive: false, capture: true });
+  rightPanel.addEventListener('scroll', preventHorizontalScroll, { passive: true });
+
+  const originalBodyStyle = {
+    overflow: document.body.style.overflow,
+    position: document.body.style.position,
+    height: document.body.style.height,
+    width: document.body.style.width,
+    top: document.body.style.top,
+    left: document.body.style.left
+  };
+  const originalHtmlStyle = {
+    overflow: document.documentElement.style.overflow,
+    height: document.documentElement.style.height
+  };
+  const mainEl = container.closest('.main');
+  const originalMainOverflow = mainEl?.style.overflow || '';
+  const originalActivityOverflow = container.style.overflow || '';
+
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.height = '100vh';
+  document.body.style.width = '100%';
+  document.body.style.top = '0';
+  document.body.style.left = '0';
+
+  document.documentElement.style.overflow = 'hidden';
+  document.documentElement.style.height = '100vh';
+
+  if (mainEl) {
+    mainEl.style.overflow = 'hidden';
+  }
+  container.style.overflow = 'hidden';
+
+  scrollPreventionCleanup = () => {
+    document.body.style.overflow = originalBodyStyle.overflow;
+    document.body.style.position = originalBodyStyle.position;
+    document.body.style.height = originalBodyStyle.height;
+    document.body.style.width = originalBodyStyle.width;
+    document.body.style.top = originalBodyStyle.top;
+    document.body.style.left = originalBodyStyle.left;
+
+    document.documentElement.style.overflow = originalHtmlStyle.overflow;
+    document.documentElement.style.height = originalHtmlStyle.height;
+
+    if (mainEl) {
+      mainEl.style.overflow = originalMainOverflow;
+    }
+    container.style.overflow = originalActivityOverflow;
+  };
+
+  const contentUrl = content.url;
+  const showOpenInNewTab = content.openInNewTab === true;
+  if (hasUrl && contentUrl && showOpenInNewTab) {
+    toolbar.registerTool(OPEN_URL_TOOL_ID, {
+      icon: 'icon-globe-bold',
+      title: 'Open content in new tab',
+      onClick: (e) => {
+        e.preventDefault();
+        window.open(contentUrl, '_blank', 'noopener,noreferrer');
+      },
+      enabled: true
+    });
+  }
+
+  if (hasUrl) {
+    iframe.src = contentUrl;
+  } else if (hasMarkdown) {
+    fetch('/api/content/markdown', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ markdown: content.markdown })
+    })
+      .then(res => res.text())
+      .then((html) => {
+        if (cancelled) return;
+        if (blobUrl) {
+          URL.revokeObjectURL(blobUrl);
+          blobUrl = null;
+        }
+        const blob = new Blob([html], { type: 'text/html' });
+        blobUrl = URL.createObjectURL(blob);
+        iframe.src = blobUrl;
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('Failed to render markdown content:', err);
+        }
+      });
+  }
+
+  const cleanup = () => {
+    cancelled = true;
+    if (hasUrl && contentUrl && showOpenInNewTab) {
+      toolbar.unregisterTool(OPEN_URL_TOOL_ID);
+    }
+    if (preventHorizontalScroll && rightPanel) {
+      rightPanel.removeEventListener('scroll', preventHorizontalScroll, true);
+      rightPanel.removeEventListener('scroll', preventHorizontalScroll, false);
+    }
+    if (blobUrl) {
+      URL.revokeObjectURL(blobUrl);
+      blobUrl = null;
+    }
+    if (splitPanel) {
+      splitPanel.destroy();
+      splitPanel = null;
+    }
+    if (scrollPreventionCleanup) {
+      scrollPreventionCleanup();
+      scrollPreventionCleanup = null;
+    }
+    container.innerHTML = '';
+  };
+
+  return { mainMount: rightPanel, cleanup };
+}

@@ -27,34 +27,11 @@
   scroll-padding-bottom: 2rem;
 }
 
-.text-input-with-content {
+.text-input.text-input--side-panel {
   max-width: 100%;
-  padding: 0;
-  gap: 0;
-  height: 100vh;
-  overflow: hidden;
   margin: 0;
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  /* Ensure container doesn't trigger document scroll */
-  contain: layout style paint;
-}
-
-.text-input-split-panel {
-  width: 100%;
-  height: 100%;
-}
-
-/* Prevent scrolling on split panel container and left panel */
-.text-input-split-panel .split-panel-container {
-  overflow: hidden !important;
-}
-
-.text-input-split-panel .split-panel-left {
-  overflow: hidden !important;
+  padding: 0;
+  padding-bottom: 0;
 }
 
 .text-input-heading {
@@ -72,14 +49,13 @@
   box-sizing: border-box;
 }
 
-/* Reduce padding for non-split-panel view to limit scrolling - 
-   allows last question to scroll to midpoint (50vh) instead of off-screen */
-.text-input:not(.text-input-with-content) .text-input-questions {
+/* Reduce padding for full-page view */
+.text-input:not(.text-input--side-panel) .text-input-questions {
   padding-bottom: 45vh;
 }
 
-/* When in split-panel mode, use same padding as non-split-panel to limit scrolling */
-.text-input-questions-wrapper .text-input-questions {
+/* Side content shell: main pane scroll area */
+.activity-main-pane .text-input-questions {
   padding-bottom: 45vh;
   max-width: 720px;
   margin: 0 auto;
@@ -237,60 +213,4 @@
 .text-input-next-button-container:empty {
   display: none;
 }
-
-/* Content and Splitter Styles */
-.text-input-content-wrapper {
-  height: 100%;
-  overflow: auto;
-  background-color: var(--Colors-Backgrounds-Main-Top, #ffffff);
-  position: relative;
-}
-
-.text-input-content-iframe {
-  width: 100%;
-  height: 100%;
-  border: 1px solid var(--Colors-Stroke-Lighter, rgba(0, 0, 0, 0.1));
-  display: block;
-}
-
-/* Disable pointer events on iframe during drag to prevent event loss */
-.split-panel-container.dragging .text-input-content-iframe {
-  pointer-events: none !important;
-}
-
-.text-input-questions-wrapper {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 1.5rem;
-  padding-bottom: 0;
-  position: relative;
-  scroll-padding-top: 2rem;
-  scroll-padding-bottom: 2rem;
-  /* Prevent horizontal scrolling */
-  scroll-behavior: smooth;
-  /* Ensure content doesn't cause horizontal overflow */
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-@media (prefers-color-scheme: dark) {
-  .text-input-content-wrapper {
-    background-color: var(--Colors-Backgrounds-Main-Top);
-    border-right-color: var(--Colors-Stroke-Lighter);
-  }
-  
-  .text-input-splitter {
-    background-color: var(--Colors-Stroke-Lighter);
-  }
-  
-  .text-input-splitter:hover,
-  .text-input-splitter:focus {
-    background-color: var(--Colors-Stroke-Default);
-  }
-}
-
 

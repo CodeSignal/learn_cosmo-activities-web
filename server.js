@@ -129,6 +129,39 @@ function escapeMathDollars(markdown) {
   return markdown.replace(/\\\$/g, '<span class="no-math">$</span>');
 }
 
+/**
+ * Parse __Content__ section tokens into { url } or { markdown } plus optional contentWidth, openInNewTab.
+ */
+function parseSideContentFromSectionTokens(sectionTokens) {
+  if (!sectionTokens || sectionTokens.length === 0) return null;
+  const contentText = sectionTokens.map(t => t.raw || t.text || '').join('\n').trim();
+  if (!contentText) return null;
+  const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
+  const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
+  const contentWithoutWidth = contentWidthMatch
+    ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '').trim()
+    : contentText;
+
+  if (/^https?:\/\//i.test(contentWithoutWidth)) {
+    const lines = contentWithoutWidth.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const firstLine = lines[0] || '';
+    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+    const url = firstLine.replace(/\s+\[openInNewTab\]\s*$/i, '').trim();
+    const out = { url, openInNewTab: !!openInNewTab };
+    if (contentWidth) out.contentWidth = contentWidth;
+    return out;
+  }
+  const out = { markdown: contentWithoutWidth };
+  if (contentWidth) out.contentWidth = contentWidth;
+  return out;
+}
+
+function attachSideContent(activity, sections) {
+  const side = parseSideContentFromSectionTokens(sections.get('Content') || []);
+  if (side) activity.content = side;
+  return activity;
+}
+
 function readListItems(sectionTokens) {
   const items = [];
   for (const t of sectionTokens || []) {
@@ -312,7 +345,10 @@ function buildActivityFromMarkdown(markdownText) {
     // Parse QuestionStyle (e.g. "boxed", "bordered") from __QuestionStyle__ section
     const questionStyleTokens = sections.get('QuestionStyle') || [];
     const questionStyle = ((questionStyleTokens.map(t => t.raw || t.text).join('\n') || '').trim()).toLowerCase() || null;
-    return { type, question, fib: { raw: fibMarkdown, prompt, promptHtml, content, htmlWithPlaceholders: contentHtml, blanks, choices, questionStyle: questionStyle || undefined } };
+    return attachSideContent(
+      { type, question, fib: { raw: fibMarkdown, prompt, promptHtml, content, htmlWithPlaceholders: contentHtml, blanks, choices, questionStyle: questionStyle || undefined } },
+      sections
+    );
   }
 
   if (/^multiple choice$/i.test(type)) {
@@ -568,7 +604,7 @@ function buildActivityFromMarkdown(markdownText) {
       throw new Error('No MCQ questions found');
     }
     
-    return { type, question: null, mcq: { questions } };
+    return attachSideContent({ type, question: null, mcq: { questions } }, sections);
   }
 
   if (/^matching$/i.test(type)) {
@@ -654,17 +690,17 @@ function buildActivityFromMarkdown(markdownText) {
     // Render markdown to HTML for prompt
     const promptHtml = prompt ? marked.parse(escapeMathDollars(prompt)) : '';
     
-    return { 
-      type, 
-      question: null, 
-      matching: { 
+    return attachSideContent({
+      type,
+      question: null,
+      matching: {
         raw: matchingMarkdown,
-        prompt, 
-        promptHtml, 
-        items, 
-        choices 
-      } 
-    };
+        prompt,
+        promptHtml,
+        items,
+        choices
+      }
+    }, sections);
   }
 
   if (/^text input$/i.test(type)) {
@@ -676,8 +712,6 @@ function buildActivityFromMarkdown(markdownText) {
     let currentSection = null;
     let questionBuffer = [];
     let answerBuffer = [];
-    let contentSection = null;
-    let contentBuffer = [];
     let headingBuffer = [];
     
     function processQuestion() {
@@ -853,11 +887,6 @@ function buildActivityFromMarkdown(markdownText) {
             currentSection = 'heading';
             headingBuffer = [];
             continue;
-          } else if (sectionName === 'Content') {
-            // Start content section
-            currentSection = 'content';
-            contentBuffer = [];
-            continue;
           }
         }
       }
@@ -866,8 +895,6 @@ function buildActivityFromMarkdown(markdownText) {
         questionBuffer.push(token);
       } else if (currentSection === 'answers' && currentQuestion) {
         answerBuffer.push(token);
-      } else if (currentSection === 'content') {
-        contentBuffer.push(token);
       } else if (currentSection === 'heading') {
         headingBuffer.push(token);
       }
@@ -882,34 +909,6 @@ function buildActivityFromMarkdown(markdownText) {
       throw new Error('No text input questions found');
     }
     
-    // Process content section if present
-    let content = null;
-    if (contentBuffer.length > 0) {
-      const contentText = contentBuffer.map(t => t.raw || t.text || '').join('\n').trim();
-      if (contentText) {
-        // Parse contentWidth option: [contentWidth: 20%] or [contentWidth: 280px]
-        const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
-        const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
-        const contentWithoutWidth = contentWidthMatch
-          ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '').trim()
-          : contentText;
-
-        // Check if it's a URL (starts with http:// or https://)
-        if (/^https?:\/\//i.test(contentWithoutWidth)) {
-          const lines = contentWithoutWidth.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-          const firstLine = lines[0] || '';
-          const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
-          const url = firstLine.replace(/\s+\[openInNewTab\]\s*$/i, '').trim();
-          content = { url, openInNewTab: !!openInNewTab };
-          if (contentWidth) content.contentWidth = contentWidth;
-        } else {
-          // Treat as markdown content
-          content = { markdown: contentWithoutWidth };
-          if (contentWidth) content.contentWidth = contentWidth;
-        }
-      }
-    }
-    
     // Process heading section if present
     let heading = null;
     if (headingBuffer.length > 0) {
@@ -919,7 +918,11 @@ function buildActivityFromMarkdown(markdownText) {
       }
     }
     
-    return { type, question: null, textInput: { questions, content, heading } };
+    const activity = { type, question: null, textInput: { questions, heading } };
+    attachSideContent(activity, sections);
+    const side = activity.content || null;
+    activity.textInput.content = side;
+    return activity;
   }
 
   const labels = readListItems(sections.get('Labels'));
@@ -941,7 +944,7 @@ function buildActivityFromMarkdown(markdownText) {
     let s = (markdownText.length || 1337) % 2147483647 || 1337;
     function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }
     for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
-    return { type, question, labels: { first, second }, items };
+    return attachSideContent({ type, question, labels: { first, second }, items }, sections);
   }
 
   // default swipe left/right
@@ -962,7 +965,7 @@ function buildActivityFromMarkdown(markdownText) {
   let s = (markdownText.length || 1337) % 2147483647 || 1337;
   function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }
   for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
-  return { type, question, labels: { left, right }, items };
+  return attachSideContent({ type, question, labels: { left, right }, items }, sections);
 }
 
 // Store active WebSocket connections

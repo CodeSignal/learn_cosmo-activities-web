@@ -1,0 +1,71 @@
+/* Side content (__Content__) split layout — used with activity-content-shell.js */
+
+.activity-with-side-content {
+  max-width: 100%;
+  padding: 0;
+  gap: 0;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  contain: layout style paint;
+}
+
+.activity-content-split-root {
+  width: 100%;
+  height: 100%;
+}
+
+.activity-content-split-root .split-panel-container {
+  overflow: hidden !important;
+}
+
+.activity-content-split-root .split-panel-left {
+  overflow: hidden !important;
+}
+
+.activity-content-pane {
+  height: 100%;
+  overflow: auto;
+  background-color: var(--Colors-Backgrounds-Main-Top, #ffffff);
+  position: relative;
+}
+
+.activity-content-iframe {
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--Colors-Stroke-Lighter, rgba(0, 0, 0, 0.1));
+  display: block;
+}
+
+.split-panel-container.dragging .activity-content-iframe {
+  pointer-events: none !important;
+}
+
+.activity-main-pane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem;
+  padding-bottom: 0;
+  position: relative;
+  scroll-padding-top: 2rem;
+  scroll-padding-bottom: 2rem;
+  scroll-behavior: smooth;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  .activity-content-pane {
+    background-color: var(--Colors-Backgrounds-Main-Top);
+    border-right-color: var(--Colors-Stroke-Lighter);
+  }
+}

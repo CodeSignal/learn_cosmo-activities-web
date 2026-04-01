@@ -2,8 +2,14 @@ import toolbar from '../components/toolbar.js';
 import { detectQuoteBlockquotes } from '../design-system/typography/typography.js';
 import { renderMath } from '../utils/katex-render.js';
 
-export function initMcq({ activity, state, postResults, persistedAnswers = null, persistedExplanations = null }) {
-  const elContainer = document.getElementById('activity-container');
+export function initMcq({
+  activity,
+  state,
+  postResults,
+  persistedAnswers = null,
+  persistedExplanations = null,
+  elContainer = document.getElementById('activity-container')
+}) {
   const mcq = activity.mcq;
   
   if (!mcq || !mcq.questions || mcq.questions.length === 0) {

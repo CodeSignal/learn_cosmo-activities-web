@@ -1,5 +1,11 @@
-export function initSwipe({ items, labels, question, state, postResults }) {
-  const elContainer = document.getElementById('activity-container');
+export function initSwipe({
+  items,
+  labels,
+  question,
+  state,
+  postResults,
+  elContainer = document.getElementById('activity-container')
+}) {
   const leftLabelText = labels.left || 'Left';
   const rightLabelText = labels.right || 'Right';
   

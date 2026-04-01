@@ -1,8 +1,13 @@
 import toolbar from '../components/toolbar.js';
 import { renderMath } from '../utils/katex-render.js';
 
-export function initFib({ activity, state, postResults, persistedAnswers = null }) {
-  const elContainer = document.getElementById('activity-container');
+export function initFib({
+  activity,
+  state,
+  postResults,
+  persistedAnswers = null,
+  elContainer = document.getElementById('activity-container')
+}) {
   const fib = activity.fib;
   
   // Create the fib container

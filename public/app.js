@@ -5,6 +5,7 @@ import { initMcq } from './modules/mcq.js';
 import { initMatching } from './modules/matching.js';
 import { initTextInput } from './modules/text-input.js';
 import toolbar from './components/toolbar.js';
+import { mountActivityContentShell } from './utils/activity-content-shell.js';
 
 (() => {
   'use strict';
@@ -19,6 +20,7 @@ import toolbar from './components/toolbar.js';
 
   let currentActivity = null;
   let currentActivityData = null;
+  let contentShellCleanup = null;
   let socket = null;
   let validationHandler = null;
 
@@ -47,8 +49,6 @@ import toolbar from './components/toolbar.js';
     state.index = 0;
     state.results = [];
     validationHandler = null;
-    // Clear toolbar when resetting
-    toolbar.clear();
     if (currentActivity) {
       if (typeof currentActivity === 'function') {
         currentActivity(); // Old cleanup function style
@@ -57,7 +57,11 @@ import toolbar from './components/toolbar.js';
       }
       currentActivity = null;
     }
-
+    if (contentShellCleanup) {
+      contentShellCleanup();
+      contentShellCleanup = null;
+    }
+    toolbar.clear();
   }
 
   async function loadActivityJson() {
@@ -212,53 +216,70 @@ import toolbar from './components/toolbar.js';
   }
 
   function initActivity(activity, persistedAnswers = null, persistedExplanations = null) {
+    const activityContainer = document.getElementById('activity-container');
+    const sideContent = activity.content;
+    const hasSideContent = sideContent && (sideContent.url || sideContent.markdown);
+    let elContainer = activityContainer;
+    if (hasSideContent) {
+      const shell = mountActivityContentShell({ container: activityContainer, content: sideContent });
+      contentShellCleanup = shell.cleanup;
+      elContainer = shell.mainMount;
+    } else {
+      contentShellCleanup = null;
+    }
+
     if (/^fill in the blanks$/i.test(activity.type)) {
-      currentActivity = initFib({ activity, state, postResults, persistedAnswers });
+      currentActivity = initFib({ activity, state, postResults, persistedAnswers, elContainer });
     } else if (/^sort into boxes$/i.test(activity.type)) {
-      currentActivity = initSort({ 
-        items: state.items, 
+      currentActivity = initSort({
+        items: state.items,
         labels: activity.labels,
         question: activity.question,
-        state, 
-        postResults 
+        state,
+        postResults,
+        elContainer
       });
     } else if (/^multiple choice$/i.test(activity.type)) {
-      currentActivity = initMcq({ 
-        activity, 
-        state, 
+      currentActivity = initMcq({
+        activity,
+        state,
         postResults,
         persistedAnswers,
-        persistedExplanations
+        persistedExplanations,
+        elContainer
       });
       // Store validation function reference
       if (currentActivity && typeof currentActivity.validate === 'function') {
         validationHandler = currentActivity.validate;
       }
     } else if (/^matching$/i.test(activity.type)) {
-      currentActivity = initMatching({ 
-        activity, 
-        state, 
+      currentActivity = initMatching({
+        activity,
+        state,
         postResults,
-        persistedAnswers
+        persistedAnswers,
+        elContainer
       });
     } else if (/^text input$/i.test(activity.type)) {
-      currentActivity = initTextInput({ 
-        activity, 
-        state, 
+      currentActivity = initTextInput({
+        activity,
+        state,
         postResults,
-        persistedAnswers
+        persistedAnswers,
+        elContainer
       });
       // Store validation function reference
       if (currentActivity && typeof currentActivity.validate === 'function') {
         validationHandler = currentActivity.validate;
       }
     } else {
-      currentActivity = initSwipe({ 
-        items: state.items, 
+      currentActivity = initSwipe({
+        items: state.items,
         labels: activity.labels || { left: 'Left', right: 'Right' },
         question: activity.question,
-        state, 
-        postResults 
+        state,
+        postResults,
+        elContainer
       });
     }
   }
@@ -343,10 +364,10 @@ import toolbar from './components/toolbar.js';
 
     function checkScrollPosition() {
       // Don't show indicator for activities that handle their own scrolling
-      const hasTextInputWithContent = document.querySelector('.text-input-with-content');
+      const hasSideContentLayout = document.querySelector('.activity-with-side-content');
       const hasMatching = document.querySelector('.matching');
       
-      if (hasTextInputWithContent || hasMatching) {
+      if (hasSideContentLayout || hasMatching) {
         scrollIndicator.classList.remove('visible');
         return;
       }

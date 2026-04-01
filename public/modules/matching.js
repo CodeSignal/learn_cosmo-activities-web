@@ -2,8 +2,13 @@ import HorizontalCards from '../design-system/components/horizontal-cards/horizo
 import { renderMath } from '../utils/katex-render.js';
 import toolbar from '../components/toolbar.js';
 
-export function initMatching({ activity, state, postResults, persistedAnswers = null }) {
-  const elContainer = document.getElementById('activity-container');
+export function initMatching({
+  activity,
+  state,
+  postResults,
+  persistedAnswers = null,
+  elContainer = document.getElementById('activity-container')
+}) {
   const matching = activity.matching;
   
   if (!matching || !matching.items || matching.items.length === 0) {

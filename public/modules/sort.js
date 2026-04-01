@@ -1,5 +1,11 @@
-export function initSort({ items, labels, question, state, postResults }) {
-  const elContainer = document.getElementById('activity-container');
+export function initSort({
+  items,
+  labels,
+  question,
+  state,
+  postResults,
+  elContainer = document.getElementById('activity-container')
+}) {
   
   // Use design system typography and spacing
   // Render a minimal placeholder view

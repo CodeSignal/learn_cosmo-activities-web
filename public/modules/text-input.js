@@ -1,217 +1,33 @@
 import toolbar from '../components/toolbar.js';
-import SplitPanel from '../design-system/components/split-panel/split-panel.js';
 import { renderMath } from '../utils/katex-render.js';
 
-export function initTextInput({ activity, state, postResults, persistedAnswers = null }) {
-  const elContainer = document.getElementById('activity-container');
+export function initTextInput({
+  activity,
+  state,
+  postResults,
+  persistedAnswers = null,
+  elContainer = document.getElementById('activity-container')
+}) {
   const textInput = activity.textInput;
-  
+
   if (!textInput || !textInput.questions || textInput.questions.length === 0) {
     elContainer.innerHTML = '<div class="error">No text input questions found</div>';
     return () => {
       elContainer.innerHTML = '';
     };
   }
-  
-  // Check if content is provided
-  const hasContent = textInput.content && (textInput.content.url || textInput.content.markdown);
-  
-  // Store split panel reference for cleanup
-  let splitPanel = null;
-  
-  // Create the text input container
-  if (hasContent) {
-    elContainer.innerHTML = `
-      <div id="text-input" class="text-input text-input-with-content">
-        <div id="text-input-split-panel" class="text-input-split-panel"></div>
-      </div>
-    `;
-    
-    // Parse contentWidth for initial split (e.g. "20%", "280px")
-    const contentWidthRaw = textInput.content?.contentWidth;
-    let initialSplitPercent = 40;
-    let contentWidthPx = null;
-    if (contentWidthRaw) {
-      const match = String(contentWidthRaw).trim().match(/^(\d+(?:\.\d+)?)\s*(%|px)?$/i);
-      if (match) {
-        const value = parseFloat(match[1]);
-        const unit = (match[2] || '%').toLowerCase();
-        if (unit === '%') {
-          initialSplitPercent = Math.max(20, Math.min(80, value));
-        } else if (unit === 'px') {
-          contentWidthPx = value;
-        }
-      }
-    }
 
-    // Initialize split panel
-    const splitPanelContainer = document.getElementById('text-input-split-panel');
-    splitPanel = new SplitPanel(splitPanelContainer, {
-      initialSplit: initialSplitPercent,
-      minLeft: 20,
-      minRight: 30,
-    });
+  const inSidePanel = elContainer.classList.contains('activity-main-pane');
+  const sidePanelClass = inSidePanel ? ' text-input--side-panel' : '';
 
-    // If contentWidth was in pixels, set split after layout
-    if (contentWidthPx != null) {
-      const applyPxSplit = () => {
-        const rect = splitPanelContainer.getBoundingClientRect();
-        if (rect.width > 0) {
-          const percent = Math.max(20, Math.min(80, (contentWidthPx / rect.width) * 100));
-          splitPanel.setSplit(percent, true);
-        }
-      };
-      requestAnimationFrame(() => {
-        requestAnimationFrame(applyPxSplit);
-      });
-    }
-    
-    // Get panel references
-    const leftPanel = splitPanel.getLeftPanel();
-    const rightPanel = splitPanel.getRightPanel();
-    
-    // Prevent scrolling on split panel container itself
-    // This prevents scrollIntoView from scrolling the container
-    // The panels themselves will handle their own scrolling via their content wrappers
-    const splitPanelContainerEl = splitPanel.container;
-    if (splitPanelContainerEl) {
-      splitPanelContainerEl.style.overflow = 'hidden';
-      // Also prevent any scroll events on the container
-      splitPanelContainerEl.addEventListener('scroll', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        splitPanelContainerEl.scrollTop = 0;
-        splitPanelContainerEl.scrollLeft = 0;
-      }, { passive: false, capture: true });
-    }
-    
-    // Set up left panel (content)
-    // Note: leftPanel will get className 'text-input-content-wrapper' which has overflow: auto
-    // This allows the iframe content to scroll, but prevents split-panel-left from being scrollable
-    leftPanel.className = 'text-input-content-wrapper';
-    leftPanel.innerHTML = '<iframe id="text-input-content-iframe" class="text-input-content-iframe" frameborder="1"></iframe>';
-    
-    // Set up right panel (questions)
-    rightPanel.className = 'text-input-questions-wrapper';
-    rightPanel.innerHTML = `
+  elContainer.innerHTML = `
+    <div id="text-input" class="text-input${sidePanelClass}">
       <div id="text-input-questions" class="text-input-questions"></div>
-    `;
-    
-    // Prevent horizontal scrolling on the questions wrapper
-    const questionsWrapperEl = document.getElementById('text-input-questions-wrapper');
-    if (questionsWrapperEl) {
-      // Prevent horizontal scrolling aggressively
-      const preventHorizontalScroll = () => {
-        if (questionsWrapperEl.scrollLeft !== 0) {
-          questionsWrapperEl.scrollLeft = 0;
-        }
-      };
-      
-      // Listen to scroll events and reset horizontal scroll immediately
-      questionsWrapperEl.addEventListener('scroll', preventHorizontalScroll, { passive: false, capture: true });
-      
-      // Also reset on any scroll event (non-capture as backup)
-      questionsWrapperEl.addEventListener('scroll', preventHorizontalScroll, { passive: true });
-      
-      // Set initial scrollLeft to 0
-      questionsWrapperEl.scrollLeft = 0;
-    }
-  } else {
-    elContainer.innerHTML = `
-      <div id="text-input" class="text-input">
-        <div id="text-input-questions" class="text-input-questions"></div>
-      </div>
-    `;
-  }
-  
-  const elTextInput = document.getElementById('text-input');
+    </div>
+  `;
+
   const elQuestions = document.getElementById('text-input-questions');
-  
-  // Prevent document-level scrolling when in split panel mode
-  // This prevents the container from being pushed up when tabbing
-  // The key is to make body/html fixed and exactly 100vh so there's nothing to scroll
-  let scrollPreventionCleanup = null;
-  if (hasContent) {
-    // Store original styles
-    const originalBodyStyle = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      height: document.body.style.height,
-      width: document.body.style.width,
-      top: document.body.style.top,
-      left: document.body.style.left
-    };
-    const originalHtmlStyle = {
-      overflow: document.documentElement.style.overflow,
-      height: document.documentElement.style.height
-    };
-    const mainEl = elContainer.closest('.main');
-    const originalMainOverflow = mainEl?.style.overflow || '';
-    const originalActivityOverflow = elContainer.style.overflow || '';
-    
-    // Make body/html fixed and exactly 100vh - this prevents ANY document scrolling
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.height = '100vh';
-    document.body.style.width = '100%';
-    document.body.style.top = '0';
-    document.body.style.left = '0';
-    
-    document.documentElement.style.overflow = 'hidden';
-    document.documentElement.style.height = '100vh';
-    
-    if (mainEl) {
-      mainEl.style.overflow = 'hidden';
-    }
-    elContainer.style.overflow = 'hidden';
-    
-    // Store cleanup function
-    scrollPreventionCleanup = () => {
-      // Restore original styles
-      document.body.style.overflow = originalBodyStyle.overflow;
-      document.body.style.position = originalBodyStyle.position;
-      document.body.style.height = originalBodyStyle.height;
-      document.body.style.width = originalBodyStyle.width;
-      document.body.style.top = originalBodyStyle.top;
-      document.body.style.left = originalBodyStyle.left;
-      
-      document.documentElement.style.overflow = originalHtmlStyle.overflow;
-      document.documentElement.style.height = originalHtmlStyle.height;
-      
-      if (mainEl) {
-        mainEl.style.overflow = originalMainOverflow;
-      }
-      elContainer.style.overflow = originalActivityOverflow;
-    };
-  }
-  
-  // Initialize content iframe if content is provided
-  if (hasContent) {
-    const elContentIframe = document.getElementById('text-input-content-iframe');
-    const elQuestionsWrapper = document.getElementById('text-input-questions-wrapper');
-    
-    // Load content into iframe
-    if (textInput.content.url) {
-      elContentIframe.src = textInput.content.url;
-    } else if (textInput.content.markdown) {
-      // Render markdown content via API
-      fetch('/api/content/markdown', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markdown: textInput.content.markdown })
-      })
-      .then(res => res.text())
-      .then(html => {
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        elContentIframe.src = url;
-      })
-      .catch(err => {
-        console.error('Failed to render markdown content:', err);
-      });
-    }
-  }
-  
+
   // Track user answers per question
   const userAnswers = {};
   
@@ -541,18 +357,17 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     input.setAttribute('aria-label', `Answer for question ${qIdx + 1}`);
     input.placeholder = 'Enter your answer...';
     
-    // Handle scrolling within the wrapper when in split panel mode
-    // Document scrolling is prevented by making body fixed, so we only need to handle wrapper scrolling
-    if (hasContent) {
-      const questionsWrapper = document.getElementById('text-input-questions-wrapper');
-      
-      // Helper function to scroll input into view within the wrapper
+    // Handle scrolling within the main pane when side content shell is active
+    if (inSidePanel) {
+      const scrollHost = elContainer;
+
+      // Helper function to scroll input into view within the scroll host
       const scrollInputIntoView = (inputElement, behavior = 'smooth') => {
-        if (!questionsWrapper) return;
-        
+        if (!scrollHost) return;
+
         // Get bounding rects
         const inputRect = inputElement.getBoundingClientRect();
-        const wrapperRect = questionsWrapper.getBoundingClientRect();
+        const wrapperRect = scrollHost.getBoundingClientRect();
         
         // Check if this is the last question
         const isLastQuestion = qIdx === textInput.questions.length - 1;
@@ -561,11 +376,11 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
         const scrollPadding = 2 * 16;
         
         // Get maximum scroll position
-        const maxScrollTop = questionsWrapper.scrollHeight - questionsWrapper.clientHeight;
+        const maxScrollTop = scrollHost.scrollHeight - scrollHost.clientHeight;
         
         // Use getBoundingClientRect calculation - more reliable than offsetTop
         const distanceFromWrapperTop = inputRect.top - wrapperRect.top;
-        const currentScrollTop = questionsWrapper.scrollTop;
+        const currentScrollTop = scrollHost.scrollTop;
         const inputPositionInScrollContent = currentScrollTop + distanceFromWrapperTop;
         
         let targetScrollTop;
@@ -573,7 +388,7 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
         // For the last question, always ensure it's visible
         if (isLastQuestion) {
           // For the last question, scroll to show it fully
-          const wrapperHeight = questionsWrapper.clientHeight;
+          const wrapperHeight = scrollHost.clientHeight;
           const inputHeight = inputRect.height;
           const inputBottomInContent = inputPositionInScrollContent + inputHeight;
           
@@ -612,18 +427,18 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
         }
         
         // Ensure no horizontal scroll before scrolling
-        questionsWrapper.scrollLeft = 0;
-        
+        scrollHost.scrollLeft = 0;
+
         // Perform the scroll
-        questionsWrapper.scrollTo({
+        scrollHost.scrollTo({
           top: targetScrollTop,
           behavior: behavior,
           left: 0  // Ensure no horizontal scroll
         });
-        
+
         // Ensure no horizontal scroll after scrolling (in case scrollTo doesn't work)
         requestAnimationFrame(() => {
-          questionsWrapper.scrollLeft = 0;
+          scrollHost.scrollLeft = 0;
         });
       };
       
@@ -633,22 +448,22 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
       // Override scrollIntoView to scroll within the wrapper instead of document
       const originalScrollIntoView = input.scrollIntoView.bind(input);
       input.scrollIntoView = function(options) {
-        if (questionsWrapper) {
+        if (scrollHost) {
           // Prevent default browser scrolling and horizontal scroll
-          questionsWrapper.scrollLeft = 0;
+          scrollHost.scrollLeft = 0;
           scrollInputIntoView(this, options?.behavior || 'smooth');
           // Don't call original - document is fixed so it can't scroll anyway
           return;
         }
         originalScrollIntoView(options);
       };
-      
+
       // Add focus handler to handle wrapper scrolling
       input.addEventListener('focus', (e) => {
         // For the last question, always scroll to ensure it's visible
         // Use multiple delays to ensure layout is complete
         const scrollToInput = () => {
-          if (questionsWrapper) {
+          if (scrollHost) {
             scrollInputIntoView(e.target, 'auto');
           }
         };
@@ -847,40 +662,12 @@ export function initTextInput({ activity, state, postResults, persistedAnswers =
     enabled: true
   });
 
-  // Register "Open in new tab" tool when URL-based content opts in via [openInNewTab]
-  const contentUrl = textInput.content?.url;
-  const showOpenInNewTab = textInput.content?.openInNewTab === true;
-  if (hasContent && contentUrl && showOpenInNewTab) {
-    toolbar.registerTool('text-input-open-url', {
-      icon: 'icon-globe-bold',
-      title: 'Open content in new tab',
-      onClick: (e) => {
-        e.preventDefault();
-        window.open(contentUrl, '_blank', 'noopener,noreferrer');
-      },
-      enabled: true
-    });
-  }
-  
   // Add static top padding to position first question near the top
   elQuestions.style.paddingTop = '2rem';
   
   return {
     cleanup: () => {
-      if (hasContent && contentUrl && showOpenInNewTab) {
-        toolbar.unregisterTool('text-input-open-url');
-      }
       toolbar.unregisterTool('text-input-clear-all');
-      if (splitPanel) {
-        splitPanel.destroy();
-        splitPanel = null;
-      }
-      if (hasContent) {
-        // Restore document scrolling
-        if (scrollPreventionCleanup) {
-          scrollPreventionCleanup();
-        }
-      }
       elContainer.innerHTML = '';
     },
     validate: validateAnswers

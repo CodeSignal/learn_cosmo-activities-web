@@ -19,8 +19,8 @@ body {
   background: var(--Colors-Backgrounds-Main-Default);
 }
 
-/* Prevent document scrolling when text-input-with-content is present */
-body:has(.text-input-with-content) {
+/* Prevent document scrolling when side content split is present */
+body:has(.activity-with-side-content) {
   height: 100vh;
   overflow: hidden;
   position: fixed;
@@ -29,7 +29,7 @@ body:has(.text-input-with-content) {
   left: 0;
 }
 
-html:has(.text-input-with-content) {
+html:has(.activity-with-side-content) {
   height: 100vh;
   overflow: hidden;
 }
@@ -56,7 +56,7 @@ body:has(.matching) {
   padding-right: 0;
 }
 
-.main:has(.text-input-with-content) {
+.main:has(.activity-with-side-content) {
   max-width: none;
   padding: 0;
   justify-content: flex-start;
@@ -72,7 +72,7 @@ body:has(.matching) {
   min-height: 400px;;
 }
 
-.activity-container:has(.text-input-with-content) {
+.activity-container:has(.activity-with-side-content) {
   place-items: start;
   width: 100%;
   height: 100vh;
@@ -204,7 +204,7 @@ blockquote + p,  blockquote + h1, blockquote + h2, blockquote + h3, blockquote +
 }
 
 /* Hide scroll indicator for activities that don't scroll */
-body:has(.text-input-with-content) .scroll-indicator,
+body:has(.activity-with-side-content) .scroll-indicator,
 body:has(.matching) .scroll-indicator {
   display: none;
 }
