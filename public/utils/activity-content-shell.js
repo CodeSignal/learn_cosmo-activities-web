@@ -3,6 +3,35 @@ import SplitPanel from '../design-system/components/split-panel/split-panel.js';
 
 const OPEN_URL_TOOL_ID = 'activity-content-open-url';
 
+/** Persisted left-panel width as a percentage (matches SplitPanel minLeft/minRight below). */
+const SPLIT_STORAGE_KEY = 'activity-content-split-left-percent';
+
+function clampSplitPercent(percent, minLeft = 20, minRight = 30) {
+  const max = 100 - minRight;
+  return Math.max(minLeft, Math.min(max, percent));
+}
+
+function readStoredSplitPercent(minLeft, minRight) {
+  try {
+    const raw = localStorage.getItem(SPLIT_STORAGE_KEY);
+    if (raw == null || raw === '') return null;
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n)) return null;
+    return clampSplitPercent(n, minLeft, minRight);
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSplitPercent(percent, minLeft, minRight) {
+  try {
+    const clamped = clampSplitPercent(percent, minLeft, minRight);
+    localStorage.setItem(SPLIT_STORAGE_KEY, String(clamped));
+  } catch {
+    /* quota / private mode */
+  }
+}
+
 /**
  * When activity.content has url or markdown, builds split layout in container and returns
  * the right panel as mainMount for module UI. Otherwise returns container unchanged.
@@ -28,6 +57,9 @@ export function mountActivityContentShell({ container, content }) {
 
   const splitRoot = document.getElementById('activity-content-split-root');
 
+  const minLeft = 20;
+  const minRight = 30;
+
   const contentWidthRaw = content?.contentWidth;
   let initialSplitPercent = 40;
   let contentWidthPx = null;
@@ -37,17 +69,25 @@ export function mountActivityContentShell({ container, content }) {
       const value = parseFloat(match[1]);
       const unit = (match[2] || '%').toLowerCase();
       if (unit === '%') {
-        initialSplitPercent = Math.max(20, Math.min(80, value));
+        initialSplitPercent = clampSplitPercent(value, minLeft, minRight);
       } else if (unit === 'px') {
         contentWidthPx = value;
       }
     }
   }
 
+  const storedSplit = readStoredSplitPercent(minLeft, minRight);
+  if (storedSplit !== null && contentWidthPx == null) {
+    initialSplitPercent = storedSplit;
+  }
+
   splitPanel = new SplitPanel(splitRoot, {
     initialSplit: initialSplitPercent,
-    minLeft: 20,
-    minRight: 30,
+    minLeft,
+    minRight,
+    onChange: (percent) => {
+      writeStoredSplitPercent(percent, minLeft, minRight);
+    }
   });
 
   if (contentWidthPx != null) {
