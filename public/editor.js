@@ -312,11 +312,48 @@ async function loadMarkdown() {
       throw new Error('Failed to load');
     }
     const data = await response.json();
-    return { markdown: data.markdown || '', questionType: data.questionType };
+    const qt = data.questionType;
+    const questionType =
+      qt != null && String(qt).trim() ? String(qt).trim() : null;
+    return { markdown: data.markdown || '', questionType };
   } catch (error) {
     console.error('Error loading markdown:', error);
     return { markdown: '', questionType: null };
   }
+}
+
+/** @returns {Promise<string>} */
+function promptForQuestionType() {
+  return new Promise((resolve) => {
+    const screen = document.getElementById('type-picker-screen');
+    const dropdownContainer = document.getElementById('type-picker-dropdown');
+    const continueBtn = document.getElementById('type-picker-continue');
+    if (!screen || !dropdownContainer || !continueBtn) {
+      resolve('Text Input');
+      return;
+    }
+
+    let selected = 'Text Input';
+    dropdownContainer.innerHTML = '';
+    new Dropdown(dropdownContainer, {
+      items: [
+        { value: 'Text Input', label: 'Text Input' },
+        { value: 'Multiple Choice', label: 'Multiple Choice' }
+      ],
+      selectedValue: 'Text Input',
+      growToFit: false,
+      onSelect: (value) => {
+        selected = value;
+      }
+    });
+
+    function onContinue() {
+      continueBtn.removeEventListener('click', onContinue);
+      resolve(selected);
+    }
+
+    continueBtn.addEventListener('click', onContinue);
+  });
 }
 
 // Render question item
@@ -646,6 +683,48 @@ const debouncedSave = debounce((markdown) => {
 
 // Track if we're in MCQ mode
 let isMcqMode = false;
+
+/** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string } | null} */
+function cloneSideContent(content) {
+  if (!content) return null;
+  return {
+    type: content.type,
+    value: content.value ?? '',
+    openInNewTab: !!content.openInNewTab,
+    contentWidth: content.contentWidth
+  };
+}
+
+function hasDefinedSideContent(content) {
+  return !!(content && String(content.value || '').trim());
+}
+
+function createDefaultMcqQuestion() {
+  return {
+    text: '',
+    options: [
+      { label: 'A', text: '', correct: false },
+      { label: 'B', text: '', correct: false },
+      { label: 'C', text: '', correct: false },
+      { label: 'D', text: '', correct: false }
+    ],
+    isMultiSelect: false,
+    explainAnswer: false,
+    shuffleOptions: true,
+    multiSelectMode: 'all'
+  };
+}
+
+function createDefaultTextQuestion() {
+  return {
+    text: '',
+    correctAnswer: '',
+    validation: { kind: 'string', options: {} }
+  };
+}
+
+let questionTypeDropdownInstance = null;
+let suppressQuestionTypeSelect = false;
 
 function updateStructure() {
   let markdown;
@@ -1345,122 +1424,44 @@ function renderMcqQuestion(question, index) {
   return container;
 }
 
-// Initialize editor
-async function initEditor() {
-  const { markdown, questionType } = await loadMarkdown();
-  
-  // Set type from server
-  if (questionType) {
-    currentStructure.type = questionType;
-  }
-  
-  // Check if this is MCQ or Text Input
-  isMcqMode = questionType && /^multiple choice$/i.test(questionType);
-  
+function hydrateStructureFromMarkdown(markdown) {
+  if (!markdown || !markdown.trim()) return;
   if (isMcqMode) {
-    // MCQ editor
-    if (markdown && markdown.trim()) {
-      const parsed = parseMcqMarkdownToStructure(markdown);
-      currentStructure.questions = parsed.questions;
-      currentStructure.content = parsed.content || null;
-    }
-
-    // Ensure at least one question exists
-    if (currentStructure.questions.length === 0) {
-      currentStructure.questions.push({
-        text: '',
-        options: [
-          { label: 'A', text: '', correct: false },
-          { label: 'B', text: '', correct: false },
-          { label: 'C', text: '', correct: false },
-          { label: 'D', text: '', correct: false }
-        ],
-        isMultiSelect: false,
-        explainAnswer: false,
-        shuffleOptions: true,
-        multiSelectMode: 'all'
-      });
-    }
-
-    // Heading is text-input-only; side content panel is shared with Text Input
-    document.getElementById('heading-title').style.display = 'none';
-    document.getElementById('heading-input-group').style.display = 'none';
-
-    // Render questions
-    const questionsContainer = document.getElementById('questions-container');
-    questionsContainer.innerHTML = '';
-    currentStructure.questions.forEach((q, index) => {
-      questionsContainer.appendChild(renderMcqQuestion(q, index));
-    });
-
-    // Handle add question
-    document.getElementById('add-question-btn').onclick = () => {
-      const newQuestion = {
-        text: '',
-        options: [
-          { label: 'A', text: '', correct: false },
-          { label: 'B', text: '', correct: false },
-          { label: 'C', text: '', correct: false },
-          { label: 'D', text: '', correct: false }
-        ],
-        isMultiSelect: false,
-        explainAnswer: false,
-        shuffleOptions: true,
-        multiSelectMode: 'all'
-      };
-      currentStructure.questions.push(newQuestion);
-      const index = currentStructure.questions.length - 1;
-      questionsContainer.appendChild(renderMcqQuestion(newQuestion, index));
-      updateStructure();
-    };
-
-    wireContentEditorPanel();
-
+    const parsed = parseMcqMarkdownToStructure(markdown);
+    currentStructure.questions = parsed.questions;
+    currentStructure.content = parsed.content || null;
   } else {
-    // Text Input editor (existing code)
-    if (markdown && markdown.trim()) {
-      const parsed = parseMarkdownToStructure(markdown);
-      currentStructure.questions = parsed.questions;
-      currentStructure.content = parsed.content;
-      currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
-    } else if (!currentStructure.heading) {
+    const parsed = parseMarkdownToStructure(markdown);
+    currentStructure.questions = parsed.questions;
+    currentStructure.content = parsed.content;
+    currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
+  }
+}
+
+function ensureDefaultQuestions() {
+  if (currentStructure.questions.length === 0) {
+    currentStructure.questions.push(
+      isMcqMode ? createDefaultMcqQuestion() : createDefaultTextQuestion()
+    );
+  }
+}
+
+function mountEditorUi() {
+  const headingTitle = document.getElementById('heading-title');
+  const headingGroup = document.getElementById('heading-input-group');
+  const headingInput = document.getElementById('heading-input');
+
+  if (isMcqMode) {
+    headingTitle.style.display = 'none';
+    headingGroup.style.display = 'none';
+    delete currentStructure.heading;
+  } else {
+    headingTitle.style.display = '';
+    headingGroup.style.display = '';
+    if (!currentStructure.heading) {
       currentStructure.heading = { value: '' };
     }
-
-    // Ensure at least one question exists
-    if (currentStructure.questions.length === 0) {
-      currentStructure.questions.push({
-        text: '',
-        correctAnswer: '',
-        validation: { kind: 'string', options: {} }
-      });
-    }
-
-    // Render questions
-    const questionsContainer = document.getElementById('questions-container');
-    questionsContainer.innerHTML = '';
-    currentStructure.questions.forEach((q, index) => {
-      questionsContainer.appendChild(renderQuestion(q, index));
-    });
-
-    // Handle add question
-    document.getElementById('add-question-btn').onclick = () => {
-      const newQuestion = {
-        text: '',
-        correctAnswer: '',
-        validation: { kind: 'string', options: {} }
-      };
-      currentStructure.questions.push(newQuestion);
-      const index = currentStructure.questions.length - 1;
-      questionsContainer.appendChild(renderQuestion(newQuestion, index));
-      updateStructure();
-    };
-
-    wireContentEditorPanel();
-
-    // Wire up heading input
-    const headingInput = document.getElementById('heading-input');
-    headingInput.value = currentStructure.heading?.value || '';
+    headingInput.value = currentStructure.heading.value || '';
     headingInput.oninput = debounce(() => {
       if (!currentStructure.heading) {
         currentStructure.heading = { value: '' };
@@ -1469,11 +1470,126 @@ async function initEditor() {
       updateStructure();
     }, 300);
   }
+
+  const questionsContainer = document.getElementById('questions-container');
+  questionsContainer.innerHTML = '';
+  questionDropdowns.clear();
+  currentStructure.questions.forEach((q, index) => {
+    questionsContainer.appendChild(
+      isMcqMode ? renderMcqQuestion(q, index) : renderQuestion(q, index)
+    );
+  });
+
+  document.getElementById('add-question-btn').onclick = () => {
+    const newQuestion = isMcqMode ? createDefaultMcqQuestion() : createDefaultTextQuestion();
+    currentStructure.questions.push(newQuestion);
+    const index = currentStructure.questions.length - 1;
+    questionsContainer.appendChild(
+      isMcqMode ? renderMcqQuestion(newQuestion, index) : renderQuestion(newQuestion, index)
+    );
+    updateStructure();
+  };
+
+  wireContentEditorPanel();
+  updateStructure();
+}
+
+function initQuestionTypeDropdown() {
+  const el = document.getElementById('question-type-dropdown');
+  if (!el || el.dataset.wired === '1') return;
+  el.dataset.wired = '1';
+
+  questionTypeDropdownInstance = new Dropdown(el, {
+    items: [
+      { value: 'Text Input', label: 'Text Input' },
+      { value: 'Multiple Choice', label: 'Multiple Choice' }
+    ],
+    selectedValue: isMcqMode ? 'Multiple Choice' : 'Text Input',
+    growToFit: false,
+    onSelect: (value) => {
+      if (suppressQuestionTypeSelect) return;
+
+      const nextMcq = value === 'Multiple Choice';
+      if (nextMcq === isMcqMode) return;
+
+      const preservedContent = cloneSideContent(currentStructure.content);
+      const contentNote = hasDefinedSideContent(currentStructure.content)
+        ? ' Your Content panel (side URL or markdown) will be kept.'
+        : '';
+      const ok = window.confirm(
+        `Switching question type will discard all questions, answers, and settings for the current format (including the optional heading for Text Input).${contentNote}\n\nContinue?`
+      );
+      if (!ok) {
+        suppressQuestionTypeSelect = true;
+        questionTypeDropdownInstance.setValue(isMcqMode ? 'Multiple Choice' : 'Text Input');
+        suppressQuestionTypeSelect = false;
+        return;
+      }
+
+      isMcqMode = nextMcq;
+      currentStructure.type = value;
+      currentStructure.questions = [
+        nextMcq ? createDefaultMcqQuestion() : createDefaultTextQuestion()
+      ];
+      if (nextMcq) {
+        delete currentStructure.heading;
+      } else {
+        currentStructure.heading = { value: '' };
+      }
+      currentStructure.content = preservedContent;
+      questionDropdowns.clear();
+      mountEditorUi();
+    }
+  });
+}
+
+// Initialize editor
+async function initEditor() {
+  let { markdown, questionType } = await loadMarkdown();
+
+  const editorRoot = document.getElementById('editor-root');
+  const typePickerScreen = document.getElementById('type-picker-screen');
+
+  if (!questionType) {
+    if (editorRoot) editorRoot.style.display = 'none';
+    if (typePickerScreen) {
+      typePickerScreen.classList.add('is-visible');
+      typePickerScreen.setAttribute('aria-hidden', 'false');
+    }
+    questionType = await promptForQuestionType();
+    if (typePickerScreen) {
+      typePickerScreen.classList.remove('is-visible');
+      typePickerScreen.setAttribute('aria-hidden', 'true');
+    }
+    if (editorRoot) editorRoot.style.display = '';
+  }
+
+  if (questionType) {
+    currentStructure.type = questionType;
+  }
+
+  isMcqMode = questionType && /^multiple choice$/i.test(questionType);
+
+  if (markdown && markdown.trim()) {
+    hydrateStructureFromMarkdown(markdown);
+  } else {
+    currentStructure.questions = [];
+    if (!isMcqMode) {
+      currentStructure.heading = { value: '' };
+    } else {
+      delete currentStructure.heading;
+    }
+  }
+
+  ensureDefaultQuestions();
+  mountEditorUi();
+  initQuestionTypeDropdown();
 }
 
 function wireContentEditorPanel() {
     const contentPanelTitle = document.getElementById('content-panel-title');
     if (contentPanelTitle) contentPanelTitle.style.display = '';
+    document.getElementById('content-open-url-btn')?.remove();
     const contentTypeDropdownContainer = document.getElementById('content-type-dropdown');
     if (!contentTypeDropdownContainer) return;
     if (contentTypeDropdownContainer.parentElement) {
@@ -1610,6 +1726,7 @@ function wireContentEditorPanel() {
       
       if (contentTypeDropdown && contentTypeDropdown.getValue() === 'url') {
         openUrlButton = document.createElement('button');
+        openUrlButton.id = 'content-open-url-btn';
         openUrlButton.type = 'button';
         openUrlButton.className = 'button button-text';
         openUrlButton.style.padding = 'var(--UI-Spacing-spacing-xs)';

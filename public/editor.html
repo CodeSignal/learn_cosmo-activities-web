@@ -180,11 +180,52 @@
       gap: var(--UI-Spacing-spacing-ms);
       margin-top: var(--UI-Spacing-spacing-l);
     }
+
+    .type-picker-screen {
+      display: none;
+      min-height: 100vh;
+      box-sizing: border-box;
+      align-items: center;
+      justify-content: center;
+      padding: var(--UI-Spacing-spacing-xl);
+      background-color: var(--Colors-Backgrounds-Main-Default);
+    }
+
+    .type-picker-screen.is-visible {
+      display: flex;
+    }
+
+    .type-picker-card {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .type-picker-actions {
+      margin-top: var(--UI-Spacing-spacing-l);
+    }
   </style>
 </head>
 <body>
-  <div class="editor-container">
+  <div id="type-picker-screen" class="type-picker-screen" aria-hidden="true">
+    <div class="type-picker-card editor-section">
+      <h2 class="editor-section-title">Question type</h2>
+      <div class="form-group">
+        <label class="form-label" for="type-picker-dropdown">What kind of question are you building?</label>
+        <div id="type-picker-dropdown"></div>
+      </div>
+      <div class="type-picker-actions">
+        <button type="button" class="button button-primary" id="type-picker-continue">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-container" id="editor-root">
     <span class="save-status hidden" id="save-status"></span>
+
+    <div class="form-group" style="margin-bottom: var(--UI-Spacing-spacing-xl);">
+      <label class="form-label">Question type</label>
+      <div id="question-type-dropdown" style="width: 240px;"></div>
+    </div>
 
     <h2 class="editor-section-title" id="content-panel-title">Content Panel</h2>
     <div class="form-group">

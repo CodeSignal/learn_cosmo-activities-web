@@ -8,10 +8,9 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = path.join(__dirname, 'data');
 
-// Parse command line arguments for --edit and --type flags
+// Parse command line arguments for --edit
 let EDIT_MODE = false;
 let EDIT_FILE_PATH = null;
-let EDIT_QUESTION_TYPE = null;
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--edit' && i + 1 < args.length) {
@@ -24,25 +23,7 @@ for (let i = 0; i < args.length; i++) {
       // Resolve relative paths from current working directory
       EDIT_FILE_PATH = path.resolve(process.cwd(), editPathArg);
     }
-  } else if (args[i] === '--type' && i + 1 < args.length) {
-    EDIT_QUESTION_TYPE = args[i + 1];
   }
-}
-
-// Require type when in edit mode
-if (EDIT_MODE && !EDIT_QUESTION_TYPE) {
-  console.error('Error: --type flag is required when using --edit');
-  console.error('');
-  console.error('Available question types:');
-  console.error('  - "Text Input"');
-  console.error('  - "Multiple Choice"');
-  console.error('  - "Fill in the Blanks"');
-  console.error('  - "Matching"');
-  console.error('  - "Sort into Boxes"');
-  console.error('  - "Swipe Left/Right"');
-  console.error('');
-  console.error('Example: node server.js --edit ./data/question.md --type "Text Input"');
-  process.exit(1);
 }
 
 const MIME_TYPES = {
@@ -118,6 +99,19 @@ function parseSectionsFromTokens(tokens) {
   }
   flush();
   return sections;
+}
+
+/** @returns {string|null} */
+function extractQuestionTypeFromMarkdown(markdownText) {
+  if (!markdownText || typeof markdownText !== 'string' || !markdownText.trim()) return null;
+  try {
+    const tokens = Lexer.lex(markdownText);
+    const sections = parseSectionsFromTokens(tokens);
+    const type = ((sections.get('Type') || []).map(t => t.raw || t.text).join('\n') || '').trim();
+    return type || null;
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
@@ -989,21 +983,21 @@ const server = http.createServer((req, res) => {
     fs.readFile(EDIT_FILE_PATH, 'utf8', (err, data) => {
       if (err) {
         if (err.code === 'ENOENT') {
-          // File doesn't exist, return empty structure
-          respondJson(res, 200, { 
-            markdown: '', 
+          // File doesn't exist; client prompts for question type
+          respondJson(res, 200, {
+            markdown: '',
             filePath: EDIT_FILE_PATH,
-            questionType: EDIT_QUESTION_TYPE
+            questionType: null
           });
         } else {
           respondJson(res, 500, { error: 'Failed to read file' });
         }
         return;
       }
-      respondJson(res, 200, { 
-        markdown: data, 
+      respondJson(res, 200, {
+        markdown: data,
         filePath: EDIT_FILE_PATH,
-        questionType: EDIT_QUESTION_TYPE
+        questionType: extractQuestionTypeFromMarkdown(data)
       });
     });
     return;
