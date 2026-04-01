@@ -1,0 +1,102 @@
+/* ===== MATRIX ACTIVITY (row × column radios) ===== */
+/* Typography: use classes from design-system/typography/typography.css only — no font overrides here. */
+
+.matrix-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--UI-Spacing-spacing-mxl, 24px);
+  padding: 1.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Spacing for markdown blocks inside the stem; font from .body-large on the element */
+.matrix-question.body-large :is(p, ul, ol) {
+  margin: 0 0 var(--UI-Spacing-spacing-mxs) 0;
+}
+
+/* Table chrome: design-system .box.card.non-interactive (see boxes.css) */
+.matrix-table-outer.box {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.matrix-table-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.matrix-table thead th {
+  padding: var(--UI-Spacing-spacing-ms, 16px) var(--UI-Spacing-spacing-mxs, 12px);
+  text-align: center;
+  border-bottom: 1px solid var(--Colors-Stroke-Default);
+  vertical-align: bottom;
+}
+
+.matrix-table thead th.matrix-corner {
+  text-align: left;
+  width: 40%;
+}
+
+.matrix-table tbody td {
+  padding: var(--UI-Spacing-spacing-ms, 16px) var(--UI-Spacing-spacing-mxs, 12px);
+  border-bottom: 1px solid var(--Colors-Stroke-Lighter, var(--Colors-Stroke-Default));
+  vertical-align: middle;
+}
+
+/*
+ * Row header: extra left padding = error stripe (4px) + gap + normal cell inset.
+ * Do not use border-left for the error stripe: border-collapse: collapse often hides
+ * the outer edge of the first column; a background gradient is reliable.
+ */
+.matrix-table tbody th.matrix-row-label {
+  padding: var(--UI-Spacing-spacing-ms, 16px) var(--UI-Spacing-spacing-mxs, 12px);
+  padding-left: calc(
+    4px + var(--UI-Spacing-spacing-xs, 8px) + var(--UI-Spacing-spacing-mxs, 12px)
+  );
+  border-bottom: 1px solid var(--Colors-Stroke-Lighter, var(--Colors-Stroke-Default));
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.matrix-table tbody tr:last-child td,
+.matrix-table tbody tr:last-child th {
+  border-bottom: none;
+}
+
+.matrix-row-label {
+  text-align: left;
+}
+
+.matrix-row-incorrect td {
+  background: var(--Colors-Backgrounds-Main-Default);
+}
+
+/* Layered background: stripe + same fill as incorrect td (avoids border-collapse quirks with border-left) */
+.matrix-row-incorrect .matrix-row-label {
+  background:
+    linear-gradient(
+        var(--Colors-Alert-Error-Default),
+        var(--Colors-Alert-Error-Default)
+      )
+      left top / 4px 100% no-repeat,
+    var(--Colors-Backgrounds-Main-Default);
+}
+
+.matrix-explain-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--UI-Spacing-spacing-xs, 8px);
+}
+
+.matrix-explain-textarea {
+  width: 100%;
+}

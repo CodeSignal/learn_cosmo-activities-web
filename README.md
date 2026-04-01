@@ -9,6 +9,7 @@ An interactive web-based learning platform that supports multiple types of educa
 - **🎯 Swipe Left or Right**: Tinder-style interface for categorizing statements or concepts
 - **📝 Fill in the Blanks**: Interactive forms for completing educational content
 - **📦 Sort into Boxes**: Drag-and-drop interface for organizing items into categories
+- **▦ Matrix**: Table of row labels with one radio choice per row across defined columns (see `data/examples/matrix.md` and `matrix.md`)
 
 ## Getting Started
 
@@ -44,6 +45,7 @@ learn_cosmo-activities-web/
 │   ├── answer.md            # Stored activity results
 │   └── examples/            # Example activity formats
 │       ├── fill-in-the-blanks.md
+│       ├── matrix.md
 │       ├── sort-into-boxes.md
 │       └── swipe-left-right.md
 ├── public/                  # Frontend assets

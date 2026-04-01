@@ -338,7 +338,8 @@ function promptForQuestionType() {
     new Dropdown(dropdownContainer, {
       items: [
         { value: 'Text Input', label: 'Text Input' },
-        { value: 'Multiple Choice', label: 'Multiple Choice' }
+        { value: 'Multiple Choice', label: 'Multiple Choice' },
+        { value: 'Matrix', label: 'Matrix' }
       ],
       selectedValue: 'Text Input',
       growToFit: false,
@@ -683,6 +684,7 @@ const debouncedSave = debounce((markdown) => {
 
 // Track if we're in MCQ mode
 let isMcqMode = false;
+let isMatrixMode = false;
 
 /** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string } | null} */
 function cloneSideContent(content) {
@@ -723,6 +725,279 @@ function createDefaultTextQuestion() {
   };
 }
 
+function createDefaultMatrixBlock() {
+  return {
+    practiceQuestion: '',
+    columns: ['Column A', 'Column B'],
+    rows: ['Row 1'],
+    correctColumnIndex: [0],
+    explainAnswer: false
+  };
+}
+
+/** @param {string} markdown */
+function parseMatrixMarkdownToStructure(markdown) {
+  const structure = {
+    type: 'Matrix',
+    matrix: createDefaultMatrixBlock(),
+    content: null
+  };
+  const sections = {};
+  let current = null;
+  const buf = [];
+  const lines = markdown.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const m = line.match(/^__([^_]+)__\s*$/);
+    if (m) {
+      if (current !== null) sections[current] = buf.join('\n');
+      current = m[1].trim();
+      buf.length = 0;
+    } else {
+      buf.push(line);
+    }
+  }
+  if (current !== null) sections[current] = buf.join('\n');
+
+  structure.type = (sections.Type || 'Matrix').trim() || 'Matrix';
+  structure.matrix.practiceQuestion = (sections['Practice Question'] || '').trim();
+
+  structure.matrix.columns = (sections['Matrix Columns'] || '')
+    .split('\n')
+    .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
+    .filter(Boolean);
+
+  structure.matrix.rows = (sections['Matrix Rows'] || '')
+    .split('\n')
+    .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
+    .filter(Boolean);
+
+  const sugg = (sections['Suggested Answers'] || '')
+    .split('\n')
+    .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
+    .filter(Boolean);
+
+  const correctColumnIndex = (structure.matrix.rows.length ? structure.matrix.rows : ['']).map(() => 0);
+  structure.matrix.rows.forEach((_, ri) => {
+    correctColumnIndex[ri] = 0;
+  });
+
+  sugg.forEach(line => {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) return;
+    const row = line.slice(0, colonIdx).trim();
+    const col = line.slice(colonIdx + 1).trim();
+    const ri = structure.matrix.rows.indexOf(row);
+    const ci = structure.matrix.columns.indexOf(col);
+    if (ri >= 0 && ci >= 0) correctColumnIndex[ri] = ci;
+  });
+  structure.matrix.correctColumnIndex = correctColumnIndex;
+
+  const ex = (sections['Explain Your Answer'] || sections['Explain your answer'] || '').trim().toLowerCase();
+  structure.matrix.explainAnswer = ex === 'true' || ex === 'yes' || ex === 'enabled';
+
+  const rawContent = (sections.Content || '').trim();
+  if (rawContent) {
+    structure.content = parseContentTextToStructure(rawContent);
+  }
+
+  if (structure.matrix.columns.length < 2) {
+    structure.matrix.columns = createDefaultMatrixBlock().columns;
+  }
+  if (structure.matrix.rows.length === 0) {
+    structure.matrix.rows = ['Row 1'];
+    structure.matrix.correctColumnIndex = [0];
+  }
+  while (structure.matrix.correctColumnIndex.length < structure.matrix.rows.length) {
+    structure.matrix.correctColumnIndex.push(0);
+  }
+  structure.matrix.correctColumnIndex.length = structure.matrix.rows.length;
+
+  return structure;
+}
+
+function matrixStructureToMarkdown(structure) {
+  const m = structure.matrix || createDefaultMatrixBlock();
+  let markdown = `__Type__\n\nMatrix\n\n__Practice Question__\n\n${m.practiceQuestion || ''}\n\n__Matrix Columns__\n\n`;
+  m.columns.forEach(c => {
+    markdown += `- ${c}\n`;
+  });
+  markdown += '\n__Matrix Rows__\n\n';
+  m.rows.forEach(r => {
+    markdown += `- ${r}\n`;
+  });
+  markdown += '\n__Suggested Answers__\n\n';
+  m.rows.forEach((row, i) => {
+    const ci = Math.min(Math.max(0, m.correctColumnIndex[i] ?? 0), Math.max(0, m.columns.length - 1));
+    const col = m.columns[ci] || m.columns[0] || '';
+    markdown += `- ${row}: ${col}\n`;
+  });
+  markdown += '\n';
+  if (m.explainAnswer) {
+    markdown += `__Explain Your Answer__\n\ntrue\n\n`;
+  }
+
+  if (structure.content && structure.content.value) {
+    let contentValue = structure.content.value;
+    if (structure.content.type === 'url') {
+      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
+      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
+    } else if (structure.content.contentWidth) {
+      contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
+    }
+    markdown += `__Content__\n\n${contentValue}\n\n`;
+  }
+
+  return markdown;
+}
+
+/**
+ * @param {{ type: string, matrix: ReturnType<typeof createDefaultMatrixBlock>, content: * }} structure
+ */
+function renderMatrixEditor(structure) {
+  const root = document.createElement('div');
+  root.className = 'matrix-editor-root box card non-interactive';
+
+  const m = structure.matrix;
+
+  const pqGroup = document.createElement('div');
+  pqGroup.className = 'form-group';
+  const pqLabel = document.createElement('label');
+  pqLabel.className = 'form-label';
+  pqLabel.textContent = 'Practice question';
+  const pqTa = document.createElement('textarea');
+  pqTa.className = 'input';
+  pqTa.rows = 4;
+  pqTa.value = m.practiceQuestion;
+  pqTa.oninput = debounce(() => {
+    m.practiceQuestion = pqTa.value;
+    updateStructure();
+  }, 300);
+  pqGroup.appendChild(pqLabel);
+  pqGroup.appendChild(pqTa);
+
+  const colGroup = document.createElement('div');
+  colGroup.className = 'form-group';
+  const colLabel = document.createElement('label');
+  colLabel.className = 'form-label';
+  colLabel.textContent = 'Matrix columns (one per line, at least 2)';
+  const colTa = document.createElement('textarea');
+  colTa.className = 'input';
+  colTa.rows = 4;
+  colTa.value = m.columns.join('\n');
+
+  const rowGroup = document.createElement('div');
+  rowGroup.className = 'form-group';
+  const rowLabel = document.createElement('label');
+  rowLabel.className = 'form-label';
+  rowLabel.textContent = 'Matrix rows (one per line)';
+  const rowTa = document.createElement('textarea');
+  rowTa.className = 'input';
+  rowTa.rows = 6;
+  rowTa.value = m.rows.join('\n');
+
+  const correctSection = document.createElement('div');
+  correctSection.className = 'form-group';
+
+  function syncMatrixLists() {
+    m.columns = colTa.value.split('\n').map(s => s.trim()).filter(Boolean);
+    m.rows = rowTa.value.split('\n').map(s => s.trim()).filter(Boolean);
+    if (m.columns.length < 2) {
+      m.columns = createDefaultMatrixBlock().columns;
+      colTa.value = m.columns.join('\n');
+    }
+    if (m.rows.length === 0) {
+      m.rows = ['Row 1'];
+      rowTa.value = m.rows.join('\n');
+    }
+    while (m.correctColumnIndex.length < m.rows.length) {
+      m.correctColumnIndex.push(0);
+    }
+    m.correctColumnIndex.length = m.rows.length;
+    m.correctColumnIndex = m.correctColumnIndex.map((v, i) => {
+      const max = Math.max(0, m.columns.length - 1);
+      const n = Number.isFinite(v) ? v : 0;
+      return Math.min(Math.max(0, n), max);
+    });
+  }
+
+  function renderCorrectPickers() {
+    syncMatrixLists();
+    correctSection.innerHTML = '';
+    const title = document.createElement('div');
+    title.className = 'form-label';
+    title.textContent = 'Correct column per row';
+    correctSection.appendChild(title);
+
+    m.rows.forEach((row, i) => {
+      const rowWrap = document.createElement('div');
+      rowWrap.className = 'form-group';
+      const lbl = document.createElement('label');
+      lbl.className = 'form-label';
+      lbl.textContent = row ? `Answer for: ${row}` : `Row ${i + 1}`;
+      const sel = document.createElement('select');
+      sel.className = 'input';
+      m.columns.forEach((c, ci) => {
+        const opt = document.createElement('option');
+        opt.value = String(ci);
+        opt.textContent = c;
+        sel.appendChild(opt);
+      });
+      const idx = Math.min(Math.max(0, m.correctColumnIndex[i] ?? 0), m.columns.length - 1);
+      sel.value = String(idx);
+      sel.addEventListener('change', () => {
+        m.correctColumnIndex[i] = parseInt(sel.value, 10);
+        updateStructure();
+      });
+      rowWrap.appendChild(lbl);
+      rowWrap.appendChild(sel);
+      correctSection.appendChild(rowWrap);
+    });
+  }
+
+  colTa.oninput = debounce(() => {
+    syncMatrixLists();
+    renderCorrectPickers();
+    updateStructure();
+  }, 300);
+
+  rowTa.oninput = debounce(() => {
+    syncMatrixLists();
+    renderCorrectPickers();
+    updateStructure();
+  }, 300);
+
+  const explainWrap = document.createElement('div');
+  explainWrap.className = 'form-group';
+  const explainLabel = document.createElement('label');
+  explainLabel.className = 'form-label';
+  const explainCb = document.createElement('input');
+  explainCb.type = 'checkbox';
+  explainCb.checked = !!m.explainAnswer;
+  explainCb.addEventListener('change', () => {
+    m.explainAnswer = explainCb.checked;
+    updateStructure();
+  });
+  explainLabel.appendChild(explainCb);
+  explainLabel.appendChild(document.createTextNode(' Explain your answer'));
+  explainWrap.appendChild(explainLabel);
+
+  colGroup.appendChild(colLabel);
+  colGroup.appendChild(colTa);
+  rowGroup.appendChild(rowLabel);
+  rowGroup.appendChild(rowTa);
+
+  root.appendChild(pqGroup);
+  root.appendChild(colGroup);
+  root.appendChild(rowGroup);
+  root.appendChild(correctSection);
+  root.appendChild(explainWrap);
+
+  renderCorrectPickers();
+
+  return root;
+}
+
 let questionTypeDropdownInstance = null;
 let suppressQuestionTypeSelect = false;
 
@@ -730,6 +1005,8 @@ function updateStructure() {
   let markdown;
   if (isMcqMode) {
     markdown = mcqStructureToMarkdown(currentStructure);
+  } else if (isMatrixMode) {
+    markdown = matrixStructureToMarkdown(currentStructure);
   } else {
     markdown = structureToMarkdown(currentStructure);
   }
@@ -1430,15 +1707,30 @@ function hydrateStructureFromMarkdown(markdown) {
     const parsed = parseMcqMarkdownToStructure(markdown);
     currentStructure.questions = parsed.questions;
     currentStructure.content = parsed.content || null;
+    delete currentStructure.matrix;
+  } else if (isMatrixMode) {
+    const parsed = parseMatrixMarkdownToStructure(markdown);
+    currentStructure.type = parsed.type;
+    currentStructure.matrix = parsed.matrix;
+    currentStructure.content = parsed.content || null;
+    currentStructure.questions = [];
+    delete currentStructure.heading;
   } else {
     const parsed = parseMarkdownToStructure(markdown);
     currentStructure.questions = parsed.questions;
     currentStructure.content = parsed.content;
     currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
+    delete currentStructure.matrix;
   }
 }
 
 function ensureDefaultQuestions() {
+  if (isMatrixMode) {
+    if (!currentStructure.matrix) {
+      currentStructure.matrix = createDefaultMatrixBlock();
+    }
+    return;
+  }
   if (currentStructure.questions.length === 0) {
     currentStructure.questions.push(
       isMcqMode ? createDefaultMcqQuestion() : createDefaultTextQuestion()
@@ -1451,7 +1743,7 @@ function mountEditorUi() {
   const headingGroup = document.getElementById('heading-input-group');
   const headingInput = document.getElementById('heading-input');
 
-  if (isMcqMode) {
+  if (isMcqMode || isMatrixMode) {
     headingTitle.style.display = 'none';
     headingGroup.style.display = 'none';
     delete currentStructure.heading;
@@ -1472,23 +1764,37 @@ function mountEditorUi() {
   }
 
   const questionsContainer = document.getElementById('questions-container');
+  const addQuestionBtn = document.getElementById('add-question-btn');
   questionsContainer.innerHTML = '';
   questionDropdowns.clear();
-  currentStructure.questions.forEach((q, index) => {
-    questionsContainer.appendChild(
-      isMcqMode ? renderMcqQuestion(q, index) : renderQuestion(q, index)
-    );
-  });
 
-  document.getElementById('add-question-btn').onclick = () => {
-    const newQuestion = isMcqMode ? createDefaultMcqQuestion() : createDefaultTextQuestion();
-    currentStructure.questions.push(newQuestion);
-    const index = currentStructure.questions.length - 1;
-    questionsContainer.appendChild(
-      isMcqMode ? renderMcqQuestion(newQuestion, index) : renderQuestion(newQuestion, index)
-    );
-    updateStructure();
-  };
+  if (isMatrixMode) {
+    if (addQuestionBtn) addQuestionBtn.style.display = 'none';
+    if (!currentStructure.matrix) {
+      currentStructure.matrix = createDefaultMatrixBlock();
+    }
+    questionsContainer.appendChild(renderMatrixEditor(currentStructure));
+  } else {
+    if (addQuestionBtn) addQuestionBtn.style.display = '';
+    currentStructure.questions.forEach((q, index) => {
+      questionsContainer.appendChild(
+        isMcqMode ? renderMcqQuestion(q, index) : renderQuestion(q, index)
+      );
+    });
+  }
+
+  if (addQuestionBtn) {
+    addQuestionBtn.onclick = () => {
+      if (isMatrixMode) return;
+      const newQuestion = isMcqMode ? createDefaultMcqQuestion() : createDefaultTextQuestion();
+      currentStructure.questions.push(newQuestion);
+      const index = currentStructure.questions.length - 1;
+      questionsContainer.appendChild(
+        isMcqMode ? renderMcqQuestion(newQuestion, index) : renderQuestion(newQuestion, index)
+      );
+      updateStructure();
+    };
+  }
 
   wireContentEditorPanel();
   updateStructure();
@@ -1499,18 +1805,26 @@ function initQuestionTypeDropdown() {
   if (!el || el.dataset.wired === '1') return;
   el.dataset.wired = '1';
 
+  function currentTypeDropdownValue() {
+    if (isMcqMode) return 'Multiple Choice';
+    if (isMatrixMode) return 'Matrix';
+    return 'Text Input';
+  }
+
   questionTypeDropdownInstance = new Dropdown(el, {
     items: [
       { value: 'Text Input', label: 'Text Input' },
-      { value: 'Multiple Choice', label: 'Multiple Choice' }
+      { value: 'Multiple Choice', label: 'Multiple Choice' },
+      { value: 'Matrix', label: 'Matrix' }
     ],
-    selectedValue: isMcqMode ? 'Multiple Choice' : 'Text Input',
+    selectedValue: currentTypeDropdownValue(),
     growToFit: false,
     onSelect: (value) => {
       if (suppressQuestionTypeSelect) return;
 
       const nextMcq = value === 'Multiple Choice';
-      if (nextMcq === isMcqMode) return;
+      const nextMatrix = value === 'Matrix';
+      if (nextMcq === isMcqMode && nextMatrix === isMatrixMode) return;
 
       const preservedContent = cloneSideContent(currentStructure.content);
       const contentNote = hasDefinedSideContent(currentStructure.content)
@@ -1521,23 +1835,30 @@ function initQuestionTypeDropdown() {
       );
       if (!ok) {
         suppressQuestionTypeSelect = true;
-        questionTypeDropdownInstance.setValue(isMcqMode ? 'Multiple Choice' : 'Text Input');
+        questionTypeDropdownInstance.setValue(currentTypeDropdownValue());
         suppressQuestionTypeSelect = false;
         return;
       }
 
       isMcqMode = nextMcq;
+      isMatrixMode = nextMatrix;
       currentStructure.type = value;
-      currentStructure.questions = [
-        nextMcq ? createDefaultMcqQuestion() : createDefaultTextQuestion()
-      ];
-      if (nextMcq) {
-        delete currentStructure.heading;
-      } else {
-        currentStructure.heading = { value: '' };
-      }
       currentStructure.content = preservedContent;
       questionDropdowns.clear();
+
+      if (nextMatrix) {
+        currentStructure.matrix = createDefaultMatrixBlock();
+        currentStructure.questions = [];
+        delete currentStructure.heading;
+      } else if (nextMcq) {
+        currentStructure.questions = [createDefaultMcqQuestion()];
+        delete currentStructure.heading;
+        delete currentStructure.matrix;
+      } else {
+        currentStructure.questions = [createDefaultTextQuestion()];
+        currentStructure.heading = { value: '' };
+        delete currentStructure.matrix;
+      }
       mountEditorUi();
     }
   });
@@ -1569,15 +1890,22 @@ async function initEditor() {
   }
 
   isMcqMode = questionType && /^multiple choice$/i.test(questionType);
+  isMatrixMode = questionType && /^matrix$/i.test(questionType);
 
   if (markdown && markdown.trim()) {
     hydrateStructureFromMarkdown(markdown);
   } else {
     currentStructure.questions = [];
-    if (!isMcqMode) {
+    if (isMatrixMode) {
+      currentStructure.type = 'Matrix';
+      currentStructure.matrix = createDefaultMatrixBlock();
+      delete currentStructure.heading;
+    } else if (!isMcqMode) {
       currentStructure.heading = { value: '' };
+      delete currentStructure.matrix;
     } else {
       delete currentStructure.heading;
+      delete currentStructure.matrix;
     }
   }
 

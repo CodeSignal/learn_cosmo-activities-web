@@ -259,8 +259,37 @@ function parseAnswersFromMarkdown(markdownText) {
         answers[questionIndex] = selectedAnswer;
       }
     }
+  } else if (/^matrix$/i.test(type)) {
+    const explanations = {};
+    const questionBlocks = responsesText.split(/(?=\d+\.\s*\*\*[^*]+\*\*)/);
+    questionBlocks.forEach(block => {
+      const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
+      if (questionMatch) {
+        const questionNumber = parseInt(questionMatch[1], 10);
+        const explanationMatch = block.match(/Explanation:\s*([^\n]+)/);
+        if (explanationMatch) {
+          const questionIndex = questionNumber - 1;
+          const explanationStr = explanationMatch[1].trim();
+          if (explanationStr) {
+            explanations[questionIndex] = explanationStr;
+          }
+        }
+      }
+    });
+    const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
+    let match;
+    while ((match = responseRegex.exec(responsesText)) !== null) {
+      const rowIndex = parseInt(match[1], 10) - 1;
+      const selectedAnswer = match[2].trim();
+      if (selectedAnswer && selectedAnswer !== 'No answer selected') {
+        answers[rowIndex] = selectedAnswer;
+      }
+    }
+    if (Object.keys(explanations).length > 0) {
+      return { answers, type, explanations };
+    }
   }
-  
+
   return { answers, type };
 }
 
@@ -919,6 +948,90 @@ function buildActivityFromMarkdown(markdownText) {
     return activity;
   }
 
+  if (/^matrix$/i.test(type)) {
+    const columns = readListItems(sections.get('Matrix Columns'));
+    const rows = readListItems(sections.get('Matrix Rows'));
+    const suggestedRaw = readListItems(sections.get('Suggested Answers'));
+
+    if (columns.length < 2) {
+      throw new Error('Matrix requires at least two entries in __Matrix Columns__');
+    }
+    if (rows.length === 0) {
+      throw new Error('Matrix requires at least one entry in __Matrix Rows__');
+    }
+
+    const colSeen = new Set();
+    for (const c of columns) {
+      if (colSeen.has(c)) {
+        throw new Error(`Duplicate matrix column label: ${c}`);
+      }
+      colSeen.add(c);
+    }
+    const rowSeen = new Set();
+    for (const r of rows) {
+      if (rowSeen.has(r)) {
+        throw new Error(`Duplicate matrix row label: ${r}`);
+      }
+      rowSeen.add(r);
+    }
+
+    if (suggestedRaw.length !== rows.length) {
+      throw new Error(
+        `Matrix __Suggested Answers__ must have exactly one line per row (expected ${rows.length}, got ${suggestedRaw.length})`
+      );
+    }
+
+    const answerByRow = new Map();
+    for (const line of suggestedRaw) {
+      const colonIdx = line.indexOf(':');
+      if (colonIdx === -1) {
+        throw new Error(`Matrix suggested answer must use "row label: column label" format: ${line}`);
+      }
+      const rowKey = line.slice(0, colonIdx).trim();
+      const colLabel = line.slice(colonIdx + 1).trim();
+      if (!rows.includes(rowKey)) {
+        throw new Error(`Matrix __Suggested Answers__ row not found in __Matrix Rows__: ${rowKey}`);
+      }
+      if (answerByRow.has(rowKey)) {
+        throw new Error(`Duplicate __Suggested Answers__ entry for row: ${rowKey}`);
+      }
+      const colIdx = columns.indexOf(colLabel);
+      if (colIdx === -1) {
+        throw new Error(`Matrix __Suggested Answers__ column not found in __Matrix Columns__: ${colLabel}`);
+      }
+      answerByRow.set(rowKey, colIdx);
+    }
+
+    const correctColumnIndexByRow = rows.map(r => {
+      if (!answerByRow.has(r)) {
+        throw new Error(`Missing __Suggested Answers__ entry for row: ${r}`);
+      }
+      return answerByRow.get(r);
+    });
+
+    const explainTokens = sections.get('Explain Your Answer') || sections.get('Explain your answer') || [];
+    const explainText = explainTokens.map(t => t.raw || t.text).join('\n').trim().toLowerCase();
+    const explainAnswer =
+      explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+
+    const questionHtml = question ? marked.parse(escapeMathDollars(question)) : '';
+
+    return attachSideContent(
+      {
+        type,
+        question,
+        questionHtml,
+        matrix: {
+          columns,
+          rows,
+          correctColumnIndexByRow,
+          explainAnswer
+        }
+      },
+      sections
+    );
+  }
+
   const labels = readListItems(sections.get('Labels'));
   if (/^sort into boxes$/i.test(type)) {
     let first = '', second = '';
@@ -1473,6 +1586,10 @@ const server = http.createServer((req, res) => {
             }
             // Fallback to simple string comparison if question not found
             return result.selected === result.correct;
+          } else if (activity && /^matrix$/i.test(activity.type)) {
+            const sel = (result.selected || '').trim();
+            const cor = (result.correct || '').trim();
+            return Boolean(sel) && sel === cor;
           }
           return result.selected === result.correct;
         }).length;
@@ -1559,10 +1676,14 @@ const server = http.createServer((req, res) => {
                 // Fallback to simple string comparison if question not found
                 isCorrect = result.selected === result.correct;
               }
+            } else if (activity && /^matrix$/i.test(activity.type)) {
+              const sel = (result.selected || '').trim();
+              const cor = (result.correct || '').trim();
+              isCorrect = Boolean(sel) && sel === cor;
             } else {
               isCorrect = result.selected === result.correct;
             }
-            
+
             // Show result status
             if (isValidateLater) {
               markdown += `   - Result: Unvalidated\n`;
@@ -1635,6 +1756,27 @@ const server = http.createServer((req, res) => {
                 markdown += `- ${answerStr}\n`;
                 markdown += '\n';
               });
+            }
+          } else if (/^matrix$/i.test(activity.type) && activity.matrix) {
+            if (activity.question) {
+              markdown += `__Practice Question__\n\n${activity.question}\n\n`;
+            }
+            markdown += `__Matrix Columns__\n\n`;
+            activity.matrix.columns.forEach(c => {
+              markdown += `- ${c}\n`;
+            });
+            markdown += '\n__Matrix Rows__\n\n';
+            activity.matrix.rows.forEach(r => {
+              markdown += `- ${r}\n`;
+            });
+            markdown += '\n__Suggested Answers__\n\n';
+            activity.matrix.rows.forEach((r, i) => {
+              const col = activity.matrix.columns[activity.matrix.correctColumnIndexByRow[i]];
+              markdown += `- ${r}: ${col}\n`;
+            });
+            markdown += '\n';
+            if (activity.matrix.explainAnswer) {
+              markdown += `__Explain Your Answer__\n\ntrue\n\n`;
             }
           } else {
             // For swipe/sort activities, include question and labels

@@ -56,6 +56,11 @@ body:has(.matching) {
   padding-right: 0;
 }
 
+/* Matrix: let the block use up to 1200px; default .main 896px would cap it */
+.main:has(.matrix-root):not(:has(.activity-with-side-content)) {
+  max-width: 1200px;
+}
+
 .main:has(.activity-with-side-content) {
   max-width: none;
   padding: 0;
@@ -78,6 +83,15 @@ body:has(.matching) {
   height: 100vh;
   overflow: hidden;
   position: relative;
+}
+
+/*
+ * Grid place-items: center shrink-wraps the sole item to max-content width.
+ * Matrix table intrinsic width (~600px) was the visible "cap", not .matrix-root max-width.
+ */
+.activity-container:has(> .matrix-root) {
+  align-items: start;
+  justify-items: stretch;
 }
 
 /* Typographic & Editorial Styles: these styles are used to style the markdown content */

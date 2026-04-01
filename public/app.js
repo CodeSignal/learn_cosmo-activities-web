@@ -4,6 +4,7 @@ import { initFib } from './modules/fib.js';
 import { initMcq } from './modules/mcq.js';
 import { initMatching } from './modules/matching.js';
 import { initTextInput } from './modules/text-input.js';
+import { initMatrix } from './modules/matrix.js';
 import toolbar from './components/toolbar.js';
 import { mountActivityContentShell } from './utils/activity-content-shell.js';
 
@@ -93,8 +94,8 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
     const currentType = activity.type || '';
     const persistedType = persistedData.type || '';
     
-    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType) && !/^matching$/i.test(currentType) && !/^text input$/i.test(currentType)) {
-      // Only validate MCQ, FIB, Matching, and Text Input for now
+    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType) && !/^matching$/i.test(currentType) && !/^text input$/i.test(currentType) && !/^matrix$/i.test(currentType)) {
+      // Only validate persisted answers for types that support them
       return { answers: null, explanations: null };
     }
 
@@ -103,7 +104,8 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
       (/^multiple choice$/i.test(currentType) && /^multiple choice$/i.test(persistedType)) ||
       (/^fill in the blanks$/i.test(currentType) && /^fill in the blanks$/i.test(persistedType)) ||
       (/^matching$/i.test(currentType) && /^matching$/i.test(persistedType)) ||
-      (/^text input$/i.test(currentType) && /^text input$/i.test(persistedType));
+      (/^text input$/i.test(currentType) && /^text input$/i.test(persistedType)) ||
+      (/^matrix$/i.test(currentType) && /^matrix$/i.test(persistedType));
 
     if (!typeMatches) {
       return { answers: null, explanations: null };
@@ -210,6 +212,36 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
         }
       });
       return { answers: validatedAnswers, explanations: null };
+    } else if (/^matrix$/i.test(currentType)) {
+      if (!activity.matrix || !activity.matrix.rows) {
+        return { answers: null, explanations: null };
+      }
+      const cols = activity.matrix.columns || [];
+      const validRowIndices = new Set(activity.matrix.rows.map((_, idx) => idx));
+      const persistedRowIndices = Object.keys(persistedData.answers).map(id => parseInt(id, 10));
+      const allIndicesValid = persistedRowIndices.every(idx => validRowIndices.has(idx));
+      if (!allIndicesValid) {
+        return { answers: null, explanations: null };
+      }
+      const validatedAnswers = {};
+      persistedRowIndices.forEach(idx => {
+        if (!validRowIndices.has(idx)) return;
+        const raw = persistedData.answers[idx];
+        const label = Array.isArray(raw) ? raw[0] : raw;
+        if (typeof label === 'string' && cols.includes(label)) {
+          validatedAnswers[idx] = label;
+        }
+      });
+      const validatedExplanations = {};
+      if (persistedData.explanations) {
+        Object.keys(persistedData.explanations).forEach(id => {
+          const i = parseInt(id, 10);
+          if (i >= 0 && i < activity.matrix.rows.length) {
+            validatedExplanations[i] = persistedData.explanations[id];
+          }
+        });
+      }
+      return { answers: validatedAnswers, explanations: validatedExplanations };
     }
 
     return { answers: null, explanations: null };
@@ -269,6 +301,18 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
         elContainer
       });
       // Store validation function reference
+      if (currentActivity && typeof currentActivity.validate === 'function') {
+        validationHandler = currentActivity.validate;
+      }
+    } else if (/^matrix$/i.test(activity.type)) {
+      currentActivity = initMatrix({
+        activity,
+        state,
+        postResults,
+        persistedAnswers,
+        persistedExplanations,
+        elContainer
+      });
       if (currentActivity && typeof currentActivity.validate === 'function') {
         validationHandler = currentActivity.validate;
       }
