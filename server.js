@@ -385,6 +385,7 @@ function buildActivityFromMarkdown(markdownText) {
     let answerBuffer = [];
     let explainAnswerBuffer = [];
     let questionOptionsBuffer = [];
+    let questionNameBuffer = [];
     
     // Deterministic shuffle using text as seed
     function seededShuffle(array, seed) {
@@ -559,12 +560,31 @@ function buildActivityFromMarkdown(markdownText) {
             }
             
             // Start new question
-            currentQuestion = { id: questions.length, text: '', options: [], isMultiSelect: false, explainAnswer: false, shuffleOptions: true, multiSelectMode: 'all' };
+            const nameFromBuffer = questionNameBuffer.map(t => t.raw || t.text || '').join('\n').trim();
+            questionNameBuffer = [];
+            currentQuestion = {
+              id: questions.length,
+              name: nameFromBuffer,
+              text: '',
+              options: [],
+              isMultiSelect: false,
+              explainAnswer: false,
+              shuffleOptions: true,
+              multiSelectMode: 'all'
+            };
             currentSection = 'question';
             questionBuffer = [];
             answerBuffer = [];
             explainAnswerBuffer = [];
             questionOptionsBuffer = [];
+            continue;
+          } else if (sectionName === 'Question Name' || sectionName === 'Question name') {
+            if (currentQuestion && (currentSection === 'answers' || currentSection === 'explain' || currentSection === 'questionOptions')) {
+              processAnswers();
+              currentQuestion = null;
+            }
+            currentSection = 'questionName';
+            questionNameBuffer = [];
             continue;
           } else if (sectionName === 'Suggested Answers') {
             // Process current question text and question options if they exist
@@ -607,7 +627,9 @@ function buildActivityFromMarkdown(markdownText) {
         }
       }
       
-      if (currentSection === 'question' && currentQuestion) {
+      if (currentSection === 'questionName') {
+        questionNameBuffer.push(token);
+      } else if (currentSection === 'question' && currentQuestion) {
         questionBuffer.push(token);
       } else if (currentSection === 'questionOptions' && currentQuestion) {
         questionOptionsBuffer.push(token);
@@ -1710,6 +1732,9 @@ const server = http.createServer((req, res) => {
             // For MCQ, include each question with options and suggested answers
             if (activity.mcq && activity.mcq.questions) {
               activity.mcq.questions.forEach((q, qIdx) => {
+                if (q.name && String(q.name).trim()) {
+                  markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;
+                }
                 markdown += `__Practice Question__\n\n${q.text}\n\n`;
                 q.options.forEach(opt => {
                   markdown += `${opt.label}. ${opt.text}\n`;

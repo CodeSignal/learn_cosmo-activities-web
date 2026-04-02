@@ -64,11 +64,12 @@ export function initMcq({
     questionEl.setAttribute('data-question-id', question.id);
     questionEl.setAttribute('data-question-index', qIdx.toString());
     
-    // Question legend (Question 1, Question 2, etc.) - only show if multiple questions
+    // Question legend — custom __Question Name__ or "Question N" when multiple questions
     if (hasMultipleQuestions) {
       const legend = document.createElement('div');
       legend.className = 'mcq-legend heading-xsmall';
-      legend.textContent = `Question ${qIdx + 1}`;
+      const customName = question.name && String(question.name).trim();
+      legend.textContent = customName || `Question ${qIdx + 1}`;
       questionEl.appendChild(legend);
     }
     
@@ -407,8 +408,9 @@ export function initMcq({
         isCorrect = arraysEqual(selected.sort(), correct.sort());
       }
       
+      const customName = q.name && String(q.name).trim();
       const result = {
-        text: `Question ${idx + 1}`,
+        text: customName || `Question ${idx + 1}`,
         selected: selected.length > 0 ? selected.join(', ') : '',
         correct: correct.join(', '),
         isCorrect: isCorrect,

@@ -707,6 +707,7 @@ function hasDefinedSideContent(content) {
 
 function createDefaultMcqQuestion() {
   return {
+    name: '',
     text: '',
     options: [
       { label: 'A', text: '', correct: false },
@@ -1317,6 +1318,47 @@ function parseMcqMarkdownToStructure(markdown) {
   let explainAnswerBuffer = [];
   let questionOptionsBuffer = [];
   let contentBuffer = [];
+  let questionNameBuffer = [];
+
+  function flushPreviousMcqQuestion() {
+    if (!currentQuestion) return;
+    if (answerBuffer.length > 0 && currentQuestion.options.length > 0) {
+      const answerItems = answerBuffer.map(line => line.trim()).filter(line => line.startsWith('-'));
+      const correctAnswers = new Set();
+      answerItems.forEach(item => {
+        const trimmed = item.replace(/^-\s*/, '').trim();
+        const match = trimmed.match(/^([A-Z])\s*(?:-?\s*(?:Correct)?)?$/i);
+        if (match) {
+          const label = match[1].toUpperCase();
+          if (trimmed.toLowerCase().includes('correct')) {
+            correctAnswers.add(label);
+          }
+        }
+      });
+      currentQuestion.options.forEach(opt => {
+        opt.correct = correctAnswers.has(opt.label);
+      });
+      currentQuestion.isMultiSelect = correctAnswers.size > 1;
+    }
+    if (explainAnswerBuffer.length > 0) {
+      const explainText = explainAnswerBuffer.join('\n').trim().toLowerCase();
+      currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+    }
+    if (questionOptionsBuffer.length > 0) {
+      const optionsText = questionOptionsBuffer.join('\n').trim().toLowerCase();
+      if (optionsText.includes('shuffle=false') || optionsText.includes('don\'t shuffle') || optionsText.includes('dont shuffle') || optionsText === 'no shuffle') {
+        currentQuestion.shuffleOptions = false;
+      }
+      if (optionsText.includes('any') || optionsText.includes('multi-select mode: any') || optionsText.includes('mode: any')) {
+        currentQuestion.multiSelectMode = 'any';
+      } else {
+        currentQuestion.multiSelectMode = 'all';
+      }
+    } else {
+      currentQuestion.multiSelectMode = 'all';
+    }
+    structure.questions.push(currentQuestion);
+  }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -1335,50 +1377,12 @@ function parseMcqMarkdownToStructure(markdown) {
       if (sectionName === 'Type') {
         currentSection = 'type';
       } else if (sectionName === 'Practice Question') {
-        // Process previous question if exists before starting new one
-        if (currentQuestion) {
-          // Process any remaining buffers
-          if (answerBuffer.length > 0 && currentQuestion.options.length > 0) {
-            const answerItems = answerBuffer.map(line => line.trim()).filter(line => line.startsWith('-'));
-            const correctAnswers = new Set();
-            answerItems.forEach(item => {
-              const trimmed = item.replace(/^-\s*/, '').trim();
-              const match = trimmed.match(/^([A-Z])\s*(?:-?\s*(?:Correct)?)?$/i);
-              if (match) {
-                const label = match[1].toUpperCase();
-                if (trimmed.toLowerCase().includes('correct')) {
-                  correctAnswers.add(label);
-                }
-              }
-            });
-            currentQuestion.options.forEach(opt => {
-              opt.correct = correctAnswers.has(opt.label);
-            });
-            currentQuestion.isMultiSelect = correctAnswers.size > 1;
-          }
-          if (explainAnswerBuffer.length > 0) {
-            const explainText = explainAnswerBuffer.join('\n').trim().toLowerCase();
-            currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
-          }
-          if (questionOptionsBuffer.length > 0) {
-            const optionsText = questionOptionsBuffer.join('\n').trim().toLowerCase();
-            if (optionsText.includes('shuffle=false') || optionsText.includes('don\'t shuffle') || optionsText.includes('dont shuffle') || optionsText === 'no shuffle') {
-              currentQuestion.shuffleOptions = false;
-            }
-            // Check for multi-select mode
-            if (optionsText.includes('any') || optionsText.includes('multi-select mode: any') || optionsText.includes('mode: any')) {
-              currentQuestion.multiSelectMode = 'any';
-            } else {
-              currentQuestion.multiSelectMode = 'all';
-            }
-          } else {
-            currentQuestion.multiSelectMode = 'all';
-          }
-          structure.questions.push(currentQuestion);
-        }
-        // Start new question
+        flushPreviousMcqQuestion();
+        const qName = questionNameBuffer.join('\n').trim();
+        questionNameBuffer = [];
         currentSection = 'question';
         currentQuestion = {
+          name: qName,
           text: '',
           options: [],
           isMultiSelect: false,
@@ -1390,6 +1394,16 @@ function parseMcqMarkdownToStructure(markdown) {
         answerBuffer = [];
         explainAnswerBuffer = [];
         questionOptionsBuffer = [];
+      } else if (sectionName === 'Question Name' || sectionName === 'Question name') {
+        if (
+          currentQuestion &&
+          (currentSection === 'answers' || currentSection === 'explain' || currentSection === 'questionOptions')
+        ) {
+          flushPreviousMcqQuestion();
+          currentQuestion = null;
+        }
+        currentSection = 'questionName';
+        questionNameBuffer = [];
       } else if (sectionName === 'Suggested Answers') {
         // Process question text and extract options when entering answers section
         if (currentQuestion && currentSection === 'question') {
@@ -1464,7 +1478,9 @@ function parseMcqMarkdownToStructure(markdown) {
     }
 
     // Accumulate content based on current section
-    if (currentSection === 'question' && currentQuestion) {
+    if (currentSection === 'questionName') {
+      questionNameBuffer.push(line);
+    } else if (currentSection === 'question' && currentQuestion) {
       questionBuffer.push(line);
     } else if (currentSection === 'answers' && currentQuestion) {
       answerBuffer.push(line);
@@ -1549,6 +1565,9 @@ function mcqStructureToMarkdown(structure) {
   let markdown = `__Type__\n\n${structure.type}\n\n`;
 
   structure.questions.forEach((q) => {
+    if (q.name && String(q.name).trim()) {
+      markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;
+    }
     markdown += `__Practice Question__\n\n${q.text}\n\n`;
     
     // Add options
@@ -1611,6 +1630,24 @@ function renderMcqQuestion(question, index) {
   title.className = 'question-item-title';
   title.textContent = `Question ${index + 1}`;
 
+  const nameLabel = document.createElement('label');
+  nameLabel.className = 'form-label';
+  nameLabel.textContent = 'Question name (optional)';
+  nameLabel.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+  nameLabel.setAttribute('for', `mcq-qname-${index}`);
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.id = `mcq-qname-${index}`;
+  nameInput.className = 'input';
+  nameInput.placeholder = 'Shown in the legend when there are multiple questions';
+  nameInput.value = question.name || '';
+  nameInput.style.boxSizing = 'border-box';
+  nameInput.style.maxWidth = '100%';
+  nameInput.oninput = debounce(() => {
+    question.name = nameInput.value;
+    updateStructure();
+  }, 300);
+
   const deleteBtn = document.createElement('button');
   deleteBtn.type = 'button';
   deleteBtn.className = 'button button-text button-danger';
@@ -1637,6 +1674,9 @@ function renderMcqQuestion(question, index) {
 
   header.appendChild(title);
   header.appendChild(deleteBtn);
+
+  container.appendChild(nameLabel);
+  container.appendChild(nameInput);
 
   // Question text textarea
   const questionTextArea = document.createElement('textarea');
