@@ -1,6 +1,6 @@
 __Type__
 
-Multiple Choice
+Text Input
 
 __Summary__
 
@@ -8,50 +8,37 @@ __Summary__
 
 __Responses__
 
-1. **Maria — brand triangle**
+1. **Capitals**
    - Selected Answer: No answer selected
-   - Correct Answer: B
+   - Correct Answer: Paris
    - Result: ✗ Incorrect
 
-2. **Question 2**
+2. **Largest planet**
    - Selected Answer: No answer selected
-   - Correct Answer: A, C
-   - Multi Mode: all
+   - Correct Answer: Jupiter
    - Result: ✗ Incorrect
 
 __Question Name__
 
-Maria — brand triangle
+Capitals
 
 __Practice Question__
 
-Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
+What is the capital of France?
 
-B. Her actual brand doesn't match her identity
-A. Her brand identity is wrong
-C. Her brand image is too positive
-D. She needs a better logo
+__Correct Answers__
 
-__Suggested Answers__
+- Paris [kind: string]
 
-- B - Correct
-- A
-- C
-- D
+__Question Name__
+
+Largest planet
 
 __Practice Question__
 
-Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
+Which planet is the largest in our solar system?
 
-D. He needs a new logo
-A. His actual brand doesn't match his intended identity
-B. He needs to improve his communication skills
-C. His brand image is inconsistent with his identity
+__Correct Answers__
 
-__Suggested Answers__
-
-- D
-- A - Correct
-- B
-- C - Correct
+- Jupiter [kind: string]
 

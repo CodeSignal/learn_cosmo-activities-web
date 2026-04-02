@@ -836,10 +836,7 @@ function parseMatrixMarkdownToStructure(markdown) {
     .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
     .filter(Boolean);
 
-  const correctColumnIndex = (structure.matrix.rows.length ? structure.matrix.rows : ['']).map(() => 0);
-  structure.matrix.rows.forEach((_, ri) => {
-    correctColumnIndex[ri] = 0;
-  });
+  const correctColumnIndex = structure.matrix.rows.map(() => 0);
 
   sugg.forEach(line => {
     const colonIdx = line.indexOf(':');
@@ -860,13 +857,6 @@ function parseMatrixMarkdownToStructure(markdown) {
     structure.content = parseContentTextToStructure(rawContent);
   }
 
-  if (structure.matrix.columns.length < 2) {
-    structure.matrix.columns = createDefaultMatrixBlock().columns;
-  }
-  if (structure.matrix.rows.length === 0) {
-    structure.matrix.rows = ['Row 1'];
-    structure.matrix.correctColumnIndex = [0];
-  }
   while (structure.matrix.correctColumnIndex.length < structure.matrix.rows.length) {
     structure.matrix.correctColumnIndex.push(0);
   }
@@ -929,22 +919,27 @@ function parseFibMarkdownToStructure(markdown) {
   }
   if (current !== null) sections[current] = buf.join('\n');
 
-  const suggested = (sections['Suggested Answers'] || '')
-    .split('\n')
-    .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
-    .filter(Boolean);
-
   const qsRaw = (sections.QuestionStyle || sections['Question Style'] || '').trim().toLowerCase();
   const questionStyle = qsRaw === 'boxed' || qsRaw === 'bordered' ? qsRaw : '';
 
-  const md = (sections['Markdown With Blanks'] || '').trim();
   const def = createDefaultFibBlock();
+  const hasMdWB = Object.prototype.hasOwnProperty.call(sections, 'Markdown With Blanks');
+  const markdownWithBlanks = hasMdWB
+    ? String(sections['Markdown With Blanks'] ?? '').trim()
+    : def.markdownWithBlanks;
+  const hasSugg = Object.prototype.hasOwnProperty.call(sections, 'Suggested Answers');
+  const suggestedAnswers = hasSugg
+    ? (sections['Suggested Answers'] || '')
+        .split('\n')
+        .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
+        .filter(Boolean)
+    : def.suggestedAnswers.slice();
 
   const structure = {
     type: (sections.Type || 'Fill In The Blanks').trim() || 'Fill In The Blanks',
     fib: {
-      markdownWithBlanks: md || def.markdownWithBlanks,
-      suggestedAnswers: suggested.length ? suggested : def.suggestedAnswers.slice(),
+      markdownWithBlanks,
+      suggestedAnswers,
       questionStyle
     },
     content: null
@@ -1000,19 +995,24 @@ function parseMatchingMarkdownToStructure(markdown) {
   }
   if (current !== null) sections[current] = buf.join('\n');
 
-  const suggested = (sections['Suggested Answers'] || '')
-    .split('\n')
-    .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
-    .filter(Boolean);
-
-  const md = (sections['Markdown With Blanks'] || '').trim();
   const def = createDefaultMatchingBlock();
+  const hasMdWB = Object.prototype.hasOwnProperty.call(sections, 'Markdown With Blanks');
+  const markdownWithBlanks = hasMdWB
+    ? String(sections['Markdown With Blanks'] ?? '').trim()
+    : def.markdownWithBlanks;
+  const hasSugg = Object.prototype.hasOwnProperty.call(sections, 'Suggested Answers');
+  const suggestedAnswers = hasSugg
+    ? (sections['Suggested Answers'] || '')
+        .split('\n')
+        .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
+        .filter(Boolean)
+    : def.suggestedAnswers.slice();
 
   const structure = {
     type: (sections.Type || 'Matching').trim() || 'Matching',
     matching: {
-      markdownWithBlanks: md || def.markdownWithBlanks,
-      suggestedAnswers: suggested.length ? suggested : def.suggestedAnswers.slice()
+      markdownWithBlanks,
+      suggestedAnswers
     },
     content: null
   };
@@ -1079,12 +1079,7 @@ function renderMatchingEditor(structure) {
   suggTa.rows = 8;
   suggTa.value = mat.suggestedAnswers.join('\n');
   suggTa.oninput = debounce(() => {
-    let next = suggTa.value.split('\n').map(s => s.trim()).filter(Boolean);
-    if (next.length === 0) {
-      next = createDefaultMatchingBlock().suggestedAnswers.slice();
-      suggTa.value = next.join('\n');
-    }
-    mat.suggestedAnswers = next;
+    mat.suggestedAnswers = suggTa.value.split('\n').map(s => s.trim()).filter(Boolean);
     updateStructure();
   }, 300);
   suggGroup.appendChild(suggLabel);
@@ -1129,12 +1124,7 @@ function renderFibEditor(structure) {
   suggTa.rows = 8;
   suggTa.value = f.suggestedAnswers.join('\n');
   suggTa.oninput = debounce(() => {
-    let next = suggTa.value.split('\n').map(s => s.trim()).filter(Boolean);
-    if (next.length === 0) {
-      next = createDefaultFibBlock().suggestedAnswers.slice();
-      suggTa.value = next.join('\n');
-    }
-    f.suggestedAnswers = next;
+    f.suggestedAnswers = suggTa.value.split('\n').map(s => s.trim()).filter(Boolean);
     updateStructure();
   }, 300);
   suggGroup.appendChild(suggLabel);
@@ -1221,14 +1211,6 @@ function renderMatrixEditor(structure) {
   function syncMatrixLists() {
     m.columns = colTa.value.split('\n').map(s => s.trim()).filter(Boolean);
     m.rows = rowTa.value.split('\n').map(s => s.trim()).filter(Boolean);
-    if (m.columns.length < 2) {
-      m.columns = createDefaultMatrixBlock().columns;
-      colTa.value = m.columns.join('\n');
-    }
-    if (m.rows.length === 0) {
-      m.rows = ['Row 1'];
-      rowTa.value = m.rows.join('\n');
-    }
     while (m.correctColumnIndex.length < m.rows.length) {
       m.correctColumnIndex.push(0);
     }
@@ -1248,12 +1230,31 @@ function renderMatrixEditor(structure) {
     title.textContent = 'Correct column per row';
     correctSection.appendChild(title);
 
+    if (m.rows.length === 0) {
+      const hint = document.createElement('div');
+      hint.className = 'body-small';
+      hint.style.opacity = '0.85';
+      hint.textContent = 'Add at least one row above.';
+      correctSection.appendChild(hint);
+      return;
+    }
+
     m.rows.forEach((row, i) => {
       const rowWrap = document.createElement('div');
       rowWrap.className = 'form-group';
       const lbl = document.createElement('label');
       lbl.className = 'form-label';
       lbl.textContent = row ? `Answer for: ${row}` : `Row ${i + 1}`;
+      if (m.columns.length === 0) {
+        const hint = document.createElement('div');
+        hint.className = 'body-small';
+        hint.style.opacity = '0.85';
+        hint.textContent = 'Add column labels above (at least two for a valid matrix).';
+        rowWrap.appendChild(lbl);
+        rowWrap.appendChild(hint);
+        correctSection.appendChild(rowWrap);
+        return;
+      }
       const sel = document.createElement('select');
       sel.className = 'input';
       m.columns.forEach((c, ci) => {
