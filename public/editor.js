@@ -36,6 +36,7 @@ function parseMarkdownToStructure(markdown) {
   let answerBuffer = [];
   let contentBuffer = [];
   let headingBuffer = [];
+  let questionNameBuffer = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -67,13 +68,19 @@ function parseMarkdownToStructure(markdown) {
       if (sectionName === 'Type') {
         currentSection = 'type';
       } else if (sectionName === 'Practice Question') {
+        const qName = questionNameBuffer.join('\n').trim();
+        questionNameBuffer = [];
         currentSection = 'question';
         currentQuestion = {
+          name: qName,
           text: '',
           correctAnswer: '',
           validation: { kind: 'string', options: {} }
         };
         questionBuffer = [];
+      } else if (sectionName === 'Question Name' || sectionName === 'Question name') {
+        currentSection = 'questionName';
+        questionNameBuffer = [];
       } else if (sectionName === 'Correct Answers' || sectionName === 'Suggested Answers') {
         currentSection = 'answers';
         answerBuffer = [];
@@ -92,6 +99,8 @@ function parseMarkdownToStructure(markdown) {
     // Accumulate content based on current section
     if (currentSection === 'type') {
       structure.type = line.trim() || 'Text Input';
+    } else if (currentSection === 'questionName') {
+      questionNameBuffer.push(line);
     } else if (currentSection === 'question' && currentQuestion) {
       questionBuffer.push(line);
     } else if (currentSection === 'answers' && currentQuestion) {
@@ -228,6 +237,9 @@ function structureToMarkdown(structure) {
 
   // Add questions
   structure.questions.forEach((q, index) => {
+    if (q.name && String(q.name).trim()) {
+      markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;
+    }
     markdown += `__Practice Question__\n\n${q.text}\n\n`;
     markdown += `__Correct Answers__\n\n`;
 
@@ -436,6 +448,24 @@ function renderQuestion(question, index) {
   header.appendChild(kindDropdownContainer);
   header.appendChild(deleteBtn);
 
+  const nameLabel = document.createElement('label');
+  nameLabel.className = 'form-label';
+  nameLabel.textContent = 'Question name (optional)';
+  nameLabel.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+  nameLabel.setAttribute('for', `text-qname-${index}`);
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.id = `text-qname-${index}`;
+  nameInput.className = 'input';
+  nameInput.placeholder = 'Shown in the legend when there are multiple questions';
+  nameInput.value = question.name || '';
+  nameInput.style.boxSizing = 'border-box';
+  nameInput.style.maxWidth = '100%';
+  nameInput.oninput = debounce(() => {
+    question.name = nameInput.value;
+    updateStructure();
+  }, 300);
+
   const questionTextArea = document.createElement('textarea');
   questionTextArea.className = 'form-textarea';
   questionTextArea.placeholder = 'Enter question text...';
@@ -463,6 +493,8 @@ function renderQuestion(question, index) {
   }, 300);
 
   container.appendChild(header);
+  container.appendChild(nameLabel);
+  container.appendChild(nameInput);
   container.appendChild(questionTextArea);
   container.appendChild(answerLabel);
   container.appendChild(answerInput);
@@ -728,6 +760,7 @@ function createDefaultMcqQuestion() {
 
 function createDefaultTextQuestion() {
   return {
+    name: '',
     text: '',
     correctAnswer: '',
     validation: { kind: 'string', options: {} }

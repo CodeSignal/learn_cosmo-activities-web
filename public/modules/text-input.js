@@ -270,6 +270,8 @@ export function initTextInput({
   }
 
   // Render all questions
+  const hasMultipleQuestions = textInput.questions.length > 1;
+
   textInput.questions.forEach((question, qIdx) => {
     const questionEl = document.createElement('div');
     questionEl.className = 'text-input-question';
@@ -280,11 +282,14 @@ export function initTextInput({
     const detailsEl = document.createElement('div');
     detailsEl.className = 'text-input-details';
 
-    // Question legend (Question 1, Question 2, etc.)
-    const legend = document.createElement('div');
-    legend.className = 'text-input-legend heading-xsmall';
-    legend.textContent = `Question ${qIdx + 1}`;
-    detailsEl.appendChild(legend);
+    // Question legend — custom __Question Name__ or "Question N" when multiple questions
+    if (hasMultipleQuestions) {
+      const legend = document.createElement('div');
+      legend.className = 'text-input-legend heading-xsmall';
+      const customName = question.name && String(question.name).trim();
+      legend.textContent = customName || `Question ${qIdx + 1}`;
+      detailsEl.appendChild(legend);
+    }
     
     // Question text (support markdown HTML if available, fallback to plain text)
     const questionTextEl = document.createElement('div');
@@ -611,8 +616,9 @@ export function initTextInput({
       const isValidateLater = q.validation && q.validation.kind === 'validate-later';
       const isCorrect = isValidateLater ? null : validateAnswer(q);
       
+      const customName = q.name && String(q.name).trim();
       return {
-        text: `Question ${idx + 1}`,
+        text: customName || `Question ${idx + 1}`,
         selected: userAnswer,
         correct: q.correctAnswer,
         validateLater: isValidateLater

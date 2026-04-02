@@ -161,6 +161,18 @@ function attachSideContent(activity, sections) {
   return activity;
 }
 
+/** Client posts one result per question in order; label may be a custom name or legacy "Question N". */
+function questionIndexFromOrderedResult(result, resultIndex, numQuestions) {
+  const n = numQuestions | 0;
+  if (typeof resultIndex === 'number' && resultIndex >= 0 && resultIndex < n) return resultIndex;
+  const m = /^Question\s+(\d+)\s*$/i.exec(String(result?.text || '').trim());
+  if (m) {
+    const i = parseInt(m[1], 10) - 1;
+    if (i >= 0 && i < n) return i;
+  }
+  return -1;
+}
+
 function readListItems(sectionTokens) {
   const items = [];
   for (const t of sectionTokens || []) {
@@ -763,6 +775,7 @@ function buildActivityFromMarkdown(markdownText) {
     let questionBuffer = [];
     let answerBuffer = [];
     let headingBuffer = [];
+    let questionNameBuffer = [];
     
     function processQuestion() {
       if (!currentQuestion || questionBuffer.length === 0) return;
@@ -914,12 +927,29 @@ function buildActivityFromMarkdown(markdownText) {
             if (currentQuestion) {
               processAnswers();
             }
-            
+
+            const nameFromBuffer = questionNameBuffer.map(t => t.raw || t.text || '').join('\n').trim();
+            questionNameBuffer = [];
+
             // Start new question
-            currentQuestion = { id: questions.length, text: '', correctAnswer: '', validation: {} };
+            currentQuestion = {
+              id: questions.length,
+              name: nameFromBuffer,
+              text: '',
+              correctAnswer: '',
+              validation: {}
+            };
             currentSection = 'question';
             questionBuffer = [];
             answerBuffer = [];
+            continue;
+          } else if (sectionName === 'Question Name' || sectionName === 'Question name') {
+            if (currentQuestion && currentSection === 'answers') {
+              processAnswers();
+              currentQuestion = null;
+            }
+            currentSection = 'questionName';
+            questionNameBuffer = [];
             continue;
           } else if (sectionName === 'Correct Answers' || sectionName === 'Suggested Answers') {
             // Process current question text
@@ -941,7 +971,9 @@ function buildActivityFromMarkdown(markdownText) {
         }
       }
       
-      if (currentSection === 'question' && currentQuestion) {
+      if (currentSection === 'questionName') {
+        questionNameBuffer.push(token);
+      } else if (currentSection === 'question' && currentQuestion) {
         questionBuffer.push(token);
       } else if (currentSection === 'answers' && currentQuestion) {
         answerBuffer.push(token);
@@ -1580,10 +1612,14 @@ const server = http.createServer((req, res) => {
         }
         
         // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact string match
-        const correctCount = data.results.filter(result => {
+        const correctCount = data.results.filter((result, resultIndex) => {
           if (activity && /^multiple choice$/i.test(activity.type)) {
             // For MCQ, check based on multi-select mode
-            const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+            const questionIndex = questionIndexFromOrderedResult(
+              result,
+              resultIndex,
+              activity.mcq?.questions?.length ?? 0
+            );
             if (activity.mcq && activity.mcq.questions && activity.mcq.questions[questionIndex]) {
               const question = activity.mcq.questions[questionIndex];
               const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1606,7 +1642,11 @@ const server = http.createServer((req, res) => {
             return selected === correct;
           } else if (activity && /^text input$/i.test(activity.type)) {
             // For Text Input, use validation logic based on question validation options
-            const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+            const questionIndex = questionIndexFromOrderedResult(
+              result,
+              resultIndex,
+              activity.textInput?.questions?.length ?? 0
+            );
             if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
               const question = activity.textInput.questions[questionIndex];
               const validationResult = validateTextInputAnswer(question, result.selected);
@@ -1626,8 +1666,12 @@ const server = http.createServer((req, res) => {
         // Count validate-later questions for text input
         let validateLaterCount = 0;
         if (activity && /^text input$/i.test(activity.type)) {
-          validateLaterCount = data.results.filter(result => {
-            const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+          validateLaterCount = data.results.filter((result, resultIndex) => {
+            const questionIndex = questionIndexFromOrderedResult(
+              result,
+              resultIndex,
+              activity.textInput?.questions?.length ?? 0
+            );
             if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
               const question = activity.textInput.questions[questionIndex];
               return question.validation && question.validation.kind === 'validate-later';
@@ -1661,7 +1705,11 @@ const server = http.createServer((req, res) => {
             let isCorrect = false;
             let isValidateLater = false;
             if (activity && /^multiple choice$/i.test(activity.type)) {
-              const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+              const questionIndex = questionIndexFromOrderedResult(
+                result,
+                index,
+                activity.mcq?.questions?.length ?? 0
+              );
               if (activity.mcq && activity.mcq.questions && activity.mcq.questions[questionIndex]) {
                 const question = activity.mcq.questions[questionIndex];
                 const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1691,7 +1739,11 @@ const server = http.createServer((req, res) => {
               }
             } else if (activity && /^text input$/i.test(activity.type)) {
               // For Text Input, use validation logic based on question validation options
-              const questionIndex = parseInt(result.text.replace('Question ', '')) - 1;
+              const questionIndex = questionIndexFromOrderedResult(
+                result,
+                index,
+                activity.textInput?.questions?.length ?? 0
+              );
               if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
                 const question = activity.textInput.questions[questionIndex];
                 isValidateLater = question.validation && question.validation.kind === 'validate-later';
@@ -1767,6 +1819,9 @@ const server = http.createServer((req, res) => {
             // For Text Input, include each question with correct answers
             if (activity.textInput && activity.textInput.questions) {
               activity.textInput.questions.forEach((q, qIdx) => {
+                if (q.name && String(q.name).trim()) {
+                  markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;
+                }
                 markdown += `__Practice Question__\n\n${q.text}\n\n`;
                 markdown += `__Correct Answers__\n\n`;
                 // Build answer string with validation options
