@@ -1,23 +1,21 @@
 __Type__
 
-Text Input
-
-__Content__
-
-https://example.com/documentation123 [openInNewTab] [contentWidth: 30%]
+Matrix
 
 __Practice Question__
 
-What is the capital of France?
 
-__Correct Answers__
 
-- Paris [kind: string] [options: caseSensitive=false]
+__Matrix Columns__
 
-__Practice Question__
+- Column A
+- Column B
 
-What is 2 + 2?
+__Matrix Rows__
 
-__Correct Answers__
+- Row 1
 
-- 4 [kind: numeric] [options: threshold=0.01,precision=2]
+__Suggested Answers__
+
+- Row 1: Column A
+

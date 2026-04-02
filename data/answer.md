@@ -1,6 +1,6 @@
 __Type__
 
-Matching
+Multiple Choice
 
 __Summary__
 
@@ -8,26 +8,50 @@ __Summary__
 
 __Responses__
 
-1. **Item 1**
-   - Selected Answer: Answer B
-   - Correct Answer: Answer A
+1. **Maria — brand triangle**
+   - Selected Answer: No answer selected
+   - Correct Answer: B
    - Result: ✗ Incorrect
 
-2. **Item 2**
-   - Selected Answer: Answer A
-   - Correct Answer: Answer B
+2. **Question 2**
+   - Selected Answer: No answer selected
+   - Correct Answer: A, C
+   - Multi Mode: all
    - Result: ✗ Incorrect
 
-__Markdown With Blanks__
+__Question Name__
 
-> **Item 1**: First prompt text [[blank:Answer A]]
+Maria — brand triangle
 
+__Practice Question__
 
-> **Item 2**: Second prompt [[blank:Answer B]]
+Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
+
+B. Her actual brand doesn't match her identity
+A. Her brand identity is wrong
+C. Her brand image is too positive
+D. She needs a better logo
 
 __Suggested Answers__
 
-- Answer B
-- distractor
-- Answer A
+- B - Correct
+- A
+- C
+- D
+
+__Practice Question__
+
+Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
+
+D. He needs a new logo
+A. His actual brand doesn't match his intended identity
+B. He needs to improve his communication skills
+C. His brand image is inconsistent with his identity
+
+__Suggested Answers__
+
+- D
+- A - Correct
+- B
+- C - Correct
 

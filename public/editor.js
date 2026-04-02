@@ -315,10 +315,14 @@ async function loadMarkdown() {
     const qt = data.questionType;
     const questionType =
       qt != null && String(qt).trim() ? String(qt).trim() : null;
-    return { markdown: data.markdown || '', questionType };
+    return {
+      markdown: data.markdown || '',
+      questionType,
+      copyMarkdownEnabled: data.copyMarkdownEnabled === true
+    };
   } catch (error) {
     console.error('Error loading markdown:', error);
-    return { markdown: '', questionType: null };
+    return { markdown: '', questionType: null, copyMarkdownEnabled: false };
   }
 }
 
@@ -1283,20 +1287,96 @@ function renderMatrixEditor(structure) {
 let questionTypeDropdownInstance = null;
 let suppressQuestionTypeSelect = false;
 
-function updateStructure() {
-  let markdown;
+/** Current question markdown (same payload as auto-save). */
+function getCurrentMarkdown() {
   if (isMcqMode) {
-    markdown = mcqStructureToMarkdown(currentStructure);
-  } else if (isMatrixMode) {
-    markdown = matrixStructureToMarkdown(currentStructure);
-  } else if (isFibMode) {
-    markdown = fibStructureToMarkdown(currentStructure);
-  } else if (isMatchingMode) {
-    markdown = matchingStructureToMarkdown(currentStructure);
-  } else {
-    markdown = structureToMarkdown(currentStructure);
+    return mcqStructureToMarkdown(currentStructure);
   }
-  debouncedSave(markdown);
+  if (isMatrixMode) {
+    return matrixStructureToMarkdown(currentStructure);
+  }
+  if (isFibMode) {
+    return fibStructureToMarkdown(currentStructure);
+  }
+  if (isMatchingMode) {
+    return matchingStructureToMarkdown(currentStructure);
+  }
+  return structureToMarkdown(currentStructure);
+}
+
+function updateStructure() {
+  debouncedSave(getCurrentMarkdown());
+}
+
+let copyMarkdownFeedbackTimer = null;
+
+function showCopyMarkdownFeedback(message, isError = false) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  if (copyMarkdownFeedbackTimer) {
+    clearTimeout(copyMarkdownFeedbackTimer);
+    copyMarkdownFeedbackTimer = null;
+  }
+  el.textContent = message;
+  el.className = isError ? 'save-status error' : 'save-status saved';
+  el.classList.remove('hidden');
+  copyMarkdownFeedbackTimer = setTimeout(() => {
+    el.classList.add('hidden');
+    copyMarkdownFeedbackTimer = null;
+  }, 2500);
+}
+
+async function copyMarkdownToClipboard() {
+  const text = getCurrentMarkdown();
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text);
+    } else {
+      throw new Error('Clipboard API unavailable');
+    }
+    showCopyMarkdownFeedback('Copied markdown to clipboard');
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) {
+        showCopyMarkdownFeedback('Copied markdown to clipboard');
+      } else {
+        showCopyMarkdownFeedback('Could not copy — select and copy manually', true);
+      }
+    } catch {
+      document.body.removeChild(ta);
+      showCopyMarkdownFeedback('Could not copy — try a secure (https) context', true);
+    }
+  }
+}
+
+function setCopyMarkdownButtonVisible(enabled) {
+  const btn = document.getElementById('copy-markdown-btn');
+  if (!btn) return;
+  if (enabled) {
+    btn.removeAttribute('hidden');
+    btn.style.removeProperty('display');
+  } else {
+    btn.setAttribute('hidden', '');
+    btn.style.display = 'none';
+  }
+}
+
+function initCopyMarkdownButton() {
+  const btn = document.getElementById('copy-markdown-btn');
+  if (!btn || btn.dataset.wired === '1') return;
+  btn.dataset.wired = '1';
+  btn.addEventListener('click', () => {
+    copyMarkdownToClipboard();
+  });
 }
 
 
@@ -2272,7 +2352,8 @@ function initQuestionTypeDropdown() {
 
 // Initialize editor
 async function initEditor() {
-  let { markdown, questionType } = await loadMarkdown();
+  let { markdown, questionType, copyMarkdownEnabled } = await loadMarkdown();
+  setCopyMarkdownButtonVisible(copyMarkdownEnabled);
 
   const editorRoot = document.getElementById('editor-root');
   const typePickerScreen = document.getElementById('type-picker-screen');
@@ -2338,6 +2419,7 @@ async function initEditor() {
   ensureDefaultQuestions();
   mountEditorUi();
   initQuestionTypeDropdown();
+  initCopyMarkdownButton();
 }
 
 function wireContentEditorPanel() {

@@ -204,6 +204,19 @@
       margin-top: var(--UI-Spacing-spacing-l);
     }
 
+    .editor-top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--UI-Spacing-spacing-ms);
+      margin-bottom: var(--UI-Spacing-spacing-l);
+    }
+
+    /* .button sets display: inline-flex, which overrides the [hidden] UA rule — keep copy control actually hidden */
+    #copy-markdown-btn[hidden] {
+      display: none !important;
+    }
+
     /*
      * Design-system .box is row flex + centered; single-card editors stack form-groups
      * in a column so fields do not overlap horizontally.
@@ -243,7 +256,12 @@
   </div>
 
   <div class="editor-container" id="editor-root">
-    <span class="save-status hidden" id="save-status"></span>
+    <div class="editor-top-bar">
+      <button type="button" class="button button-secondary" id="copy-markdown-btn" hidden>
+        Copy markdown
+      </button>
+      <span class="save-status hidden" id="save-status"></span>
+    </div>
 
     <div class="form-group" style="margin-bottom: var(--UI-Spacing-spacing-xl);">
       <label class="form-label">Question type</label>

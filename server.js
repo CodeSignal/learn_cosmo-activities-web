@@ -8,11 +8,16 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = path.join(__dirname, 'data');
 
-// Parse command line arguments for --edit
+// Parse command line arguments for --edit and --copy-markdown
 let EDIT_MODE = false;
 let EDIT_FILE_PATH = null;
+let COPY_MARKDOWN_ENABLED = false;
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--copy-markdown') {
+    COPY_MARKDOWN_ENABLED = true;
+    continue;
+  }
   if (args[i] === '--edit' && i + 1 < args.length) {
     EDIT_MODE = true;
     let editPathArg = args[i + 1];
@@ -1122,7 +1127,8 @@ const server = http.createServer((req, res) => {
           respondJson(res, 200, {
             markdown: '',
             filePath: EDIT_FILE_PATH,
-            questionType: null
+            questionType: null,
+            copyMarkdownEnabled: COPY_MARKDOWN_ENABLED
           });
         } else {
           respondJson(res, 500, { error: 'Failed to read file' });
@@ -1132,7 +1138,8 @@ const server = http.createServer((req, res) => {
       respondJson(res, 200, {
         markdown: data,
         filePath: EDIT_FILE_PATH,
-        questionType: extractQuestionTypeFromMarkdown(data)
+        questionType: extractQuestionTypeFromMarkdown(data),
+        copyMarkdownEnabled: COPY_MARKDOWN_ENABLED
       });
     });
     return;
