@@ -339,7 +339,9 @@ function promptForQuestionType() {
       items: [
         { value: 'Text Input', label: 'Text Input' },
         { value: 'Multiple Choice', label: 'Multiple Choice' },
-        { value: 'Matrix', label: 'Matrix' }
+        { value: 'Matrix', label: 'Matrix' },
+        { value: 'Fill in the blanks', label: 'Fill in the blanks' },
+        { value: 'Matching', label: 'Matching' }
       ],
       selectedValue: 'Text Input',
       growToFit: false,
@@ -682,9 +684,11 @@ const debouncedSave = debounce((markdown) => {
   saveMarkdown(markdown);
 }, 500);
 
-// Track if we're in MCQ mode
+// Track if we're in MCQ / Matrix / FIB mode
 let isMcqMode = false;
 let isMatrixMode = false;
+let isFibMode = false;
+let isMatchingMode = false;
 
 /** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string } | null} */
 function cloneSideContent(content) {
@@ -732,6 +736,23 @@ function createDefaultMatrixBlock() {
     rows: ['Row 1'],
     correctColumnIndex: [0],
     explainAnswer: false
+  };
+}
+
+function createDefaultFibBlock() {
+  return {
+    markdownWithBlanks:
+      'Fill in the blanks\n\n> This sentence has a [[blank:word]] and a [[blank:number]].',
+    suggestedAnswers: ['word', 'number', 'extra choice'],
+    questionStyle: ''
+  };
+}
+
+function createDefaultMatchingBlock() {
+  return {
+    markdownWithBlanks:
+      '> **Item 1**: First prompt text [[blank:Answer A]]\n\n> **Item 2**: Second prompt [[blank:Answer B]]',
+    suggestedAnswers: ['Answer A', 'Answer B', 'distractor']
   };
 }
 
@@ -849,6 +870,266 @@ function matrixStructureToMarkdown(structure) {
   }
 
   return markdown;
+}
+
+/** @param {string} markdown */
+function parseFibMarkdownToStructure(markdown) {
+  const sections = {};
+  let current = null;
+  const buf = [];
+  const lines = markdown.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const m = line.match(/^__([^_]+)__\s*$/);
+    if (m) {
+      if (current !== null) sections[current] = buf.join('\n');
+      current = m[1].trim();
+      buf.length = 0;
+    } else {
+      buf.push(line);
+    }
+  }
+  if (current !== null) sections[current] = buf.join('\n');
+
+  const suggested = (sections['Suggested Answers'] || '')
+    .split('\n')
+    .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
+    .filter(Boolean);
+
+  const qsRaw = (sections.QuestionStyle || sections['Question Style'] || '').trim().toLowerCase();
+  const questionStyle = qsRaw === 'boxed' || qsRaw === 'bordered' ? qsRaw : '';
+
+  const md = (sections['Markdown With Blanks'] || '').trim();
+  const def = createDefaultFibBlock();
+
+  const structure = {
+    type: (sections.Type || 'Fill In The Blanks').trim() || 'Fill In The Blanks',
+    fib: {
+      markdownWithBlanks: md || def.markdownWithBlanks,
+      suggestedAnswers: suggested.length ? suggested : def.suggestedAnswers.slice(),
+      questionStyle
+    },
+    content: null
+  };
+
+  const rawContent = (sections.Content || '').trim();
+  if (rawContent) {
+    structure.content = parseContentTextToStructure(rawContent);
+  }
+
+  return structure;
+}
+
+function fibStructureToMarkdown(structure) {
+  const f = structure.fib || createDefaultFibBlock();
+  let markdown = `__Type__\n\nFill In The Blanks\n\n__Markdown With Blanks__\n\n${f.markdownWithBlanks || ''}\n\n__Suggested Answers__\n\n`;
+  f.suggestedAnswers.forEach(a => {
+    markdown += `- ${a}\n`;
+  });
+  markdown += '\n';
+  if (f.questionStyle === 'boxed' || f.questionStyle === 'bordered') {
+    markdown += `__QuestionStyle__\n\n${f.questionStyle}\n\n`;
+  }
+  if (structure.content && structure.content.value) {
+    let contentValue = structure.content.value;
+    if (structure.content.type === 'url') {
+      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
+      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
+    } else if (structure.content.contentWidth) {
+      contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
+    }
+    markdown += `__Content__\n\n${contentValue}\n\n`;
+  }
+  return markdown;
+}
+
+/** @param {string} markdown */
+function parseMatchingMarkdownToStructure(markdown) {
+  const sections = {};
+  let current = null;
+  const buf = [];
+  const lines = markdown.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const m = line.match(/^__([^_]+)__\s*$/);
+    if (m) {
+      if (current !== null) sections[current] = buf.join('\n');
+      current = m[1].trim();
+      buf.length = 0;
+    } else {
+      buf.push(line);
+    }
+  }
+  if (current !== null) sections[current] = buf.join('\n');
+
+  const suggested = (sections['Suggested Answers'] || '')
+    .split('\n')
+    .map(l => l.replace(/^\s*[-*]\s+/, '').trim())
+    .filter(Boolean);
+
+  const md = (sections['Markdown With Blanks'] || '').trim();
+  const def = createDefaultMatchingBlock();
+
+  const structure = {
+    type: (sections.Type || 'Matching').trim() || 'Matching',
+    matching: {
+      markdownWithBlanks: md || def.markdownWithBlanks,
+      suggestedAnswers: suggested.length ? suggested : def.suggestedAnswers.slice()
+    },
+    content: null
+  };
+
+  const rawContent = (sections.Content || '').trim();
+  if (rawContent) {
+    structure.content = parseContentTextToStructure(rawContent);
+  }
+
+  return structure;
+}
+
+function matchingStructureToMarkdown(structure) {
+  const m = structure.matching || createDefaultMatchingBlock();
+  let markdown = `__Type__\n\nMatching\n\n__Markdown With Blanks__\n\n${m.markdownWithBlanks || ''}\n\n__Suggested Answers__\n\n`;
+  m.suggestedAnswers.forEach(a => {
+    markdown += `- ${a}\n`;
+  });
+  markdown += '\n';
+  if (structure.content && structure.content.value) {
+    let contentValue = structure.content.value;
+    if (structure.content.type === 'url') {
+      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
+      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
+    } else if (structure.content.contentWidth) {
+      contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
+    }
+    markdown += `__Content__\n\n${contentValue}\n\n`;
+  }
+  return markdown;
+}
+
+function renderMatchingEditor(structure) {
+  const root = document.createElement('div');
+  root.className = 'matching-editor-root box card non-interactive';
+
+  const mat = structure.matching;
+
+  const mdGroup = document.createElement('div');
+  mdGroup.className = 'form-group';
+  const mdLabel = document.createElement('label');
+  mdLabel.className = 'form-label';
+  mdLabel.textContent =
+    'Markdown with blanks (one blockquote line per item; use [[blank:correctMatch]] for the draggable answer)';
+  const mdTa = document.createElement('textarea');
+  mdTa.className = 'input';
+  mdTa.rows = 14;
+  mdTa.value = mat.markdownWithBlanks;
+  mdTa.oninput = debounce(() => {
+    mat.markdownWithBlanks = mdTa.value;
+    updateStructure();
+  }, 300);
+  mdGroup.appendChild(mdLabel);
+  mdGroup.appendChild(mdTa);
+
+  const suggGroup = document.createElement('div');
+  suggGroup.className = 'form-group';
+  const suggLabel = document.createElement('label');
+  suggLabel.className = 'form-label';
+  suggLabel.textContent =
+    'Suggested answers (one per line; include each correct match and any extra choices)';
+  const suggTa = document.createElement('textarea');
+  suggTa.className = 'input';
+  suggTa.rows = 8;
+  suggTa.value = mat.suggestedAnswers.join('\n');
+  suggTa.oninput = debounce(() => {
+    let next = suggTa.value.split('\n').map(s => s.trim()).filter(Boolean);
+    if (next.length === 0) {
+      next = createDefaultMatchingBlock().suggestedAnswers.slice();
+      suggTa.value = next.join('\n');
+    }
+    mat.suggestedAnswers = next;
+    updateStructure();
+  }, 300);
+  suggGroup.appendChild(suggLabel);
+  suggGroup.appendChild(suggTa);
+
+  root.appendChild(mdGroup);
+  root.appendChild(suggGroup);
+
+  return root;
+}
+
+function renderFibEditor(structure) {
+  const root = document.createElement('div');
+  root.className = 'fib-editor-root box card non-interactive';
+
+  const f = structure.fib;
+
+  const mdGroup = document.createElement('div');
+  mdGroup.className = 'form-group';
+  const mdLabel = document.createElement('label');
+  mdLabel.className = 'form-label';
+  mdLabel.textContent =
+    'Markdown with blanks (use [[blank:correctAnswer]]; start the FIB block with a > blockquote line per server rules)';
+  const mdTa = document.createElement('textarea');
+  mdTa.className = 'input';
+  mdTa.rows = 14;
+  mdTa.value = f.markdownWithBlanks;
+  mdTa.oninput = debounce(() => {
+    f.markdownWithBlanks = mdTa.value;
+    updateStructure();
+  }, 300);
+  mdGroup.appendChild(mdLabel);
+  mdGroup.appendChild(mdTa);
+
+  const suggGroup = document.createElement('div');
+  suggGroup.className = 'form-group';
+  const suggLabel = document.createElement('label');
+  suggLabel.className = 'form-label';
+  suggLabel.textContent = 'Suggested answers (one per line; include correct answers and distractors)';
+  const suggTa = document.createElement('textarea');
+  suggTa.className = 'input';
+  suggTa.rows = 8;
+  suggTa.value = f.suggestedAnswers.join('\n');
+  suggTa.oninput = debounce(() => {
+    let next = suggTa.value.split('\n').map(s => s.trim()).filter(Boolean);
+    if (next.length === 0) {
+      next = createDefaultFibBlock().suggestedAnswers.slice();
+      suggTa.value = next.join('\n');
+    }
+    f.suggestedAnswers = next;
+    updateStructure();
+  }, 300);
+  suggGroup.appendChild(suggLabel);
+  suggGroup.appendChild(suggTa);
+
+  const styleGroup = document.createElement('div');
+  styleGroup.className = 'form-group';
+  const styleLabel = document.createElement('label');
+  styleLabel.className = 'form-label';
+  styleLabel.textContent = 'Question style (optional)';
+  const styleWrap = document.createElement('div');
+  styleWrap.style.width = '260px';
+  new Dropdown(styleWrap, {
+    items: [
+      { value: '', label: 'Default' },
+      { value: 'boxed', label: 'Boxed' },
+      { value: 'bordered', label: 'Bordered' }
+    ],
+    selectedValue: f.questionStyle || '',
+    growToFit: false,
+    onSelect: value => {
+      f.questionStyle = value || '';
+      updateStructure();
+    }
+  });
+  styleGroup.appendChild(styleLabel);
+  styleGroup.appendChild(styleWrap);
+
+  root.appendChild(mdGroup);
+  root.appendChild(suggGroup);
+  root.appendChild(styleGroup);
+
+  return root;
 }
 
 /**
@@ -1007,6 +1288,10 @@ function updateStructure() {
     markdown = mcqStructureToMarkdown(currentStructure);
   } else if (isMatrixMode) {
     markdown = matrixStructureToMarkdown(currentStructure);
+  } else if (isFibMode) {
+    markdown = fibStructureToMarkdown(currentStructure);
+  } else if (isMatchingMode) {
+    markdown = matchingStructureToMarkdown(currentStructure);
   } else {
     markdown = structureToMarkdown(currentStructure);
   }
@@ -1708,6 +1993,8 @@ function hydrateStructureFromMarkdown(markdown) {
     currentStructure.questions = parsed.questions;
     currentStructure.content = parsed.content || null;
     delete currentStructure.matrix;
+    delete currentStructure.fib;
+    delete currentStructure.matching;
   } else if (isMatrixMode) {
     const parsed = parseMatrixMarkdownToStructure(markdown);
     currentStructure.type = parsed.type;
@@ -1715,12 +2002,34 @@ function hydrateStructureFromMarkdown(markdown) {
     currentStructure.content = parsed.content || null;
     currentStructure.questions = [];
     delete currentStructure.heading;
+    delete currentStructure.fib;
+    delete currentStructure.matching;
+  } else if (isFibMode) {
+    const parsed = parseFibMarkdownToStructure(markdown);
+    currentStructure.type = parsed.type;
+    currentStructure.fib = parsed.fib;
+    currentStructure.content = parsed.content || null;
+    currentStructure.questions = [];
+    delete currentStructure.heading;
+    delete currentStructure.matrix;
+    delete currentStructure.matching;
+  } else if (isMatchingMode) {
+    const parsed = parseMatchingMarkdownToStructure(markdown);
+    currentStructure.type = parsed.type;
+    currentStructure.matching = parsed.matching;
+    currentStructure.content = parsed.content || null;
+    currentStructure.questions = [];
+    delete currentStructure.heading;
+    delete currentStructure.matrix;
+    delete currentStructure.fib;
   } else {
     const parsed = parseMarkdownToStructure(markdown);
     currentStructure.questions = parsed.questions;
     currentStructure.content = parsed.content;
     currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
     delete currentStructure.matrix;
+    delete currentStructure.fib;
+    delete currentStructure.matching;
   }
 }
 
@@ -1728,6 +2037,18 @@ function ensureDefaultQuestions() {
   if (isMatrixMode) {
     if (!currentStructure.matrix) {
       currentStructure.matrix = createDefaultMatrixBlock();
+    }
+    return;
+  }
+  if (isFibMode) {
+    if (!currentStructure.fib) {
+      currentStructure.fib = createDefaultFibBlock();
+    }
+    return;
+  }
+  if (isMatchingMode) {
+    if (!currentStructure.matching) {
+      currentStructure.matching = createDefaultMatchingBlock();
     }
     return;
   }
@@ -1743,7 +2064,7 @@ function mountEditorUi() {
   const headingGroup = document.getElementById('heading-input-group');
   const headingInput = document.getElementById('heading-input');
 
-  if (isMcqMode || isMatrixMode) {
+  if (isMcqMode || isMatrixMode || isFibMode || isMatchingMode) {
     headingTitle.style.display = 'none';
     headingGroup.style.display = 'none';
     delete currentStructure.heading;
@@ -1774,6 +2095,18 @@ function mountEditorUi() {
       currentStructure.matrix = createDefaultMatrixBlock();
     }
     questionsContainer.appendChild(renderMatrixEditor(currentStructure));
+  } else if (isFibMode) {
+    if (addQuestionBtn) addQuestionBtn.style.display = 'none';
+    if (!currentStructure.fib) {
+      currentStructure.fib = createDefaultFibBlock();
+    }
+    questionsContainer.appendChild(renderFibEditor(currentStructure));
+  } else if (isMatchingMode) {
+    if (addQuestionBtn) addQuestionBtn.style.display = 'none';
+    if (!currentStructure.matching) {
+      currentStructure.matching = createDefaultMatchingBlock();
+    }
+    questionsContainer.appendChild(renderMatchingEditor(currentStructure));
   } else {
     if (addQuestionBtn) addQuestionBtn.style.display = '';
     currentStructure.questions.forEach((q, index) => {
@@ -1785,7 +2118,7 @@ function mountEditorUi() {
 
   if (addQuestionBtn) {
     addQuestionBtn.onclick = () => {
-      if (isMatrixMode) return;
+      if (isMatrixMode || isFibMode || isMatchingMode) return;
       const newQuestion = isMcqMode ? createDefaultMcqQuestion() : createDefaultTextQuestion();
       currentStructure.questions.push(newQuestion);
       const index = currentStructure.questions.length - 1;
@@ -1808,6 +2141,8 @@ function initQuestionTypeDropdown() {
   function currentTypeDropdownValue() {
     if (isMcqMode) return 'Multiple Choice';
     if (isMatrixMode) return 'Matrix';
+    if (isFibMode) return 'Fill in the blanks';
+    if (isMatchingMode) return 'Matching';
     return 'Text Input';
   }
 
@@ -1815,7 +2150,9 @@ function initQuestionTypeDropdown() {
     items: [
       { value: 'Text Input', label: 'Text Input' },
       { value: 'Multiple Choice', label: 'Multiple Choice' },
-      { value: 'Matrix', label: 'Matrix' }
+      { value: 'Matrix', label: 'Matrix' },
+      { value: 'Fill in the blanks', label: 'Fill in the blanks' },
+      { value: 'Matching', label: 'Matching' }
     ],
     selectedValue: currentTypeDropdownValue(),
     growToFit: false,
@@ -1824,7 +2161,16 @@ function initQuestionTypeDropdown() {
 
       const nextMcq = value === 'Multiple Choice';
       const nextMatrix = value === 'Matrix';
-      if (nextMcq === isMcqMode && nextMatrix === isMatrixMode) return;
+      const nextFib = value === 'Fill in the blanks';
+      const nextMatching = value === 'Matching';
+      if (
+        nextMcq === isMcqMode &&
+        nextMatrix === isMatrixMode &&
+        nextFib === isFibMode &&
+        nextMatching === isMatchingMode
+      ) {
+        return;
+      }
 
       const preservedContent = cloneSideContent(currentStructure.content);
       const contentNote = hasDefinedSideContent(currentStructure.content)
@@ -1842,6 +2188,8 @@ function initQuestionTypeDropdown() {
 
       isMcqMode = nextMcq;
       isMatrixMode = nextMatrix;
+      isFibMode = nextFib;
+      isMatchingMode = nextMatching;
       currentStructure.type = value;
       currentStructure.content = preservedContent;
       questionDropdowns.clear();
@@ -1850,14 +2198,32 @@ function initQuestionTypeDropdown() {
         currentStructure.matrix = createDefaultMatrixBlock();
         currentStructure.questions = [];
         delete currentStructure.heading;
+        delete currentStructure.fib;
+        delete currentStructure.matching;
+      } else if (nextFib) {
+        currentStructure.fib = createDefaultFibBlock();
+        currentStructure.questions = [];
+        delete currentStructure.heading;
+        delete currentStructure.matrix;
+        delete currentStructure.matching;
+      } else if (nextMatching) {
+        currentStructure.matching = createDefaultMatchingBlock();
+        currentStructure.questions = [];
+        delete currentStructure.heading;
+        delete currentStructure.matrix;
+        delete currentStructure.fib;
       } else if (nextMcq) {
         currentStructure.questions = [createDefaultMcqQuestion()];
         delete currentStructure.heading;
         delete currentStructure.matrix;
+        delete currentStructure.fib;
+        delete currentStructure.matching;
       } else {
         currentStructure.questions = [createDefaultTextQuestion()];
         currentStructure.heading = { value: '' };
         delete currentStructure.matrix;
+        delete currentStructure.fib;
+        delete currentStructure.matching;
       }
       mountEditorUi();
     }
@@ -1891,6 +2257,8 @@ async function initEditor() {
 
   isMcqMode = questionType && /^multiple choice$/i.test(questionType);
   isMatrixMode = questionType && /^matrix$/i.test(questionType);
+  isFibMode = questionType && /^fill in the blanks$/i.test(questionType);
+  isMatchingMode = questionType && /^matching$/i.test(questionType);
 
   if (markdown && markdown.trim()) {
     hydrateStructureFromMarkdown(markdown);
@@ -1900,12 +2268,30 @@ async function initEditor() {
       currentStructure.type = 'Matrix';
       currentStructure.matrix = createDefaultMatrixBlock();
       delete currentStructure.heading;
+      delete currentStructure.fib;
+      delete currentStructure.matching;
+    } else if (isFibMode) {
+      currentStructure.type = 'Fill In The Blanks';
+      currentStructure.fib = createDefaultFibBlock();
+      delete currentStructure.heading;
+      delete currentStructure.matrix;
+      delete currentStructure.matching;
+    } else if (isMatchingMode) {
+      currentStructure.type = 'Matching';
+      currentStructure.matching = createDefaultMatchingBlock();
+      delete currentStructure.heading;
+      delete currentStructure.matrix;
+      delete currentStructure.fib;
     } else if (!isMcqMode) {
       currentStructure.heading = { value: '' };
       delete currentStructure.matrix;
+      delete currentStructure.fib;
+      delete currentStructure.matching;
     } else {
       delete currentStructure.heading;
       delete currentStructure.matrix;
+      delete currentStructure.fib;
+      delete currentStructure.matching;
     }
   }
 

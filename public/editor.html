@@ -205,10 +205,12 @@
     }
 
     /*
-     * Design-system .box is row flex + centered; matrix editor stacks many form-groups
-     * and must be a column so fields do not overlap horizontally.
+     * Design-system .box is row flex + centered; single-card editors stack form-groups
+     * in a column so fields do not overlap horizontally.
      */
-    .matrix-editor-root.box {
+    .matrix-editor-root.box,
+    .fib-editor-root.box,
+    .matching-editor-root.box {
       flex-direction: column;
       align-items: stretch;
       justify-content: flex-start;
@@ -219,7 +221,9 @@
       box-sizing: border-box;
     }
 
-    .matrix-editor-root .form-group {
+    .matrix-editor-root .form-group,
+    .fib-editor-root .form-group,
+    .matching-editor-root .form-group {
       min-width: 0;
     }
   </style>
