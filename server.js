@@ -385,8 +385,28 @@ function buildActivityFromMarkdown(markdownText) {
     // Parse QuestionStyle (e.g. "boxed", "bordered") from __QuestionStyle__ section
     const questionStyleTokens = sections.get('QuestionStyle') || [];
     const questionStyle = ((questionStyleTokens.map(t => t.raw || t.text).join('\n') || '').trim()).toLowerCase() || null;
+    const fibHeadingTokens = sections.get('Heading') || [];
+    const fibHeadingMd = fibHeadingTokens.map(t => t.raw || t.text).join('\n').trim();
+    let fibHeading = null;
+    if (fibHeadingMd) {
+      fibHeading = { markdown: fibHeadingMd, html: marked.parse(escapeMathDollars(fibHeadingMd)) };
+    }
     return attachSideContent(
-      { type, question, fib: { raw: fibMarkdown, prompt, promptHtml, content, htmlWithPlaceholders: contentHtml, blanks, choices, questionStyle: questionStyle || undefined } },
+      {
+        type,
+        question,
+        fib: {
+          raw: fibMarkdown,
+          prompt,
+          promptHtml,
+          content,
+          htmlWithPlaceholders: contentHtml,
+          blanks,
+          choices,
+          questionStyle: questionStyle || undefined,
+          ...(fibHeading ? { heading: fibHeading } : {})
+        }
+      },
       sections
     );
   }
@@ -766,7 +786,14 @@ function buildActivityFromMarkdown(markdownText) {
     
     // Render markdown to HTML for prompt
     const promptHtml = prompt ? marked.parse(escapeMathDollars(prompt)) : '';
-    
+
+    const matchingHeadingTokens = sections.get('Heading') || [];
+    const matchingHeadingMd = matchingHeadingTokens.map(t => t.raw || t.text).join('\n').trim();
+    let matchingHeading = null;
+    if (matchingHeadingMd) {
+      matchingHeading = { markdown: matchingHeadingMd, html: marked.parse(escapeMathDollars(matchingHeadingMd)) };
+    }
+
     return attachSideContent({
       type,
       question: null,
@@ -775,7 +802,8 @@ function buildActivityFromMarkdown(markdownText) {
         prompt,
         promptHtml,
         items,
-        choices
+        choices,
+        ...(matchingHeading ? { heading: matchingHeading } : {})
       }
     }, sections);
   }
@@ -1088,6 +1116,13 @@ function buildActivityFromMarkdown(markdownText) {
     const explainAnswer =
       explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
 
+    const headingTokens = sections.get('Heading') || [];
+    const headingMd = headingTokens.map(t => t.raw || t.text).join('\n').trim();
+    let matrixHeading = null;
+    if (headingMd) {
+      matrixHeading = { markdown: headingMd, html: marked.parse(escapeMathDollars(headingMd)) };
+    }
+
     const questionHtml = question ? marked.parse(escapeMathDollars(question)) : '';
 
     return attachSideContent(
@@ -1099,7 +1134,8 @@ function buildActivityFromMarkdown(markdownText) {
           columns,
           rows,
           correctColumnIndexByRow,
-          explainAnswer
+          explainAnswer,
+          ...(matrixHeading ? { heading: matrixHeading } : {})
         }
       },
       sections
@@ -1796,6 +1832,10 @@ const server = http.createServer((req, res) => {
 
           if (/^fill in the blanks$/i.test(activity.type)) {
             // For fill-in-the-blanks, include the original markdown with blanks
+            const fh = activity.fib && activity.fib.heading;
+            if (fh && fh.markdown && String(fh.markdown).trim()) {
+              markdown += `__Heading__\n\n${String(fh.markdown).trim()}\n\n`;
+            }
             markdown += `__Markdown With Blanks__\n\n${activity.fib.raw}\n\n`;
             markdown += `__Suggested Answers__\n\n`;
             activity.fib.choices.forEach(choice => {
@@ -1828,6 +1868,10 @@ const server = http.createServer((req, res) => {
             }
           } else if (/^matching$/i.test(activity.type)) {
             // For Matching, include the original markdown with blanks
+            const mh = activity.matching && activity.matching.heading;
+            if (mh && mh.markdown && String(mh.markdown).trim()) {
+              markdown += `__Heading__\n\n${String(mh.markdown).trim()}\n\n`;
+            }
             markdown += `__Markdown With Blanks__\n\n${activity.matching.raw}\n\n`;
             markdown += `__Suggested Answers__\n\n`;
             activity.matching.choices.forEach(choice => {
@@ -1864,6 +1908,10 @@ const server = http.createServer((req, res) => {
               });
             }
           } else if (/^matrix$/i.test(activity.type) && activity.matrix) {
+            const mh = activity.matrix.heading;
+            if (mh && mh.markdown && String(mh.markdown).trim()) {
+              markdown += `__Heading__\n\n${String(mh.markdown).trim()}\n\n`;
+            }
             if (activity.question) {
               markdown += `__Practice Question__\n\n${activity.question}\n\n`;
             }

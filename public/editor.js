@@ -819,6 +819,12 @@ function parseMatrixMarkdownToStructure(markdown) {
   if (current !== null) sections[current] = buf.join('\n');
 
   structure.type = (sections.Type || 'Matrix').trim() || 'Matrix';
+
+  const headingRaw = (sections.Heading || '').trim();
+  if (headingRaw) {
+    structure.heading = { value: headingRaw };
+  }
+
   structure.matrix.practiceQuestion = (sections['Practice Question'] || '').trim();
 
   structure.matrix.columns = (sections['Matrix Columns'] || '')
@@ -867,7 +873,11 @@ function parseMatrixMarkdownToStructure(markdown) {
 
 function matrixStructureToMarkdown(structure) {
   const m = structure.matrix || createDefaultMatrixBlock();
-  let markdown = `__Type__\n\nMatrix\n\n__Practice Question__\n\n${m.practiceQuestion || ''}\n\n__Matrix Columns__\n\n`;
+  let markdown = `__Type__\n\nMatrix\n\n`;
+  if (structure.heading && structure.heading.value) {
+    markdown += `__Heading__\n\n${structure.heading.value}\n\n`;
+  }
+  markdown += `__Practice Question__\n\n${m.practiceQuestion || ''}\n\n__Matrix Columns__\n\n`;
   m.columns.forEach(c => {
     markdown += `- ${c}\n`;
   });
@@ -945,6 +955,11 @@ function parseFibMarkdownToStructure(markdown) {
     content: null
   };
 
+  const fibHeadingRaw = (sections.Heading || '').trim();
+  if (fibHeadingRaw) {
+    structure.heading = { value: fibHeadingRaw };
+  }
+
   const rawContent = (sections.Content || '').trim();
   if (rawContent) {
     structure.content = parseContentTextToStructure(rawContent);
@@ -955,7 +970,11 @@ function parseFibMarkdownToStructure(markdown) {
 
 function fibStructureToMarkdown(structure) {
   const f = structure.fib || createDefaultFibBlock();
-  let markdown = `__Type__\n\nFill In The Blanks\n\n__Markdown With Blanks__\n\n${f.markdownWithBlanks || ''}\n\n__Suggested Answers__\n\n`;
+  let markdown = `__Type__\n\nFill In The Blanks\n\n`;
+  if (structure.heading && structure.heading.value) {
+    markdown += `__Heading__\n\n${structure.heading.value}\n\n`;
+  }
+  markdown += `__Markdown With Blanks__\n\n${f.markdownWithBlanks || ''}\n\n__Suggested Answers__\n\n`;
   f.suggestedAnswers.forEach(a => {
     markdown += `- ${a}\n`;
   });
@@ -1017,6 +1036,11 @@ function parseMatchingMarkdownToStructure(markdown) {
     content: null
   };
 
+  const matchingHeadingRaw = (sections.Heading || '').trim();
+  if (matchingHeadingRaw) {
+    structure.heading = { value: matchingHeadingRaw };
+  }
+
   const rawContent = (sections.Content || '').trim();
   if (rawContent) {
     structure.content = parseContentTextToStructure(rawContent);
@@ -1027,7 +1051,11 @@ function parseMatchingMarkdownToStructure(markdown) {
 
 function matchingStructureToMarkdown(structure) {
   const m = structure.matching || createDefaultMatchingBlock();
-  let markdown = `__Type__\n\nMatching\n\n__Markdown With Blanks__\n\n${m.markdownWithBlanks || ''}\n\n__Suggested Answers__\n\n`;
+  let markdown = `__Type__\n\nMatching\n\n`;
+  if (structure.heading && structure.heading.value) {
+    markdown += `__Heading__\n\n${structure.heading.value}\n\n`;
+  }
+  markdown += `__Markdown With Blanks__\n\n${m.markdownWithBlanks || ''}\n\n__Suggested Answers__\n\n`;
   m.suggestedAnswers.forEach(a => {
     markdown += `- ${a}\n`;
   });
@@ -2173,7 +2201,7 @@ function hydrateStructureFromMarkdown(markdown) {
     currentStructure.matrix = parsed.matrix;
     currentStructure.content = parsed.content || null;
     currentStructure.questions = [];
-    delete currentStructure.heading;
+    currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
     delete currentStructure.fib;
     delete currentStructure.matching;
   } else if (isFibMode) {
@@ -2182,7 +2210,7 @@ function hydrateStructureFromMarkdown(markdown) {
     currentStructure.fib = parsed.fib;
     currentStructure.content = parsed.content || null;
     currentStructure.questions = [];
-    delete currentStructure.heading;
+    currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
     delete currentStructure.matrix;
     delete currentStructure.matching;
   } else if (isMatchingMode) {
@@ -2191,7 +2219,7 @@ function hydrateStructureFromMarkdown(markdown) {
     currentStructure.matching = parsed.matching;
     currentStructure.content = parsed.content || null;
     currentStructure.questions = [];
-    delete currentStructure.heading;
+    currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
     delete currentStructure.matrix;
     delete currentStructure.fib;
   } else {
@@ -2236,25 +2264,19 @@ function mountEditorUi() {
   const headingGroup = document.getElementById('heading-input-group');
   const headingInput = document.getElementById('heading-input');
 
-  if (isMatrixMode || isFibMode || isMatchingMode) {
-    headingTitle.style.display = 'none';
-    headingGroup.style.display = 'none';
-    delete currentStructure.heading;
-  } else {
-    headingTitle.style.display = '';
-    headingGroup.style.display = '';
+  headingTitle.style.display = '';
+  headingGroup.style.display = '';
+  if (!currentStructure.heading) {
+    currentStructure.heading = { value: '' };
+  }
+  headingInput.value = currentStructure.heading.value || '';
+  headingInput.oninput = debounce(() => {
     if (!currentStructure.heading) {
       currentStructure.heading = { value: '' };
     }
-    headingInput.value = currentStructure.heading.value || '';
-    headingInput.oninput = debounce(() => {
-      if (!currentStructure.heading) {
-        currentStructure.heading = { value: '' };
-      }
-      currentStructure.heading.value = headingInput.value;
-      updateStructure();
-    }, 300);
-  }
+    currentStructure.heading.value = headingInput.value;
+    updateStructure();
+  }, 300);
 
   const questionsContainer = document.getElementById('questions-container');
   const addQuestionBtn = document.getElementById('add-question-btn');
@@ -2349,7 +2371,7 @@ function initQuestionTypeDropdown() {
         ? ' Your Content panel (side URL or markdown) will be kept.'
         : '';
       const ok = window.confirm(
-        `Switching question type will discard all questions, answers, and settings for the current format (except the optional heading when switching between Text Input and Multiple Choice).${contentNote}\n\nContinue?`
+        `Switching question type will discard all questions, answers, and settings for the current format (except the optional heading, which is kept when switching among any of the five activity types).${contentNote}\n\nContinue?`
       );
       if (!ok) {
         suppressQuestionTypeSelect = true;
@@ -2369,19 +2391,25 @@ function initQuestionTypeDropdown() {
       if (nextMatrix) {
         currentStructure.matrix = createDefaultMatrixBlock();
         currentStructure.questions = [];
-        delete currentStructure.heading;
+        if (!currentStructure.heading) {
+          currentStructure.heading = { value: '' };
+        }
         delete currentStructure.fib;
         delete currentStructure.matching;
       } else if (nextFib) {
         currentStructure.fib = createDefaultFibBlock();
         currentStructure.questions = [];
-        delete currentStructure.heading;
+        if (!currentStructure.heading) {
+          currentStructure.heading = { value: '' };
+        }
         delete currentStructure.matrix;
         delete currentStructure.matching;
       } else if (nextMatching) {
         currentStructure.matching = createDefaultMatchingBlock();
         currentStructure.questions = [];
-        delete currentStructure.heading;
+        if (!currentStructure.heading) {
+          currentStructure.heading = { value: '' };
+        }
         delete currentStructure.matrix;
         delete currentStructure.fib;
       } else if (nextMcq) {
@@ -2444,19 +2472,19 @@ async function initEditor() {
     if (isMatrixMode) {
       currentStructure.type = 'Matrix';
       currentStructure.matrix = createDefaultMatrixBlock();
-      delete currentStructure.heading;
+      currentStructure.heading = { value: '' };
       delete currentStructure.fib;
       delete currentStructure.matching;
     } else if (isFibMode) {
       currentStructure.type = 'Fill In The Blanks';
       currentStructure.fib = createDefaultFibBlock();
-      delete currentStructure.heading;
+      currentStructure.heading = { value: '' };
       delete currentStructure.matrix;
       delete currentStructure.matching;
     } else if (isMatchingMode) {
       currentStructure.type = 'Matching';
       currentStructure.matching = createDefaultMatchingBlock();
-      delete currentStructure.heading;
+      currentStructure.heading = { value: '' };
       delete currentStructure.matrix;
       delete currentStructure.fib;
     } else if (!isMcqMode) {

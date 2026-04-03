@@ -29,7 +29,21 @@ export function initMatching({
   const elMatching = document.getElementById('matching');
   const elMatchingCardsContainer = document.getElementById('matching-cards-container');
   const elMatchingChoices = document.getElementById('matching-choices');
-  
+
+  const matchInstr = matching.heading;
+  if (matchInstr && (matchInstr.html || matchInstr.markdown)) {
+    const instrEl = document.createElement('div');
+    instrEl.className =
+      'text-input-heading box non-interactive input-group text-input-question-text body-large';
+    if (matchInstr.html) {
+      instrEl.innerHTML = matchInstr.html;
+    } else {
+      instrEl.textContent = matchInstr.markdown;
+    }
+    renderMath(instrEl);
+    elMatching.insertBefore(instrEl, elMatching.firstChild);
+  }
+
   // Selection state - initialize with persisted answers if available
   const selectedByItemIdx = matching.items.map((_, idx) => {
     if (persistedAnswers && persistedAnswers[idx] !== undefined) {

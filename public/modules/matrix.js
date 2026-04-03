@@ -63,6 +63,20 @@ export function initMatrix({
   const elTbody = elContainer.querySelector('#matrix-tbody');
   const elExplainHost = elContainer.querySelector('#matrix-explain-host');
 
+  const matrixHeading = matrix.heading;
+  if (matrixHeading && (matrixHeading.html || matrixHeading.markdown)) {
+    const headingEl = document.createElement('div');
+    headingEl.className =
+      'text-input-heading box non-interactive input-group text-input-question-text body-large';
+    if (matrixHeading.html) {
+      headingEl.innerHTML = matrixHeading.html;
+    } else {
+      headingEl.textContent = matrixHeading.markdown;
+    }
+    renderMath(headingEl);
+    elQuestion.insertAdjacentElement('beforebegin', headingEl);
+  }
+
   if (activity.questionHtml) {
     elQuestion.innerHTML = activity.questionHtml;
     renderMath(elQuestion);

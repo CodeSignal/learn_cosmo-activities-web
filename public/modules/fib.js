@@ -24,6 +24,20 @@ export function initFib({
   const elFibHeading = elFib.querySelector('.fib-heading');
   const elFibContent = document.getElementById('fib-content');
 
+  const fibInstr = fib.heading;
+  if (fibInstr && (fibInstr.html || fibInstr.markdown)) {
+    const instrEl = document.createElement('div');
+    instrEl.className =
+      'text-input-heading box non-interactive input-group text-input-question-text body-large';
+    if (fibInstr.html) {
+      instrEl.innerHTML = fibInstr.html;
+    } else {
+      instrEl.textContent = fibInstr.markdown;
+    }
+    renderMath(instrEl);
+    elFib.insertBefore(instrEl, elFib.firstChild);
+  }
+
   // Set static heading text
   if (elFibHeading) {
     elFibHeading.textContent = 'Fill in the blanks';
