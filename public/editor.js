@@ -1433,6 +1433,7 @@ function parseMcqMarkdownToStructure(markdown) {
   let questionOptionsBuffer = [];
   let contentBuffer = [];
   let questionNameBuffer = [];
+  let headingBuffer = [];
 
   function flushPreviousMcqQuestion() {
     if (!currentQuestion) return;
@@ -1582,6 +1583,9 @@ function parseMcqMarkdownToStructure(markdown) {
         }
         currentSection = 'explain';
         explainAnswerBuffer = [];
+      } else if (sectionName === 'Heading') {
+        currentSection = 'heading';
+        headingBuffer = [];
       } else if (sectionName === 'Content') {
         currentSection = 'content';
         contentBuffer = [];
@@ -1592,7 +1596,9 @@ function parseMcqMarkdownToStructure(markdown) {
     }
 
     // Accumulate content based on current section
-    if (currentSection === 'questionName') {
+    if (currentSection === 'heading') {
+      headingBuffer.push(line);
+    } else if (currentSection === 'questionName') {
       questionNameBuffer.push(line);
     } else if (currentSection === 'question' && currentQuestion) {
       questionBuffer.push(line);
@@ -1671,12 +1677,23 @@ function parseMcqMarkdownToStructure(markdown) {
     if (raw) structure.content = parseContentTextToStructure(raw);
   }
 
+  if (headingBuffer.length > 0) {
+    const headingText = headingBuffer.join('\n').trim();
+    if (headingText) {
+      structure.heading = { value: headingText };
+    }
+  }
+
   return structure;
 }
 
 // Convert MCQ structure back to markdown
 function mcqStructureToMarkdown(structure) {
   let markdown = `__Type__\n\n${structure.type}\n\n`;
+
+  if (structure.heading && structure.heading.value) {
+    markdown += `__Heading__\n\n${structure.heading.value}\n\n`;
+  }
 
   structure.questions.forEach((q) => {
     if (q.name && String(q.name).trim()) {
@@ -2146,6 +2163,7 @@ function hydrateStructureFromMarkdown(markdown) {
     const parsed = parseMcqMarkdownToStructure(markdown);
     currentStructure.questions = parsed.questions;
     currentStructure.content = parsed.content || null;
+    currentStructure.heading = parsed.heading ? { value: parsed.heading.value } : { value: '' };
     delete currentStructure.matrix;
     delete currentStructure.fib;
     delete currentStructure.matching;
@@ -2218,7 +2236,7 @@ function mountEditorUi() {
   const headingGroup = document.getElementById('heading-input-group');
   const headingInput = document.getElementById('heading-input');
 
-  if (isMcqMode || isMatrixMode || isFibMode || isMatchingMode) {
+  if (isMatrixMode || isFibMode || isMatchingMode) {
     headingTitle.style.display = 'none';
     headingGroup.style.display = 'none';
     delete currentStructure.heading;
@@ -2331,7 +2349,7 @@ function initQuestionTypeDropdown() {
         ? ' Your Content panel (side URL or markdown) will be kept.'
         : '';
       const ok = window.confirm(
-        `Switching question type will discard all questions, answers, and settings for the current format (including the optional heading for Text Input).${contentNote}\n\nContinue?`
+        `Switching question type will discard all questions, answers, and settings for the current format (except the optional heading when switching between Text Input and Multiple Choice).${contentNote}\n\nContinue?`
       );
       if (!ok) {
         suppressQuestionTypeSelect = true;
@@ -2368,13 +2386,17 @@ function initQuestionTypeDropdown() {
         delete currentStructure.fib;
       } else if (nextMcq) {
         currentStructure.questions = [createDefaultMcqQuestion()];
-        delete currentStructure.heading;
+        if (!currentStructure.heading) {
+          currentStructure.heading = { value: '' };
+        }
         delete currentStructure.matrix;
         delete currentStructure.fib;
         delete currentStructure.matching;
       } else {
         currentStructure.questions = [createDefaultTextQuestion()];
-        currentStructure.heading = { value: '' };
+        if (!currentStructure.heading) {
+          currentStructure.heading = { value: '' };
+        }
         delete currentStructure.matrix;
         delete currentStructure.fib;
         delete currentStructure.matching;
@@ -2443,7 +2465,7 @@ async function initEditor() {
       delete currentStructure.fib;
       delete currentStructure.matching;
     } else {
-      delete currentStructure.heading;
+      currentStructure.heading = { value: '' };
       delete currentStructure.matrix;
       delete currentStructure.fib;
       delete currentStructure.matching;

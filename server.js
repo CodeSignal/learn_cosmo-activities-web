@@ -403,7 +403,8 @@ function buildActivityFromMarkdown(markdownText) {
     let explainAnswerBuffer = [];
     let questionOptionsBuffer = [];
     let questionNameBuffer = [];
-    
+    let headingBuffer = [];
+
     // Deterministic shuffle using text as seed
     function seededShuffle(array, seed) {
       // Simple seeded random number generator
@@ -636,6 +637,10 @@ function buildActivityFromMarkdown(markdownText) {
               }
             }
             continue;
+          } else if (sectionName === 'Heading') {
+            currentSection = 'heading';
+            headingBuffer = [];
+            continue;
           } else if (sectionName === 'Type') {
             // Skip type section
             currentSection = null;
@@ -643,8 +648,10 @@ function buildActivityFromMarkdown(markdownText) {
           }
         }
       }
-      
-      if (currentSection === 'questionName') {
+
+      if (currentSection === 'heading') {
+        headingBuffer.push(token);
+      } else if (currentSection === 'questionName') {
         questionNameBuffer.push(token);
       } else if (currentSection === 'question' && currentQuestion) {
         questionBuffer.push(token);
@@ -665,8 +672,16 @@ function buildActivityFromMarkdown(markdownText) {
     if (questions.length === 0) {
       throw new Error('No MCQ questions found');
     }
-    
-    return attachSideContent({ type, question: null, mcq: { questions } }, sections);
+
+    let heading = null;
+    if (headingBuffer.length > 0) {
+      const headingText = headingBuffer.map(t => t.raw || t.text || '').join('\n').trim();
+      if (headingText) {
+        heading = { markdown: headingText, html: marked.parse(escapeMathDollars(headingText)) };
+      }
+    }
+
+    return attachSideContent({ type, question: null, mcq: { questions, heading } }, sections);
   }
 
   if (/^matching$/i.test(type)) {
@@ -1790,6 +1805,10 @@ const server = http.createServer((req, res) => {
           } else if (/^multiple choice$/i.test(activity.type)) {
             // For MCQ, include each question with options and suggested answers
             if (activity.mcq && activity.mcq.questions) {
+              const h = activity.mcq.heading;
+              if (h && h.markdown && String(h.markdown).trim()) {
+                markdown += `__Heading__\n\n${String(h.markdown).trim()}\n\n`;
+              }
               activity.mcq.questions.forEach((q, qIdx) => {
                 if (q.name && String(q.name).trim()) {
                   markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;

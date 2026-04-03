@@ -28,7 +28,22 @@ export function initMcq({
   
   const elMcq = document.getElementById('mcq');
   const elQuestions = document.getElementById('mcq-questions');
-  
+
+  // Optional heading (shared pattern with Text Input)
+  const hasHeading = mcq.heading && (mcq.heading.html || mcq.heading.markdown);
+  if (hasHeading) {
+    const headingEl = document.createElement('div');
+    headingEl.className =
+      'text-input-heading box non-interactive input-group text-input-question-text body-large';
+    if (mcq.heading.html) {
+      headingEl.innerHTML = mcq.heading.html;
+    } else {
+      headingEl.textContent = mcq.heading.markdown;
+    }
+    renderMath(headingEl);
+    elQuestions.appendChild(headingEl);
+  }
+
   // Track selected answers per question
   const selectedAnswers = {};
   
