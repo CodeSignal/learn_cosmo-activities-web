@@ -753,6 +753,7 @@ function createDefaultMcqQuestion() {
     ],
     isMultiSelect: false,
     explainAnswer: false,
+    explainAnswerLabel: '',
     shuffleOptions: true,
     multiSelectMode: 'all'
   };
@@ -773,7 +774,8 @@ function createDefaultMatrixBlock() {
     columns: ['Column A', 'Column B'],
     rows: ['Row 1'],
     correctColumnIndex: [0],
-    explainAnswer: false
+    explainAnswer: false,
+    explainAnswerLabel: ''
   };
 }
 
@@ -855,8 +857,10 @@ function parseMatrixMarkdownToStructure(markdown) {
   });
   structure.matrix.correctColumnIndex = correctColumnIndex;
 
-  const ex = (sections['Explain Your Answer'] || sections['Explain your answer'] || '').trim().toLowerCase();
-  structure.matrix.explainAnswer = ex === 'true' || ex === 'yes' || ex === 'enabled';
+  const exRaw = (sections['Explain Your Answer'] || sections['Explain your answer'] || '').trim();
+  const exParsed = parseExplainYourAnswerBody(exRaw);
+  structure.matrix.explainAnswer = exParsed.enabled;
+  structure.matrix.explainAnswerLabel = exParsed.enabled && exParsed.label ? exParsed.label : '';
 
   const rawContent = (sections.Content || '').trim();
   if (rawContent) {
@@ -893,7 +897,11 @@ function matrixStructureToMarkdown(structure) {
   });
   markdown += '\n';
   if (m.explainAnswer) {
-    markdown += `__Explain Your Answer__\n\ntrue\n\n`;
+    markdown += `__Explain Your Answer__\n\ntrue\n`;
+    if (m.explainAnswerLabel && String(m.explainAnswerLabel).trim()) {
+      markdown += `${String(m.explainAnswerLabel).trim()}\n`;
+    }
+    markdown += '\n';
   }
 
   if (structure.content && structure.content.value) {
@@ -1317,6 +1325,22 @@ function renderMatrixEditor(structure) {
 
   const explainWrap = document.createElement('div');
   explainWrap.className = 'form-group';
+  const explainPromptInput = document.createElement('input');
+  explainPromptInput.type = 'text';
+  explainPromptInput.className = 'input';
+  explainPromptInput.placeholder = 'Optional label for the explanation box (default: Explain your answer)';
+  explainPromptInput.value = m.explainAnswerLabel || '';
+  explainPromptInput.style.marginTop = 'var(--UI-Spacing-spacing-xs)';
+  explainPromptInput.style.display = m.explainAnswer ? 'block' : 'none';
+  explainPromptInput.style.maxWidth = '100%';
+  explainPromptInput.style.boxSizing = 'border-box';
+  explainPromptInput.addEventListener(
+    'input',
+    debounce(() => {
+      m.explainAnswerLabel = explainPromptInput.value;
+      updateStructure();
+    }, 300)
+  );
   const explainLabel = document.createElement('label');
   explainLabel.className = 'form-label';
   const explainCb = document.createElement('input');
@@ -1324,11 +1348,17 @@ function renderMatrixEditor(structure) {
   explainCb.checked = !!m.explainAnswer;
   explainCb.addEventListener('change', () => {
     m.explainAnswer = explainCb.checked;
+    if (!m.explainAnswer) {
+      m.explainAnswerLabel = '';
+      explainPromptInput.value = '';
+    }
+    explainPromptInput.style.display = m.explainAnswer ? 'block' : 'none';
     updateStructure();
   });
   explainLabel.appendChild(explainCb);
   explainLabel.appendChild(document.createTextNode(' Explain your answer'));
   explainWrap.appendChild(explainLabel);
+  explainWrap.appendChild(explainPromptInput);
 
   colGroup.appendChild(colLabel);
   colGroup.appendChild(colTa);
@@ -1444,6 +1474,19 @@ function initCopyMarkdownButton() {
 
 // ===== MCQ-SPECIFIC PARSING AND RENDERING =====
 
+/** Same rules as server `parseExplainYourAnswerSection`. */
+function parseExplainYourAnswerBody(rawText) {
+  const raw = String(rawText || '').trim();
+  if (!raw) return { enabled: false, label: '' };
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return { enabled: false, label: '' };
+  const first = lines[0].toLowerCase();
+  const enabled = first === 'true' || first === 'yes' || first === 'enabled';
+  if (!enabled) return { enabled: false, label: '' };
+  if (lines.length === 1) return { enabled: true, label: '' };
+  return { enabled: true, label: lines.slice(1).join('\n').trim() };
+}
+
 // Parse MCQ markdown into editable structure
 function parseMcqMarkdownToStructure(markdown) {
   const lines = markdown.split('\n');
@@ -1484,8 +1527,9 @@ function parseMcqMarkdownToStructure(markdown) {
       currentQuestion.isMultiSelect = correctAnswers.size > 1;
     }
     if (explainAnswerBuffer.length > 0) {
-      const explainText = explainAnswerBuffer.join('\n').trim().toLowerCase();
-      currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+      const { enabled, label } = parseExplainYourAnswerBody(explainAnswerBuffer.join('\n'));
+      currentQuestion.explainAnswer = enabled;
+      currentQuestion.explainAnswerLabel = enabled && label ? label : '';
     }
     if (questionOptionsBuffer.length > 0) {
       const optionsText = questionOptionsBuffer.join('\n').trim().toLowerCase();
@@ -1530,6 +1574,7 @@ function parseMcqMarkdownToStructure(markdown) {
           options: [],
           isMultiSelect: false,
           explainAnswer: false,
+          explainAnswerLabel: '',
           shuffleOptions: true,
           multiSelectMode: 'all'
         };
@@ -1693,10 +1738,11 @@ function parseMcqMarkdownToStructure(markdown) {
     
     // Process explain answer if we're in explain section
     if (explainAnswerBuffer.length > 0) {
-      const explainText = explainAnswerBuffer.join('\n').trim().toLowerCase();
-      currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+      const { enabled, label } = parseExplainYourAnswerBody(explainAnswerBuffer.join('\n'));
+      currentQuestion.explainAnswer = enabled;
+      currentQuestion.explainAnswerLabel = enabled && label ? label : '';
     }
-    
+
     structure.questions.push(currentQuestion);
   }
 
@@ -1758,7 +1804,11 @@ function mcqStructureToMarkdown(structure) {
     
     // Add explain your answer if enabled
     if (q.explainAnswer) {
-      markdown += `__Explain Your Answer__\n\ntrue\n\n`;
+      markdown += `__Explain Your Answer__\n\ntrue\n`;
+      if (q.explainAnswerLabel && String(q.explainAnswerLabel).trim()) {
+        markdown += `${String(q.explainAnswerLabel).trim()}\n`;
+      }
+      markdown += '\n';
     }
   });
 
@@ -2103,6 +2153,32 @@ function renderMcqQuestion(question, index) {
   shuffleLabel.appendChild(shuffleText);
   questionOptionsDiv.appendChild(shuffleLabel);
 
+  const explainPromptRow = document.createElement('div');
+  explainPromptRow.className = 'form-group';
+  explainPromptRow.style.marginTop = 'var(--UI-Spacing-spacing-xs)';
+  explainPromptRow.style.display = question.explainAnswer ? 'block' : 'none';
+  const explainPromptLbl = document.createElement('label');
+  explainPromptLbl.className = 'form-label';
+  explainPromptLbl.textContent = 'Explanation prompt (optional)';
+  explainPromptLbl.setAttribute('for', `mcq-explain-prompt-${index}`);
+  const explainPromptInput = document.createElement('input');
+  explainPromptInput.type = 'text';
+  explainPromptInput.id = `mcq-explain-prompt-${index}`;
+  explainPromptInput.className = 'input';
+  explainPromptInput.placeholder = 'Default: Explain your answer';
+  explainPromptInput.value = question.explainAnswerLabel || '';
+  explainPromptInput.style.maxWidth = '100%';
+  explainPromptInput.style.boxSizing = 'border-box';
+  explainPromptInput.addEventListener(
+    'input',
+    debounce(() => {
+      question.explainAnswerLabel = explainPromptInput.value;
+      updateStructure();
+    }, 300)
+  );
+  explainPromptRow.appendChild(explainPromptLbl);
+  explainPromptRow.appendChild(explainPromptInput);
+
   // Explain answer checkbox
   const explainLabel = document.createElement('label');
   explainLabel.className = 'input-checkbox';
@@ -2111,6 +2187,13 @@ function renderMcqQuestion(question, index) {
   explainInput.checked = question.explainAnswer || false;
   explainInput.onchange = () => {
     question.explainAnswer = explainInput.checked;
+    if (!question.explainAnswer) {
+      question.explainAnswerLabel = '';
+      explainPromptRow.style.display = 'none';
+      explainPromptInput.value = '';
+    } else {
+      explainPromptRow.style.display = 'block';
+    }
     updateStructure();
   };
   const explainBox = document.createElement('span');
@@ -2125,6 +2208,7 @@ function renderMcqQuestion(question, index) {
   explainLabel.appendChild(explainBox);
   explainLabel.appendChild(explainText);
   questionOptionsDiv.appendChild(explainLabel);
+  questionOptionsDiv.appendChild(explainPromptRow); // below "Explain your answer" checkbox
 
   // Multi-select mode checkbox container (created but may be hidden)
   const modeLabel = document.createElement('label');

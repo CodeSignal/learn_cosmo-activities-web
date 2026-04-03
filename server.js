@@ -161,6 +161,24 @@ function attachSideContent(activity, sections) {
   return activity;
 }
 
+/**
+ * __Explain Your Answer__ body: first non-empty line must be true | yes | enabled;
+ * optional following lines (case preserved) = custom prompt shown instead of "Explain your answer".
+ * @returns {{ enabled: boolean, label: string | null }}
+ */
+function parseExplainYourAnswerSection(rawText) {
+  const raw = String(rawText || '').trim();
+  if (!raw) return { enabled: false, label: null };
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return { enabled: false, label: null };
+  const first = lines[0].toLowerCase();
+  const enabled = first === 'true' || first === 'yes' || first === 'enabled';
+  if (!enabled) return { enabled: false, label: null };
+  if (lines.length === 1) return { enabled: true, label: null };
+  const label = lines.slice(1).join('\n').trim();
+  return { enabled: true, label: label || null };
+}
+
 /** Client posts one result per question in order; label may be a custom name or legacy "Question N". */
 function questionIndexFromOrderedResult(result, resultIndex, numQuestions) {
   const n = numQuestions | 0;
@@ -500,10 +518,14 @@ function buildActivityFromMarkdown(markdownText) {
     
     function processExplainAnswer() {
       if (!currentQuestion) return;
-      
-      // Parse explain answer section - check if it contains "true", "yes", or "enabled"
-      const explainText = explainAnswerBuffer.map(t => t.raw || t.text || '').join('\n').trim().toLowerCase();
-      currentQuestion.explainAnswer = explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+      const raw = explainAnswerBuffer.map(t => t.raw || t.text || '').join('\n').trim();
+      const { enabled, label } = parseExplainYourAnswerSection(raw);
+      currentQuestion.explainAnswer = enabled;
+      if (enabled && label) {
+        currentQuestion.explainAnswerLabel = label;
+      } else {
+        delete currentQuestion.explainAnswerLabel;
+      }
     }
     
     function processQuestionOptions() {
@@ -537,6 +559,7 @@ function buildActivityFromMarkdown(markdownText) {
         processExplainAnswer();
       } else {
         currentQuestion.explainAnswer = false;
+        delete currentQuestion.explainAnswerLabel;
       }
       
       // Process question options if buffer exists
@@ -660,6 +683,11 @@ function buildActivityFromMarkdown(markdownText) {
           } else if (sectionName === 'Heading') {
             currentSection = 'heading';
             headingBuffer = [];
+            continue;
+          } else if (sectionName === 'Content') {
+            // Side content is read from the section map by attachSideContent; do not
+            // leave MCQ in 'explain' (etc.) or __Content__ tokens pollute explainAnswerBuffer.
+            currentSection = null;
             continue;
           } else if (sectionName === 'Type') {
             // Skip type section
@@ -1112,9 +1140,11 @@ function buildActivityFromMarkdown(markdownText) {
     });
 
     const explainTokens = sections.get('Explain Your Answer') || sections.get('Explain your answer') || [];
-    const explainText = explainTokens.map(t => t.raw || t.text).join('\n').trim().toLowerCase();
-    const explainAnswer =
-      explainText === 'true' || explainText === 'yes' || explainText === 'enabled';
+    const explainRaw = explainTokens.map(t => t.raw || t.text).join('\n').trim();
+    const {
+      enabled: explainAnswer,
+      label: explainAnswerLabel
+    } = parseExplainYourAnswerSection(explainRaw);
 
     const headingTokens = sections.get('Heading') || [];
     const headingMd = headingTokens.map(t => t.raw || t.text).join('\n').trim();
@@ -1135,6 +1165,7 @@ function buildActivityFromMarkdown(markdownText) {
           rows,
           correctColumnIndexByRow,
           explainAnswer,
+          ...(explainAnswer && explainAnswerLabel ? { explainAnswerLabel } : {}),
           ...(matrixHeading ? { heading: matrixHeading } : {})
         }
       },
@@ -1864,6 +1895,13 @@ const server = http.createServer((req, res) => {
                   markdown += `- ${opt.label}${correctMarker}\n`;
                 });
                 markdown += '\n';
+                if (q.explainAnswer) {
+                  markdown += `__Explain Your Answer__\n\ntrue\n`;
+                  if (q.explainAnswerLabel && String(q.explainAnswerLabel).trim()) {
+                    markdown += `${String(q.explainAnswerLabel).trim()}\n`;
+                  }
+                  markdown += '\n';
+                }
               });
             }
           } else if (/^matching$/i.test(activity.type)) {
@@ -1930,7 +1968,14 @@ const server = http.createServer((req, res) => {
             });
             markdown += '\n';
             if (activity.matrix.explainAnswer) {
-              markdown += `__Explain Your Answer__\n\ntrue\n\n`;
+              markdown += `__Explain Your Answer__\n\ntrue\n`;
+              if (
+                activity.matrix.explainAnswerLabel &&
+                String(activity.matrix.explainAnswerLabel).trim()
+              ) {
+                markdown += `${String(activity.matrix.explainAnswerLabel).trim()}\n`;
+              }
+              markdown += '\n';
             }
           } else {
             // For swipe/sort activities, include question and labels

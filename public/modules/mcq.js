@@ -207,12 +207,17 @@ export function initMcq({
     
     // Add explanation textarea if enabled
     if (question.explainAnswer) {
+      const explainPrompt =
+        question.explainAnswerLabel && String(question.explainAnswerLabel).trim()
+          ? String(question.explainAnswerLabel).trim()
+          : 'Explain your answer';
+
       const explainContainer = document.createElement('div');
       explainContainer.className = 'mcq-explain-container';
       
       const explainLabel = document.createElement('label');
       explainLabel.className = 'mcq-explain-label body-large';
-      explainLabel.textContent = 'Explain your answer';
+      explainLabel.textContent = explainPrompt;
       explainLabel.setAttribute('for', `explain-${question.id}`);
       explainContainer.appendChild(explainLabel);
       
@@ -222,7 +227,7 @@ export function initMcq({
       explainTextarea.placeholder = 'Enter your explanation...';
       explainTextarea.rows = 4;
       explainTextarea.value = explanations[question.id] || '';
-      explainTextarea.setAttribute('aria-label', 'Explain your answer');
+      explainTextarea.setAttribute('aria-label', explainPrompt);
       
       // Sync explanation value to our tracking object on load (in case it was set before listener)
       explanations[question.id] = explainTextarea.value;

@@ -19,7 +19,7 @@ export function initMatrix({
     };
   }
 
-  const { columns, rows, correctColumnIndexByRow, explainAnswer } = matrix;
+  const { columns, rows, correctColumnIndexByRow, explainAnswer, explainAnswerLabel } = matrix;
   const colCount = columns.length;
   const rowCount = rows.length;
 
@@ -166,12 +166,17 @@ export function initMatrix({
   });
 
   if (explainAnswer) {
+    const explainPrompt =
+      explainAnswerLabel && String(explainAnswerLabel).trim()
+        ? String(explainAnswerLabel).trim()
+        : 'Explain your answer';
+
     const wrap = document.createElement('div');
     wrap.className = 'matrix-explain-container';
 
     const lbl = document.createElement('label');
     lbl.className = 'body-large';
-    lbl.textContent = 'Explain your answer';
+    lbl.textContent = explainPrompt;
     lbl.setAttribute('for', 'matrix-explain-textarea');
 
     const ta = document.createElement('textarea');
@@ -180,7 +185,7 @@ export function initMatrix({
     ta.placeholder = 'Enter your explanation...';
     ta.rows = 4;
     ta.value = explanationText;
-    ta.setAttribute('aria-label', 'Explain your answer');
+    ta.setAttribute('aria-label', explainPrompt);
 
     explanationText = ta.value;
     ta.addEventListener('input', () => {
