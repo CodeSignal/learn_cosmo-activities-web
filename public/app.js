@@ -403,20 +403,149 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
     `;
     document.body.appendChild(scrollIndicator);
 
-    // Track if user has reached the bottom at least once
+    // Track if user has reached the bottom at least once (window vs. shell main pane)
     let hasReachedBottom = false;
+    let shellScrollHost = null;
+    let shellHasReachedBottom = false;
+
+    const SHELL_SENTINEL_CLASS = 'activity-scroll-bottom-sentinel';
+    let shellBottomIO = null;
+    let shellIOScrollPane = null;
+    let shellObservedSentinel = null;
+    let shellBottomInView = false;
+
+    function ensureShellBottomSentinelAndIO() {
+      const hasSide = document.querySelector('.activity-with-side-content');
+      const scrollPane = document.querySelector('.activity-main-pane-scroll');
+      if (!hasSide || !scrollPane) {
+        if (shellBottomIO) {
+          shellBottomIO.disconnect();
+          shellBottomIO = null;
+        }
+        shellIOScrollPane = null;
+        shellObservedSentinel = null;
+        shellBottomInView = false;
+        return;
+      }
+
+      let sentinel = scrollPane.querySelector(`.${SHELL_SENTINEL_CLASS}`);
+      if (!sentinel) {
+        sentinel = document.createElement('div');
+        sentinel.className = SHELL_SENTINEL_CLASS;
+        sentinel.setAttribute('aria-hidden', 'true');
+        sentinel.style.cssText =
+          'width:100%;height:1px;margin:0;padding:0;flex-shrink:0;pointer-events:none;visibility:hidden';
+      }
+      if (sentinel.parentElement !== scrollPane || scrollPane.lastElementChild !== sentinel) {
+        scrollPane.appendChild(sentinel);
+      }
+
+      const needReconnect =
+        !shellBottomIO ||
+        shellIOScrollPane !== scrollPane ||
+        shellObservedSentinel !== sentinel;
+
+      if (needReconnect) {
+        if (shellBottomIO) {
+          shellBottomIO.disconnect();
+        }
+        shellBottomInView = false;
+        shellIOScrollPane = scrollPane;
+        shellObservedSentinel = sentinel;
+        shellBottomIO = new IntersectionObserver(
+          (entries) => {
+            const e = entries[0];
+            shellBottomInView = !!(e && e.isIntersecting);
+            checkScrollPosition();
+          },
+          {
+            root: scrollPane,
+            threshold: 0,
+            // Treat content as “at bottom” when the sentinel is within one row of the visible edge (padding / subpixel).
+            rootMargin: '0px 0px 64px 0px'
+          }
+        );
+        shellBottomIO.observe(sentinel);
+      }
+    }
+
+    function syncScrollIndicatorParent() {
+      const hasSideContentLayout = document.querySelector('.activity-with-side-content');
+      const mainPane = document.querySelector('.activity-main-pane');
+      const mountInPane = !!(hasSideContentLayout && mainPane);
+
+      if (mountInPane) {
+        if (scrollIndicator.parentElement !== mainPane) {
+          mainPane.appendChild(scrollIndicator);
+        }
+        scrollIndicator.classList.add('scroll-indicator--in-pane');
+      } else {
+        scrollIndicator.classList.remove('scroll-indicator--in-pane');
+        if (scrollIndicator.parentElement !== document.body) {
+          document.body.appendChild(scrollIndicator);
+        }
+      }
+    }
+
+    function syncShellScrollListener() {
+      const scrollPane = document.querySelector('.activity-main-pane-scroll');
+      if (scrollPane === shellScrollHost) {
+        return;
+      }
+      if (shellScrollHost) {
+        shellScrollHost.removeEventListener('scroll', checkScrollPosition);
+      }
+      shellScrollHost = scrollPane;
+      shellHasReachedBottom = false;
+      if (shellScrollHost) {
+        shellScrollHost.addEventListener('scroll', checkScrollPosition, { passive: true });
+      }
+    }
 
     function checkScrollPosition() {
-      // Don't show indicator for activities that handle their own scrolling
+      syncShellScrollListener();
+      syncScrollIndicatorParent();
+      ensureShellBottomSentinelAndIO();
+
       const hasSideContentLayout = document.querySelector('.activity-with-side-content');
       const hasMatching = document.querySelector('.matching');
-      
-      if (hasSideContentLayout || hasMatching) {
+
+      if (hasMatching) {
         scrollIndicator.classList.remove('visible');
         return;
       }
 
-      // If user has already reached bottom, don't show indicator again
+      // Activity Content Shell: scroll lives in .activity-main-pane-scroll; indicator mounts on .activity-main-pane.
+      // Activity init replaces innerHTML and removes any prior nodes — use a bottom sentinel + IntersectionObserver
+      // so "at bottom" does not depend on fragile scrollTop vs scrollHeight math.
+      if (hasSideContentLayout) {
+        const scrollPane = document.querySelector('.activity-main-pane-scroll');
+        if (!scrollPane) {
+          scrollIndicator.classList.remove('visible');
+          return;
+        }
+        const clientHeight = scrollPane.clientHeight;
+        const scrollHeight = scrollPane.scrollHeight;
+        const scrollTop = scrollPane.scrollTop;
+        const hasScrollableContent = scrollHeight > clientHeight;
+        if (!hasScrollableContent) {
+          scrollIndicator.classList.remove('visible');
+          return;
+        }
+        if (shellHasReachedBottom) {
+          scrollIndicator.classList.remove('visible');
+          return;
+        }
+        const atBottomByScroll = scrollTop + clientHeight >= scrollHeight - 8;
+        if (shellBottomInView || atBottomByScroll) {
+          shellHasReachedBottom = true;
+          scrollIndicator.classList.remove('visible');
+          return;
+        }
+        scrollIndicator.classList.add('visible');
+        return;
+      }
+
       if (hasReachedBottom) {
         scrollIndicator.classList.remove('visible');
         return;
@@ -425,20 +554,17 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      
-      // Check if there's more content below (with a small threshold to account for rounding)
+
       const isAtBottom = scrollTop + windowHeight >= documentHeight - 10;
-      
-      // Mark that user has reached bottom
+
       if (isAtBottom) {
         hasReachedBottom = true;
         scrollIndicator.classList.remove('visible');
         return;
       }
-      
-      // Only show if there's scrollable content and we're not at the bottom
+
       const hasScrollableContent = documentHeight > windowHeight;
-      
+
       if (hasScrollableContent && !isAtBottom) {
         scrollIndicator.classList.add('visible');
       } else {

@@ -1826,6 +1826,14 @@ function mcqStructureToMarkdown(structure) {
   return markdown;
 }
 
+/** Assign sequential labels A, B, C, … to MCQ options by index. */
+function renumberMcqOptionLabels(options) {
+  if (!options || !Array.isArray(options)) return;
+  options.forEach((opt, i) => {
+    opt.label = String.fromCharCode(65 + i);
+  });
+}
+
 // Render MCQ question item
 function renderMcqQuestion(question, index) {
   const container = document.createElement('div');
@@ -1919,6 +1927,7 @@ function renderMcqQuestion(question, index) {
       { label: 'D', text: '', correct: false }
     ];
   }
+  renumberMcqOptionLabels(question.options);
 
   // Render each option
   question.options.forEach((option, optIdx) => {
@@ -1995,8 +2004,8 @@ function renderMcqQuestion(question, index) {
         return;
       }
       question.options.splice(optIdx, 1);
+      renumberMcqOptionLabels(question.options);
       // Re-render the entire question to update indices
-      const questionIndex = parseInt(container.dataset.index);
       const questionsContainer = document.getElementById('questions-container');
       questionsContainer.innerHTML = '';
       currentStructure.questions.forEach((q, idx) => {
@@ -2020,12 +2029,12 @@ function renderMcqQuestion(question, index) {
   addOptionBtn.textContent = '+ Add Option';
   addOptionBtn.style.marginTop = 'var(--UI-Spacing-spacing-xs)';
   addOptionBtn.onclick = () => {
-    const nextLabel = String.fromCharCode(65 + question.options.length); // A, B, C, etc.
     question.options.push({
-      label: nextLabel,
+      label: 'A',
       text: '',
       correct: false
     });
+    renumberMcqOptionLabels(question.options);
     // Re-render options
     optionsContainer.innerHTML = '';
     question.options.forEach((opt, optIdx) => {
@@ -2101,8 +2110,7 @@ function renderMcqQuestion(question, index) {
           return;
         }
         question.options.splice(optIdx, 1);
-        // Re-render the entire question to update indices
-        const questionIndex = parseInt(container.dataset.index);
+        renumberMcqOptionLabels(question.options);
         const questionsContainer = document.getElementById('questions-container');
         questionsContainer.innerHTML = '';
         currentStructure.questions.forEach((q, idx) => {

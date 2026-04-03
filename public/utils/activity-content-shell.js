@@ -34,7 +34,8 @@ function writeStoredSplitPercent(percent, minLeft, minRight) {
 
 /**
  * When activity.content has url or markdown, builds split layout in container and returns
- * the right panel as mainMount for module UI. Otherwise returns container unchanged.
+ * the inner scroll element (.activity-main-pane-scroll) as mainMount for module UI.
+ * Otherwise returns container unchanged.
  */
 export function mountActivityContentShell({ container, content }) {
   const hasUrl = !!(content && content.url);
@@ -124,15 +125,18 @@ export function mountActivityContentShell({ container, content }) {
   leftPanel.appendChild(iframe);
 
   rightPanel.className = 'activity-main-pane';
-  rightPanel.scrollLeft = 0;
+  const mainPaneScroll = document.createElement('div');
+  mainPaneScroll.className = 'activity-main-pane-scroll';
+  rightPanel.appendChild(mainPaneScroll);
+  mainPaneScroll.scrollLeft = 0;
 
   preventHorizontalScroll = () => {
-    if (rightPanel.scrollLeft !== 0) {
-      rightPanel.scrollLeft = 0;
+    if (mainPaneScroll.scrollLeft !== 0) {
+      mainPaneScroll.scrollLeft = 0;
     }
   };
-  rightPanel.addEventListener('scroll', preventHorizontalScroll, { passive: false, capture: true });
-  rightPanel.addEventListener('scroll', preventHorizontalScroll, { passive: true });
+  mainPaneScroll.addEventListener('scroll', preventHorizontalScroll, { passive: false, capture: true });
+  mainPaneScroll.addEventListener('scroll', preventHorizontalScroll, { passive: true });
 
   const originalBodyStyle = {
     overflow: document.body.style.overflow,
@@ -227,9 +231,9 @@ export function mountActivityContentShell({ container, content }) {
     if (hasUrl && contentUrl && showOpenInNewTab) {
       toolbar.unregisterTool(OPEN_URL_TOOL_ID);
     }
-    if (preventHorizontalScroll && rightPanel) {
-      rightPanel.removeEventListener('scroll', preventHorizontalScroll, true);
-      rightPanel.removeEventListener('scroll', preventHorizontalScroll, false);
+    if (preventHorizontalScroll && mainPaneScroll) {
+      mainPaneScroll.removeEventListener('scroll', preventHorizontalScroll, true);
+      mainPaneScroll.removeEventListener('scroll', preventHorizontalScroll, false);
     }
     if (blobUrl) {
       URL.revokeObjectURL(blobUrl);
@@ -246,5 +250,5 @@ export function mountActivityContentShell({ container, content }) {
     container.innerHTML = '';
   };
 
-  return { mainMount: rightPanel, cleanup };
+  return { mainMount: mainPaneScroll, cleanup };
 }

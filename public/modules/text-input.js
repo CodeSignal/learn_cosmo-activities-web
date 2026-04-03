@@ -17,7 +17,7 @@ export function initTextInput({
     };
   }
 
-  const inSidePanel = elContainer.classList.contains('activity-main-pane');
+  const inSidePanel = elContainer.classList.contains('activity-main-pane-scroll');
   const sidePanelClass = inSidePanel ? ' text-input--side-panel' : '';
 
   elContainer.innerHTML = `

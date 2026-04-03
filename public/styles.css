@@ -173,6 +173,14 @@ blockquote + p,  blockquote + h1, blockquote + h2, blockquote + h3, blockquote +
   opacity: 1;
 }
 
+/* Activity Content Shell: keep gradient + chevron within the right-hand pane */
+.scroll-indicator.scroll-indicator--in-pane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
 .scroll-indicator-gradient {
   position: absolute;
   bottom: 0;
@@ -217,8 +225,7 @@ blockquote + p,  blockquote + h1, blockquote + h2, blockquote + h3, blockquote +
   stroke-width: 2;
 }
 
-/* Hide scroll indicator for activities that don't scroll */
-body:has(.activity-with-side-content) .scroll-indicator,
+/* Hide scroll indicator for matching (internal scroll regions); side-content shell uses window + main-pane JS */
 body:has(.matching) .scroll-indicator {
   display: none;
 }
