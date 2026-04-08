@@ -1995,12 +1995,12 @@ function renderMcqQuestion(question, index) {
     deleteBtn.style.padding = '0';
     deleteBtn.style.fontSize = '20px';
     deleteBtn.style.lineHeight = '1';
-    deleteBtn.disabled = question.options.length <= 2;
+    deleteBtn.disabled = question.options.length <= 1;
     if (deleteBtn.disabled) {
       deleteBtn.classList.add('disabled');
     }
     deleteBtn.onclick = () => {
-      if (question.options.length <= 2) {
+      if (question.options.length <= 1) {
         return;
       }
       question.options.splice(optIdx, 1);
@@ -2101,12 +2101,12 @@ function renderMcqQuestion(question, index) {
       deleteBtn.style.padding = '0';
       deleteBtn.style.fontSize = '20px';
       deleteBtn.style.lineHeight = '1';
-      deleteBtn.disabled = question.options.length <= 2;
+      deleteBtn.disabled = question.options.length <= 1;
       if (deleteBtn.disabled) {
         deleteBtn.classList.add('disabled');
       }
       deleteBtn.onclick = () => {
-        if (question.options.length <= 2) {
+        if (question.options.length <= 1) {
           return;
         }
         question.options.splice(optIdx, 1);
