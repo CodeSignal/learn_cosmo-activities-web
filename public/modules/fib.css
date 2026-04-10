@@ -185,7 +185,10 @@
   width: max-content;
   min-width: 220px;
   max-width: min(600px, calc(100vw - 40px));
-  
+  max-height: min(320px, 60vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
   display: flex;
   flex-direction: column;
 
