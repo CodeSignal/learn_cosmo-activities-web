@@ -127,6 +127,12 @@ export function initFib({
     });
   }
 
+  function handleOutsideScroll(e) {
+    if (!openDropdown) return;
+    if (openDropdown.container.contains(e.target)) return;
+    closeMenu();
+  }
+
   function closeMenu() {
     if (!openDropdown) return;
     const { container, blank } = openDropdown;
@@ -135,7 +141,7 @@ export function initFib({
     blank.classList.remove('dropdown-open');
     document.removeEventListener('mousedown', handleOutside);
     window.removeEventListener('resize', closeMenu);
-    window.removeEventListener('scroll', closeMenu, true);
+    window.removeEventListener('scroll', handleOutsideScroll, true);
     openDropdown = null;
   }
 
@@ -192,7 +198,7 @@ export function initFib({
     const docY = rect.bottom + window.scrollY + 4;
     menu.style.left = docX + 'px';
     menu.style.top = docY + 'px';
-    
+
     // Add class to blank to keep hover effect active
     blank.classList.add('dropdown-open');
 
@@ -215,6 +221,17 @@ export function initFib({
     });
 
     document.body.appendChild(menu);
+
+    // Smart positioning: flip upward if dropdown overflows the viewport bottom
+    const menuRect = menu.getBoundingClientRect();
+    if (menuRect.bottom > window.innerHeight - 8) {
+      const spaceAbove = rect.top - 4;
+      const menuHeight = menu.offsetHeight;
+      if (spaceAbove >= menuHeight || spaceAbove > menuRect.bottom - window.innerHeight) {
+        menu.style.top = (rect.top + window.scrollY - menuHeight - 4) + 'px';
+      }
+    }
+
     blank.setAttribute('aria-expanded', 'true');
     openDropdown = { container: menu, blank, idx };
     
@@ -229,7 +246,7 @@ export function initFib({
     
     document.addEventListener('mousedown', handleOutside);
     window.addEventListener('resize', closeMenu);
-    window.addEventListener('scroll', closeMenu, true);
+    window.addEventListener('scroll', handleOutsideScroll, true);
   }
 
   function setSelection(idx, choice) {
