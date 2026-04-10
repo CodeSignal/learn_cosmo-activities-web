@@ -223,12 +223,19 @@ export function initFib({
     document.body.appendChild(menu);
 
     // Smart positioning: flip upward if dropdown overflows the viewport bottom
-    const menuRect = menu.getBoundingClientRect();
-    if (menuRect.bottom > window.innerHeight - 8) {
-      const spaceAbove = rect.top - 4;
-      const menuHeight = menu.offsetHeight;
-      if (spaceAbove >= menuHeight || spaceAbove > menuRect.bottom - window.innerHeight) {
-        menu.style.top = (rect.top + window.scrollY - menuHeight - 4) + 'px';
+    const viewportPadding = 8;
+    const gap = 4;
+    const menuHeight = menu.offsetHeight;
+    const spaceAbove = rect.top - viewportPadding - gap;
+    const spaceBelow = window.innerHeight - rect.bottom - viewportPadding - gap;
+
+    if (spaceBelow < menuHeight) {
+      if (spaceAbove > spaceBelow) {
+        const clampedHeight = Math.min(menuHeight, spaceAbove);
+        menu.style.maxHeight = `${clampedHeight}px`;
+        menu.style.top = `${rect.top + window.scrollY - clampedHeight - gap}px`;
+      } else {
+        menu.style.maxHeight = `${Math.max(spaceBelow, 0)}px`;
       }
     }
 
