@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examples — Activity preview</title>
+  <meta name="color-scheme" content="light dark" />
+  <style>
+    :root {
+      --ex-border: #c8cdd9;
+      --ex-bg: #f4f5f9;
+      --ex-panel: #fff;
+      --ex-text: #11192e;
+      --ex-muted: #66718f;
+      --ex-accent: #377dff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ex-border: #2d3855;
+        --ex-bg: #11192e;
+        --ex-panel: #1d2740;
+        --ex-text: #edeff5;
+        --ex-muted: #979fb4;
+        --ex-accent: #4888ff;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid;
+      grid-template-columns: minmax(260px, 340px) 1fr;
+      grid-template-rows: 1fr;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--ex-text);
+      background: var(--ex-bg);
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--ex-border);
+      background: var(--ex-panel);
+      min-height: 0;
+    }
+    .sidebar-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--ex-border);
+      flex-shrink: 0;
+    }
+    .sidebar-header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+    .sidebar-header p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--ex-muted);
+      line-height: 1.35;
+    }
+    #filter {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--ex-border);
+      border-radius: 8px;
+      font: inherit;
+      color: inherit;
+      background: var(--ex-bg);
+    }
+    #list {
+      list-style: none;
+      margin: 0;
+      padding: 8px;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+    }
+    #list li { margin: 0 0 4px; }
+    #list button {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      line-height: 1.3;
+    }
+    #list button:hover {
+      background: var(--ex-bg);
+      border-color: var(--ex-border);
+    }
+    #list button.active {
+      border-color: var(--ex-accent);
+      background: var(--ex-bg);
+      font-weight: 600;
+    }
+    #list button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+    .preview {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+    .preview-toolbar {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--ex-border);
+      background: var(--ex-panel);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .preview-toolbar span {
+      font-size: 12px;
+      color: var(--ex-muted);
+    }
+    #reload {
+      padding: 6px 12px;
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--ex-border);
+      background: var(--ex-bg);
+      color: inherit;
+      cursor: pointer;
+    }
+    #reload:hover { border-color: var(--ex-accent); }
+    #frame-wrap {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+    }
+    #app-frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+    @media (max-width: 720px) {
+      body {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(200px, 40vh) 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Example activities</h1>
+      <p>Pick a file from <code>data/examples</code>. It is copied to <code>data/question.md</code> and the preview reloads.</p>
+      <input type="search" id="filter" placeholder="Filter by name…" autocomplete="off" />
+    </div>
+    <ul id="list" aria-label="Example markdown files"></ul>
+  </aside>
+  <div class="preview">
+    <div class="preview-toolbar">
+      <button type="button" id="reload" title="Reload preview without changing example">Reload preview</button>
+      <span id="status"></span>
+    </div>
+    <div id="frame-wrap">
+      <iframe id="app-frame" title="Activity preview" src="/play"></iframe>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const listEl = document.getElementById('list');
+      const filterEl = document.getElementById('filter');
+      const frame = document.getElementById('app-frame');
+      const statusEl = document.getElementById('status');
+      const reloadBtn = document.getElementById('reload');
+      let examples = [];
+      let activeFilename = null;
+
+      function setStatus(msg, isError) {
+        statusEl.textContent = msg || '';
+        statusEl.style.color = isError ? '#c62828' : '';
+      }
+
+      function renderList() {
+        const q = (filterEl.value || '').trim().toLowerCase();
+        listEl.innerHTML = '';
+        examples
+          .filter((name) => !q || name.toLowerCase().includes(q))
+          .forEach((filename) => {
+            const li = document.createElement('li');
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = filename;
+            if (filename === activeFilename) btn.classList.add('active');
+            btn.addEventListener('click', () => selectExample(filename, btn));
+            li.appendChild(btn);
+            listEl.appendChild(li);
+          });
+      }
+
+      function refreshFrame() {
+        frame.src = '/play?cb=' + Date.now();
+      }
+
+      async function selectExample(filename, btn) {
+        if (btn) btn.disabled = true;
+        setStatus('Applying…');
+        try {
+          const res = await fetch('/api/examples/select', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setStatus(data.error || res.statusText, true);
+            return;
+          }
+          activeFilename = filename;
+          listEl.querySelectorAll('button').forEach((b) => {
+            b.classList.toggle('active', b.textContent === filename);
+          });
+          setStatus('Loaded: ' + filename);
+          refreshFrame();
+        } catch (e) {
+          setStatus(String(e.message || e), true);
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      }
+
+      filterEl.addEventListener('input', renderList);
+      reloadBtn.addEventListener('click', () => {
+        setStatus('Reloading…');
+        refreshFrame();
+        setTimeout(() => setStatus(activeFilename ? 'Loaded: ' + activeFilename : ''), 400);
+      });
+
+      frame.addEventListener('load', () => {
+        if (activeFilename) setStatus('Loaded: ' + activeFilename);
+      });
+
+      fetch('/api/examples/list')
+        .then((r) => r.json())
+        .then((data) => {
+          examples = Array.isArray(data.examples) ? data.examples.slice() : [];
+          examples.sort((a, b) => a.localeCompare(b));
+          renderList();
+          setStatus(examples.length + ' examples');
+        })
+        .catch((e) => setStatus('Failed to load list: ' + e.message, true));
+    })();
+  </script>
+</body>
+</html>

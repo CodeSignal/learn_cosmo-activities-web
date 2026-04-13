@@ -136,12 +136,13 @@
   border-radius: var(--UI-Radius-radius-xs, 6px);
 }
 
-/* Remove dashed border from action container when it contains a matched selection */
-/* Keep padding to maintain vertical position consistency */
+/* Matched selection: grow row for wrapped text; same padding as empty state to limit vertical jump */
 .horizontal-cards-card-action:has(.matching-selection-area.matched) {
+  height: auto !important;
+  min-height: 48px !important;
+  align-items: stretch;
   border: none;
   background: transparent;
-  /* Keep same padding as empty state to prevent vertical jump */
   padding: var(--UI-Spacing-spacing-s, 8px);
 }
 
@@ -151,6 +152,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-width: 0;
   min-height: 33px;
   padding: var(--UI-Spacing-spacing-s, 8px) var(--UI-Spacing-spacing-ml, 20px);
   border-radius: var(--UI-Radius-radius-s, 8px);
@@ -158,6 +160,9 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .matching-selection-area:not(.matched):not(.empty) {
@@ -181,6 +186,10 @@
   /* Override base padding to use button padding, but maintain same min-height */
   padding: var(--UI-Spacing-spacing-ms, 16px) var(--UI-Spacing-spacing-xl, 32px);
   min-height: 48px;
+  /* .button uses nowrap + fixed height — allow long suggested answers to wrap */
+  height: auto;
+  white-space: normal;
+  align-self: center;
 }
 
 .matching-selection-area.matched:hover {

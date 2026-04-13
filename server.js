@@ -7,15 +7,22 @@ const WebSocket = require('ws');
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = path.join(__dirname, 'data');
+const EXAMPLES_DIR = path.join(DATA_DIR, 'examples');
+const QUESTION_MD_PATH = path.join(DATA_DIR, 'question.md');
 
-// Parse command line arguments for --edit and --copy-markdown
+// Parse command line arguments for --edit, --copy-markdown, and --examples
 let EDIT_MODE = false;
+let EXAMPLES_MODE = false;
 let EDIT_FILE_PATH = null;
 let COPY_MARKDOWN_ENABLED = false;
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--copy-markdown') {
     COPY_MARKDOWN_ENABLED = true;
+    continue;
+  }
+  if (args[i] === '--examples') {
+    EXAMPLES_MODE = true;
     continue;
   }
   if (args[i] === '--edit' && i + 1 < args.length) {
@@ -49,6 +56,14 @@ const MIME_TYPES = {
 function isPathInside(child, parent) {
   const relative = path.relative(parent, child);
   return !!relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+}
+
+/** Basename only; safe characters for data/examples/*.md */
+function isValidExampleBasename(name) {
+  if (typeof name !== 'string' || !name.trim()) return false;
+  const t = name.trim();
+  if (t !== path.basename(t)) return false;
+  return /^[a-zA-Z0-9][a-zA-Z0-9._-]*\.md$/i.test(t);
 }
 
 function sendFile(res, filePath, status = 200) {
@@ -1223,6 +1238,16 @@ const server = http.createServer((req, res) => {
   const urlObj = new URL(req.url, 'http://localhost');
   let pathname = decodeURIComponent(urlObj.pathname || '/');
 
+  // Examples mode: shell at /, activity app in iframe at /play
+  if (EXAMPLES_MODE && pathname === '/') {
+    sendFile(res, path.join(PUBLIC_DIR, 'examples-mode.html'), 200);
+    return;
+  }
+  if (EXAMPLES_MODE && pathname === '/play') {
+    sendFile(res, path.join(PUBLIC_DIR, 'index.html'), 200);
+    return;
+  }
+
   // In edit mode, serve editor.html for root path
   if (EDIT_MODE && pathname === '/') {
     pathname = '/editor.html';
@@ -1290,6 +1315,71 @@ const server = http.createServer((req, res) => {
       } catch (e) {
         respondJson(res, 400, { error: 'Invalid JSON' });
       }
+    });
+    return;
+  }
+
+  // API: /api/examples/list — names of data/examples/*.md (only with --examples)
+  if (EXAMPLES_MODE && pathname === '/api/examples/list' && req.method === 'GET') {
+    fs.readdir(EXAMPLES_DIR, { withFileTypes: true }, (err, entries) => {
+      if (err) {
+        if (err.code === 'ENOENT') {
+          respondJson(res, 200, { examples: [] });
+          return;
+        }
+        respondJson(res, 500, { error: 'Failed to read examples directory' });
+        return;
+      }
+      const names = entries
+        .filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.md'))
+        .map((e) => e.name)
+        .sort((a, b) => a.localeCompare(b));
+      respondJson(res, 200, { examples: names });
+    });
+    return;
+  }
+
+  // API: /api/examples/select — copy one example to data/question.md (only with --examples)
+  if (EXAMPLES_MODE && pathname === '/api/examples/select' && req.method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      let payload;
+      try {
+        payload = JSON.parse(body || '{}');
+      } catch (e) {
+        respondJson(res, 400, { error: 'Invalid JSON' });
+        return;
+      }
+      const filename = payload.filename;
+      if (!isValidExampleBasename(filename)) {
+        respondJson(res, 400, { error: 'Invalid example filename' });
+        return;
+      }
+      const srcPath = path.join(EXAMPLES_DIR, filename);
+      if (!isPathInside(srcPath, EXAMPLES_DIR)) {
+        respondJson(res, 400, { error: 'Invalid example path' });
+        return;
+      }
+      fs.readFile(srcPath, 'utf8', (readErr, content) => {
+        if (readErr) {
+          if (readErr.code === 'ENOENT') {
+            respondJson(res, 404, { error: 'Example file not found' });
+          } else {
+            respondJson(res, 500, { error: 'Failed to read example' });
+          }
+          return;
+        }
+        fs.writeFile(QUESTION_MD_PATH, content, 'utf8', (writeErr) => {
+          if (writeErr) {
+            respondJson(res, 500, { error: 'Failed to write question.md' });
+            return;
+          }
+          respondJson(res, 200, { success: true, filename });
+        });
+      });
     });
     return;
   }
@@ -2099,7 +2189,12 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`Server running at http://localhost:${PORT}`);
+  if (EXAMPLES_MODE) {
+    console.log(`Examples mode: http://localhost:${PORT}/`);
+    console.log(`  Activity preview loads in iframe from /play (copies examples → data/question.md).`);
+  } else {
+    console.log(`Server running at http://localhost:${PORT}`);
+  }
 });
 
 // Create WebSocket server using the ws module
