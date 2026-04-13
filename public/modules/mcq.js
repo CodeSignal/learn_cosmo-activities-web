@@ -119,7 +119,7 @@ export function initMcq({
       input.id = `q${question.id}-opt${optIdx}`;
       input.setAttribute('aria-label', `Option ${option.label}: ${option.text}`);
       
-      const optionText = document.createElement('span');
+      const optionText = document.createElement('div');
       optionText.className = 'mcq-option-text body-large markdown-content';
       // Support markdown HTML if available, fallback to plain text for backward compatibility
       if (option.textHtml) {
