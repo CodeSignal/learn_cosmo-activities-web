@@ -1419,6 +1419,55 @@ const server = http.createServer((req, res) => {
       color: var(--Colors-Text-Body-Default);
       font-family: var(--body-family);
     }
+    .markdown-content {
+      max-width: 100%;
+    }
+    .markdown-content table {
+      display: block;
+      width: fit-content;
+      min-width: 0;
+      max-width: 100%;
+      overflow-x: auto;
+      border-collapse: collapse;
+      margin: 1em 0;
+      background: var(--Colors-Backgrounds-Main-Top);
+      border: 1px solid var(--Colors-Stroke-Default);
+      border-radius: 8px;
+    }
+    .markdown-content thead {
+      background: var(--Colors-Backgrounds-Main-Medium);
+    }
+    .markdown-content tbody {
+      background: var(--Colors-Backgrounds-Main-Top);
+    }
+    .markdown-content tr {
+      border-bottom: 1px solid var(--Colors-Stroke-Default);
+    }
+    .markdown-content tbody tr:last-child {
+      border-bottom: none;
+    }
+    .markdown-content th,
+    .markdown-content td {
+      padding: 12px 16px;
+      text-align: left;
+      vertical-align: top;
+      border-right: 1px solid var(--Colors-Stroke-Default);
+    }
+    .markdown-content th:last-child,
+    .markdown-content td:last-child {
+      border-right: none;
+    }
+    .markdown-content th {
+      color: var(--Colors-Text-Body-Strong);
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+    }
+    .markdown-content td {
+      color: var(--Colors-Text-Body-Default);
+    }
+    .markdown-content table code {
+      white-space: nowrap;
+    }
     @media (prefers-color-scheme: dark) {
       body {
         background-color: var(--Colors-Backgrounds-Main-Top);
@@ -1428,7 +1477,7 @@ const server = http.createServer((req, res) => {
   </style>
 </head>
 <body>
-  <div class="body-medium">${html}</div>
+  <div class="body-medium markdown-content">${html}</div>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
   <script>

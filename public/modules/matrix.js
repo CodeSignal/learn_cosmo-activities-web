@@ -67,7 +67,7 @@ export function initMatrix({
   if (matrixHeading && (matrixHeading.html || matrixHeading.markdown)) {
     const headingEl = document.createElement('div');
     headingEl.className =
-      'text-input-heading box non-interactive input-group text-input-question-text body-large';
+      'text-input-heading box non-interactive input-group text-input-question-text body-large markdown-content';
     if (matrixHeading.html) {
       headingEl.innerHTML = matrixHeading.html;
     } else {
@@ -78,6 +78,7 @@ export function initMatrix({
   }
 
   if (activity.questionHtml) {
+    elQuestion.classList.add('markdown-content');
     elQuestion.innerHTML = activity.questionHtml;
     renderMath(elQuestion);
   } else if (activity.question) {

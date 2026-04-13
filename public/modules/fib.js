@@ -28,7 +28,7 @@ export function initFib({
   if (fibInstr && (fibInstr.html || fibInstr.markdown)) {
     const instrEl = document.createElement('div');
     instrEl.className =
-      'text-input-heading box non-interactive input-group text-input-question-text body-large';
+      'text-input-heading box non-interactive input-group text-input-question-text body-large markdown-content';
     if (fibInstr.html) {
       instrEl.innerHTML = fibInstr.html;
     } else {
@@ -43,26 +43,22 @@ export function initFib({
     elFibHeading.textContent = 'Fill in the blanks';
   }
 
+  elFibContent.classList.add('markdown-content');
+
   // Content HTML is provided by server with embedded blank spans
   elFibContent.innerHTML = fib.htmlWithPlaceholders;
   // Render LaTeX math expressions
   renderMath(elFibContent);
 
-  // Wrap each question (p containing a blank) in div.fib-question
-  const questionParagraphs = Array.from(elFibContent.querySelectorAll('p')).filter((p) => p.querySelector('.blank'));
-  const wrappers = [];
+  // Wrap each top-level block that contains blanks so tables/lists survive intact.
   const questionStyleClass = fib.questionStyle ? ' ' + String(fib.questionStyle).trim() : '';
-  questionParagraphs.forEach((p) => {
+  const questionBlocks = Array.from(elFibContent.children).filter((el) => el.querySelector('.blank'));
+  questionBlocks.forEach((block) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'fib-question' + questionStyleClass;
-    p.parentNode.insertBefore(wrapper, p);
-    wrapper.appendChild(p);
-    wrappers.push(wrapper);
+    block.parentNode.insertBefore(wrapper, block);
+    wrapper.appendChild(block);
   });
-  while (elFibContent.firstChild) {
-    elFibContent.removeChild(elFibContent.firstChild);
-  }
-  wrappers.forEach((w) => elFibContent.appendChild(w));
 
   // Build dropdowns in each blank and synchronize options across all blanks
   const blanks = Array.from(elFibContent.querySelectorAll('.blank')).sort((a, b) => {
