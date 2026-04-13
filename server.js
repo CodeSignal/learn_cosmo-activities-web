@@ -53,6 +53,11 @@ const MIME_TYPES = {
   '.txt': 'text/plain; charset=utf-8'
 };
 
+const MARKDOWN_RENDERER = new marked.Renderer();
+MARKDOWN_RENDERER.table = function renderMarkdownTable(header, body) {
+  return `<div class="table-scroll"><table class="table">\n<thead>${header}</thead>\n<tbody>${body}</tbody>\n</table></div>`;
+};
+
 function isPathInside(child, parent) {
   const relative = path.relative(parent, child);
   return !!relative && !relative.startsWith('..') && !path.isAbsolute(relative);
@@ -141,6 +146,11 @@ function extractQuestionTypeFromMarkdown(markdownText) {
 function escapeMathDollars(markdown) {
   if (!markdown || typeof markdown !== 'string') return markdown;
   return markdown.replace(/\\\$/g, '<span class="no-math">$</span>');
+}
+
+function renderMarkdown(markdown) {
+  if (!markdown || typeof markdown !== 'string') return '';
+  return marked.parse(escapeMathDollars(markdown), { renderer: MARKDOWN_RENDERER });
 }
 
 /**
@@ -413,8 +423,8 @@ function buildActivityFromMarkdown(markdownText) {
       [choices[i], choices[j]] = [choices[j], choices[i]];
     }
     // Render markdown to HTML for prompt and content
-    const promptHtml = prompt ? marked.parse(escapeMathDollars(prompt)) : '';
-    const contentHtml = marked.parse(escapeMathDollars(contentWithBlankSpans));
+    const promptHtml = prompt ? renderMarkdown(prompt) : '';
+    const contentHtml = renderMarkdown(contentWithBlankSpans);
     // Parse QuestionStyle (e.g. "boxed", "bordered") from __QuestionStyle__ section
     const questionStyleTokens = sections.get('QuestionStyle') || [];
     const questionStyle = ((questionStyleTokens.map(t => t.raw || t.text).join('\n') || '').trim()).toLowerCase() || null;
@@ -422,7 +432,7 @@ function buildActivityFromMarkdown(markdownText) {
     const fibHeadingMd = fibHeadingTokens.map(t => t.raw || t.text).join('\n').trim();
     let fibHeading = null;
     if (fibHeadingMd) {
-      fibHeading = { markdown: fibHeadingMd, html: marked.parse(escapeMathDollars(fibHeadingMd)) };
+      fibHeading = { markdown: fibHeadingMd, html: renderMarkdown(fibHeadingMd) };
     }
     return attachSideContent(
       {
@@ -505,7 +515,7 @@ function buildActivityFromMarkdown(markdownText) {
         optionMap.set(label, text);
         
         // Parse markdown to HTML for rendering (supports images, bold, etc.)
-        const textHtml = marked.parse(escapeMathDollars(text));
+        const textHtml = renderMarkdown(text);
         
         options.push({
           label: label,
@@ -523,7 +533,7 @@ function buildActivityFromMarkdown(markdownText) {
       
       // Parse markdown to HTML for rendering (supports multiple paragraphs, blockquotes, etc.)
       if (currentQuestion.text) {
-        currentQuestion.textHtml = marked.parse(escapeMathDollars(currentQuestion.text));
+        currentQuestion.textHtml = renderMarkdown(currentQuestion.text);
       } else {
         currentQuestion.textHtml = '';
       }
@@ -740,7 +750,7 @@ function buildActivityFromMarkdown(markdownText) {
     if (headingBuffer.length > 0) {
       const headingText = headingBuffer.map(t => t.raw || t.text || '').join('\n').trim();
       if (headingText) {
-        heading = { markdown: headingText, html: marked.parse(escapeMathDollars(headingText)) };
+        heading = { markdown: headingText, html: renderMarkdown(headingText) };
       }
     }
 
@@ -790,7 +800,7 @@ function buildActivityFromMarkdown(markdownText) {
         const textBeforeBlank = itemLine.replace(/\[\[blank:[^\]]+\]\]/gi, '').trim();
         
         // Render text without blank to HTML
-        const textHtml = marked.parse(escapeMathDollars(textBeforeBlank));
+        const textHtml = renderMarkdown(textBeforeBlank);
         
         items.push({
           index: idx++,
@@ -828,13 +838,13 @@ function buildActivityFromMarkdown(markdownText) {
     }
     
     // Render markdown to HTML for prompt
-    const promptHtml = prompt ? marked.parse(escapeMathDollars(prompt)) : '';
+    const promptHtml = prompt ? renderMarkdown(prompt) : '';
 
     const matchingHeadingTokens = sections.get('Heading') || [];
     const matchingHeadingMd = matchingHeadingTokens.map(t => t.raw || t.text).join('\n').trim();
     let matchingHeading = null;
     if (matchingHeadingMd) {
-      matchingHeading = { markdown: matchingHeadingMd, html: marked.parse(escapeMathDollars(matchingHeadingMd)) };
+      matchingHeading = { markdown: matchingHeadingMd, html: renderMarkdown(matchingHeadingMd) };
     }
 
     return attachSideContent({
@@ -872,7 +882,7 @@ function buildActivityFromMarkdown(markdownText) {
       
       // Parse markdown to HTML for rendering (supports LaTeX, images, bold, etc.)
       if (currentQuestion.text) {
-        currentQuestion.textHtml = marked.parse(escapeMathDollars(currentQuestion.text));
+        currentQuestion.textHtml = renderMarkdown(currentQuestion.text);
       } else {
         currentQuestion.textHtml = '';
       }
@@ -1082,7 +1092,7 @@ function buildActivityFromMarkdown(markdownText) {
     if (headingBuffer.length > 0) {
       const headingText = headingBuffer.map(t => t.raw || t.text || '').join('\n').trim();
       if (headingText) {
-        heading = { markdown: headingText, html: marked.parse(escapeMathDollars(headingText)) };
+        heading = { markdown: headingText, html: renderMarkdown(headingText) };
       }
     }
     
@@ -1165,10 +1175,10 @@ function buildActivityFromMarkdown(markdownText) {
     const headingMd = headingTokens.map(t => t.raw || t.text).join('\n').trim();
     let matrixHeading = null;
     if (headingMd) {
-      matrixHeading = { markdown: headingMd, html: marked.parse(escapeMathDollars(headingMd)) };
+      matrixHeading = { markdown: headingMd, html: renderMarkdown(headingMd) };
     }
 
-    const questionHtml = question ? marked.parse(escapeMathDollars(question)) : '';
+    const questionHtml = question ? renderMarkdown(question) : '';
 
     return attachSideContent(
       {
@@ -1488,7 +1498,7 @@ const server = http.createServer((req, res) => {
       try {
         const data = JSON.parse(body);
         const markdown = data.markdown || '';
-        const html = marked.parse(markdown);
+        const html = renderMarkdown(markdown);
         
         // Return HTML wrapped in a proper document with styles
         const fullHtml = `<!DOCTYPE html>
@@ -1500,6 +1510,7 @@ const server = http.createServer((req, res) => {
   <link rel="stylesheet" href="/design-system/colors/colors.css" />
   <link rel="stylesheet" href="/design-system/typography/typography.css" />
   <link rel="stylesheet" href="/design-system/spacing/spacing.css" />
+  <link rel="stylesheet" href="/design-system/components/table/table.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
   <style>
     body {
@@ -1511,52 +1522,6 @@ const server = http.createServer((req, res) => {
     }
     .markdown-content {
       max-width: 100%;
-    }
-    .markdown-content table {
-      display: block;
-      width: fit-content;
-      min-width: 0;
-      max-width: 100%;
-      overflow-x: auto;
-      border-collapse: collapse;
-      margin: 1em 0;
-      background: var(--Colors-Backgrounds-Main-Top);
-      border: 1px solid var(--Colors-Stroke-Default);
-      border-radius: 8px;
-    }
-    .markdown-content thead {
-      background: var(--Colors-Backgrounds-Main-Medium);
-    }
-    .markdown-content tbody {
-      background: var(--Colors-Backgrounds-Main-Top);
-    }
-    .markdown-content tr {
-      border-bottom: 1px solid var(--Colors-Stroke-Default);
-    }
-    .markdown-content tbody tr:last-child {
-      border-bottom: none;
-    }
-    .markdown-content th,
-    .markdown-content td {
-      padding: 12px 16px;
-      text-align: left;
-      vertical-align: top;
-      border-right: 1px solid var(--Colors-Stroke-Default);
-    }
-    .markdown-content th:last-child,
-    .markdown-content td:last-child {
-      border-right: none;
-    }
-    .markdown-content th {
-      color: var(--Colors-Text-Body-Strong);
-      font-weight: 500;
-      -webkit-font-smoothing: antialiased;
-    }
-    .markdown-content td {
-      color: var(--Colors-Text-Body-Default);
-    }
-    .markdown-content table code {
-      white-space: nowrap;
     }
     @media (prefers-color-scheme: dark) {
       body {

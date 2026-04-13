@@ -160,62 +160,6 @@ blockquote + p,  blockquote + h1, blockquote + h2, blockquote + h3, blockquote +
   max-width: 100%;
 }
 
-.markdown-content table {
-  display: block;
-  width: fit-content;
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: auto;
-  border-collapse: collapse;
-  margin: 1em 0;
-  background: var(--Colors-Backgrounds-Main-Top);
-  border: 1px solid var(--Colors-Stroke-Default);
-  border-radius: var(--UI-Radius-radius-s, 8px);
-}
-
-.markdown-content thead {
-  background: var(--Colors-Backgrounds-Main-Medium);
-}
-
-.markdown-content tbody {
-  background: var(--Colors-Backgrounds-Main-Top);
-}
-
-.markdown-content tr {
-  border-bottom: 1px solid var(--Colors-Stroke-Default);
-}
-
-.markdown-content tbody tr:last-child {
-  border-bottom: none;
-}
-
-.markdown-content th,
-.markdown-content td {
-  padding: var(--UI-Spacing-spacing-mxs, 12px) var(--UI-Spacing-spacing-ms, 16px);
-  text-align: left;
-  vertical-align: top;
-  border-right: 1px solid var(--Colors-Stroke-Default);
-}
-
-.markdown-content th:last-child,
-.markdown-content td:last-child {
-  border-right: none;
-}
-
-.markdown-content th {
-  color: var(--Colors-Text-Body-Strong);
-  font-weight: 500;
-  -webkit-font-smoothing: antialiased;
-}
-
-.markdown-content td {
-  color: var(--Colors-Text-Body-Default);
-}
-
-.markdown-content table code {
-  white-space: nowrap;
-}
-
 /* Scroll indicator - shows when there's more content below */
 .scroll-indicator {
   position: fixed;
