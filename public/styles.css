@@ -156,6 +156,10 @@ blockquote + p,  blockquote + h1, blockquote + h2, blockquote + h3, blockquote +
   margin-top: 1.5em;
 }
 
+.markdown-content {
+  max-width: 100%;
+}
+
 /* Scroll indicator - shows when there's more content below */
 .scroll-indicator {
   position: fixed;

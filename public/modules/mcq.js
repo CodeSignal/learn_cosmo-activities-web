@@ -34,7 +34,7 @@ export function initMcq({
   if (hasHeading) {
     const headingEl = document.createElement('div');
     headingEl.className =
-      'text-input-heading box non-interactive input-group text-input-question-text body-large';
+      'text-input-heading box non-interactive input-group text-input-question-text body-large markdown-content';
     if (mcq.heading.html) {
       headingEl.innerHTML = mcq.heading.html;
     } else {
@@ -90,7 +90,7 @@ export function initMcq({
     
     // Question text (support markdown HTML if available, fallback to plain text for backward compatibility)
     const questionTextEl = document.createElement('div');
-    questionTextEl.className = 'mcq-question-text body-large';
+    questionTextEl.className = 'mcq-question-text body-large markdown-content';
     if (question.textHtml) {
       questionTextEl.innerHTML = question.textHtml;
       // Render LaTeX math expressions
@@ -119,8 +119,8 @@ export function initMcq({
       input.id = `q${question.id}-opt${optIdx}`;
       input.setAttribute('aria-label', `Option ${option.label}: ${option.text}`);
       
-      const optionText = document.createElement('span');
-      optionText.className = 'mcq-option-text body-large';
+      const optionText = document.createElement('div');
+      optionText.className = 'mcq-option-text body-large markdown-content';
       // Support markdown HTML if available, fallback to plain text for backward compatibility
       if (option.textHtml) {
         optionText.innerHTML = option.textHtml;
@@ -509,4 +509,3 @@ export function initMcq({
     validate: validateAnswers
   };
 }
-

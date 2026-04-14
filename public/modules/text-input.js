@@ -259,7 +259,7 @@ export function initTextInput({
   const hasHeading = textInput.heading && (textInput.heading.html || textInput.heading.markdown);
   if (hasHeading) {
     const headingEl = document.createElement('div');
-    headingEl.className = 'text-input-heading box non-interactive input-group text-input-question-text body-large';
+    headingEl.className = 'text-input-heading box non-interactive input-group text-input-question-text body-large markdown-content';
     if (textInput.heading.html) {
       headingEl.innerHTML = textInput.heading.html;
     } else {
@@ -293,7 +293,7 @@ export function initTextInput({
     
     // Question text (support markdown HTML if available, fallback to plain text)
     const questionTextEl = document.createElement('div');
-    questionTextEl.className = 'text-input-question-text body-large';
+    questionTextEl.className = 'text-input-question-text body-large markdown-content';
     if (question.textHtml) {
       questionTextEl.innerHTML = question.textHtml;
       // Render LaTeX math expressions
