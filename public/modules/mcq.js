@@ -242,8 +242,8 @@ export function initMcq({
       questionEl.appendChild(explainContainer);
     }
     
-    // Add "Next" button for multi-select questions or questions with explainAnswer (not on last question)
-    if ((question.isMultiSelect || question.explainAnswer) && qIdx < mcq.questions.length - 1) {
+    // Add "Next" button for questions with explainAnswer (not on last question)
+    if (question.explainAnswer && qIdx < mcq.questions.length - 1) {
       const nextButtonContainer = document.createElement('div');
       nextButtonContainer.className = 'mcq-next-button-container';
       
