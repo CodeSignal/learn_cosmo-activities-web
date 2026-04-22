@@ -295,14 +295,13 @@ export function initMcq({
         selectedAnswers[questionId] = selectedAnswers[questionId].filter(l => l !== optionLabel);
       }
       
-      // Enable/disable next button for multi-select questions based on selection
-      const questionEl = elQuestions.querySelector(`[data-question-id="${questionId}"]`);
-      if (questionEl) {
-        const nextButton = questionEl.querySelector('.mcq-next-button');
-        if (nextButton) {
-          const hasSelection = selectedAnswers[questionId].length > 0;
-          // Disable if no answer selected
-          nextButton.disabled = !hasSelection;
+      if (question.explainAnswer) {
+        const questionEl = elQuestions.querySelector(`[data-question-id="${questionId}"]`);
+        if (questionEl) {
+          const nextButton = questionEl.querySelector('.mcq-next-button');
+          if (nextButton) {
+            nextButton.disabled = selectedAnswers[questionId].length === 0;
+          }
         }
       }
     } else {
