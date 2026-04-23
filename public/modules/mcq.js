@@ -242,8 +242,8 @@ export function initMcq({
       questionEl.appendChild(explainContainer);
     }
     
-    // Add "Next" button for multi-select questions or questions with explainAnswer (not on last question)
-    if ((question.isMultiSelect || question.explainAnswer) && qIdx < mcq.questions.length - 1) {
+    // Add "Next" button for questions with explainAnswer (not on last question)
+    if (question.explainAnswer && qIdx < mcq.questions.length - 1) {
       const nextButtonContainer = document.createElement('div');
       nextButtonContainer.className = 'mcq-next-button-container';
       
@@ -295,14 +295,13 @@ export function initMcq({
         selectedAnswers[questionId] = selectedAnswers[questionId].filter(l => l !== optionLabel);
       }
       
-      // Enable/disable next button for multi-select questions based on selection
-      const questionEl = elQuestions.querySelector(`[data-question-id="${questionId}"]`);
-      if (questionEl) {
-        const nextButton = questionEl.querySelector('.mcq-next-button');
-        if (nextButton) {
-          const hasSelection = selectedAnswers[questionId].length > 0;
-          // Disable if no answer selected
-          nextButton.disabled = !hasSelection;
+      if (question.explainAnswer) {
+        const questionEl = elQuestions.querySelector(`[data-question-id="${questionId}"]`);
+        if (questionEl) {
+          const nextButton = questionEl.querySelector('.mcq-next-button');
+          if (nextButton) {
+            nextButton.disabled = selectedAnswers[questionId].length === 0;
+          }
         }
       }
     } else {
