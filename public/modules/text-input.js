@@ -224,13 +224,35 @@ export function initTextInput({
     return Math.abs(userValue - correctValue) <= threshold;
   }
   
+  function getValidationCandidates(question) {
+    const candidates = Array.isArray(question.correctAnswers) && question.correctAnswers.length > 0
+      ? question.correctAnswers
+      : [{ correctAnswer: question.correctAnswer, validation: question.validation || {} }];
+
+    return candidates
+      .map(candidate => {
+        if (typeof candidate === 'string') {
+          return { correctAnswer: candidate, validation: question.validation || {} };
+        }
+        return {
+          correctAnswer: candidate.correctAnswer || '',
+          validation: candidate.validation || question.validation || {}
+        };
+      })
+      .filter(candidate => {
+        const kind = candidate.validation && candidate.validation.kind;
+        if (kind === 'validate-later') return true;
+        return String(candidate.correctAnswer || '').trim().length > 0;
+      });
+  }
+
   function validateAnswer(question) {
     const userAnswer = userAnswers[question.id] || '';
-    const correctAnswer = question.correctAnswer;
-    const validation = question.validation || {};
+    const candidates = getValidationCandidates(question);
+    const scorableCandidates = candidates.filter(c => (c.validation?.kind || '') !== 'validate-later');
     
     // "validate-later" still requires a response, but any non-empty value is accepted.
-    if (validation.kind === 'validate-later') {
+    if (scorableCandidates.length === 0) {
       return userAnswer.trim() ? null : false;
     }
     
@@ -238,21 +260,24 @@ export function initTextInput({
       return false;
     }
     
-    const options = validation.options || {};
-    
-    switch (validation.kind) {
-      case 'string':
-        return validateString(userAnswer, correctAnswer, options);
-      case 'numeric':
-        return validateNumeric(userAnswer, correctAnswer, options);
-      case 'numeric-with-units':
-        return validateNumericWithUnits(userAnswer, correctAnswer, options);
-      case 'numeric-with-currency':
-        return validateNumericWithCurrency(userAnswer, correctAnswer, options);
-      default:
-        // Default to exact string match (case-insensitive)
-        return validateString(userAnswer, correctAnswer, { caseSensitive: false });
-    }
+    return scorableCandidates.some(candidate => {
+      const validation = candidate.validation || {};
+      const options = validation.options || {};
+
+      switch (validation.kind) {
+        case 'string':
+          return validateString(userAnswer, candidate.correctAnswer, options);
+        case 'numeric':
+          return validateNumeric(userAnswer, candidate.correctAnswer, options);
+        case 'numeric-with-units':
+          return validateNumericWithUnits(userAnswer, candidate.correctAnswer, options);
+        case 'numeric-with-currency':
+          return validateNumericWithCurrency(userAnswer, candidate.correctAnswer, options);
+        default:
+          // Default to exact string match (case-insensitive)
+          return validateString(userAnswer, candidate.correctAnswer, { caseSensitive: false });
+      }
+    });
   }
   
   // Optional heading section (instructions for the questions)
@@ -615,12 +640,19 @@ export function initTextInput({
       const userAnswer = userAnswers[q.id] || '';
       const isValidateLater = q.validation && q.validation.kind === 'validate-later';
       const isCorrect = isValidateLater ? null : validateAnswer(q);
+      const answerCandidates = Array.isArray(q.correctAnswers) && q.correctAnswers.length > 0
+        ? q.correctAnswers
+        : [{ correctAnswer: q.correctAnswer }];
+      const correctAnswersText = answerCandidates
+        .map(entry => (typeof entry === 'string' ? entry : entry.correctAnswer))
+        .filter(Boolean)
+        .join(' | ');
       
       const customName = q.name && String(q.name).trim();
       return {
         text: customName || `Question ${idx + 1}`,
         selected: userAnswer,
-        correct: q.correctAnswer,
+        correct: correctAnswersText || q.correctAnswer,
         validateLater: isValidateLater
       };
     });

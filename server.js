@@ -995,15 +995,25 @@ function buildActivityFromMarkdown(markdownText) {
       
       const answerItems = readListItems(answerBuffer);
       
-      // For text-input, we expect a single correct answer per question
-      // But we support multiple answers in case of multiple correct answers
+      // For text-input, support multiple correct answers.
       if (answerItems.length > 0) {
-        // Use the first answer as the correct answer
-        const answerText = answerItems[0].trim();
-        const { correctAnswer, validation } = parseValidationOptions(answerText);
-        
-        currentQuestion.correctAnswer = correctAnswer;
-        currentQuestion.validation = validation;
+        const parsedAnswers = answerItems
+          .map(item => parseValidationOptions(item.trim()))
+          .filter(entry => {
+            const hasAnswerText = String(entry.correctAnswer || '').trim().length > 0;
+            const isValidateLater = entry.validation && entry.validation.kind === 'validate-later';
+            return hasAnswerText || isValidateLater;
+          });
+
+        if (parsedAnswers.length > 0) {
+          currentQuestion.correctAnswers = parsedAnswers.map(entry => ({
+            correctAnswer: entry.correctAnswer,
+            validation: entry.validation || {}
+          }));
+          // Backward compatibility with existing consumers expecting singular fields.
+          currentQuestion.correctAnswer = parsedAnswers[0].correctAnswer;
+          currentQuestion.validation = parsedAnswers[0].validation || {};
+        }
       }
       
       // Add to questions array
@@ -1033,6 +1043,7 @@ function buildActivityFromMarkdown(markdownText) {
               name: nameFromBuffer,
               text: '',
               correctAnswer: '',
+              correctAnswers: [],
               validation: {}
             };
             currentSection = 'question';
@@ -1768,33 +1779,59 @@ const server = http.createServer((req, res) => {
           return Math.abs(userValue - correctValue) <= threshold;
         }
         
+        function getTextInputValidationCandidates(question) {
+          const candidates = Array.isArray(question.correctAnswers) && question.correctAnswers.length > 0
+            ? question.correctAnswers
+            : [{ correctAnswer: question.correctAnswer, validation: question.validation || {} }];
+
+          return candidates
+            .map(candidate => {
+              if (typeof candidate === 'string') {
+                return { correctAnswer: candidate, validation: question.validation || {} };
+              }
+              return {
+                correctAnswer: candidate.correctAnswer || '',
+                validation: candidate.validation || question.validation || {}
+              };
+            })
+            .filter(candidate => {
+              const kind = candidate.validation && candidate.validation.kind;
+              if (kind === 'validate-later') return true;
+              return String(candidate.correctAnswer || '').trim().length > 0;
+            });
+        }
+
         function validateTextInputAnswer(question, userAnswer) {
-          const validation = question.validation || {};
-          
-          // Skip validation for "validate-later" type - return null to exclude from scoring
-          if (validation.kind === 'validate-later') {
-            return null;
+          const candidates = getTextInputValidationCandidates(question);
+          const scorableCandidates = candidates.filter(c => (c.validation?.kind || '') !== 'validate-later');
+
+          // "validate-later" questions require a non-empty response but are excluded from score.
+          if (scorableCandidates.length === 0) {
+            return userAnswer && userAnswer.trim() ? null : false;
           }
-          
+
           if (!userAnswer || !userAnswer.trim()) {
             return false;
           }
-          
-          const options = validation.options || {};
-          
-          switch (validation.kind) {
-            case 'string':
-              return validateTextInputString(userAnswer, question.correctAnswer, options);
-            case 'numeric':
-              return validateTextInputNumeric(userAnswer, question.correctAnswer, options);
-            case 'numeric-with-units':
-              return validateTextInputNumericWithUnits(userAnswer, question.correctAnswer, options);
-            case 'numeric-with-currency':
-              return validateTextInputNumericWithCurrency(userAnswer, question.correctAnswer, options);
-            default:
-              // Default to exact string match (case-insensitive)
-              return validateTextInputString(userAnswer, question.correctAnswer, { caseSensitive: false });
-          }
+
+          return scorableCandidates.some(candidate => {
+            const validation = candidate.validation || {};
+            const options = validation.options || {};
+
+            switch (validation.kind) {
+              case 'string':
+                return validateTextInputString(userAnswer, candidate.correctAnswer, options);
+              case 'numeric':
+                return validateTextInputNumeric(userAnswer, candidate.correctAnswer, options);
+              case 'numeric-with-units':
+                return validateTextInputNumericWithUnits(userAnswer, candidate.correctAnswer, options);
+              case 'numeric-with-currency':
+                return validateTextInputNumericWithCurrency(userAnswer, candidate.correctAnswer, options);
+              default:
+                // Default to exact string match (case-insensitive)
+                return validateTextInputString(userAnswer, candidate.correctAnswer, { caseSensitive: false });
+            }
+          });
         }
         
         // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact string match
@@ -2029,23 +2066,37 @@ const server = http.createServer((req, res) => {
                 }
                 markdown += `__Practice Question__\n\n${q.text}\n\n`;
                 markdown += `__Correct Answers__\n\n`;
-                // Build answer string with validation options
-                let answerStr = q.correctAnswer;
-                if (q.validation && q.validation.kind) {
-                  answerStr += ` [kind: ${q.validation.kind}]`;
-                  if (q.validation.options && Object.keys(q.validation.options).length > 0) {
-                    const optionsStr = Object.entries(q.validation.options)
-                      .map(([key, value]) => {
-                        if (Array.isArray(value)) {
-                          return `${key}=${value.join(',')}`;
-                        }
-                        return `${key}=${value}`;
-                      })
-                      .join(',');
-                    answerStr += ` [options: ${optionsStr}]`;
+
+                const answerCandidates = Array.isArray(q.correctAnswers) && q.correctAnswers.length > 0
+                  ? q.correctAnswers
+                  : [{ correctAnswer: q.correctAnswer, validation: q.validation || {} }];
+
+                answerCandidates.forEach(candidate => {
+                  const entry = (typeof candidate === 'string')
+                    ? { correctAnswer: candidate, validation: q.validation || {} }
+                    : {
+                        correctAnswer: candidate.correctAnswer || '',
+                        validation: candidate.validation || q.validation || {}
+                      };
+
+                  let answerStr = String(entry.correctAnswer || '');
+                  if (entry.validation && entry.validation.kind) {
+                    const kindPrefix = answerStr ? `${answerStr} ` : '';
+                    answerStr = `${kindPrefix}[kind: ${entry.validation.kind}]`;
+                    if (entry.validation.options && Object.keys(entry.validation.options).length > 0) {
+                      const optionsStr = Object.entries(entry.validation.options)
+                        .map(([key, value]) => {
+                          if (Array.isArray(value)) {
+                            return `${key}=${value.join(',')}`;
+                          }
+                          return `${key}=${value}`;
+                        })
+                        .join(',');
+                      answerStr += ` [options: ${optionsStr}]`;
+                    }
                   }
-                }
-                markdown += `- ${answerStr}\n`;
+                  markdown += `- ${answerStr}\n`;
+                });
                 markdown += '\n';
               });
             }
