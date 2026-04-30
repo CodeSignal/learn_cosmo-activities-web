@@ -2,106 +2,62 @@ __Type__
 
 Text Input
 
-__Content__
+__Heading__
 
-# Mathematical Problem Solving
-
-This activity tests your knowledge of mathematical concepts and formulas.
-
-## Instructions
-
-- Enter numerical answers as decimals or fractions
-- For formulas, use standard mathematical notation
-- All answers are case-insensitive unless otherwise specified
-
----
-
-> **Note**: Some questions may require you to solve equations or evaluate expressions. Show your work if needed.
+Answer the following questions. You may use the content panel for reference. **Accept the formats indicated** in each question (e.g., case, units, or approximate values).
 
 __Practice Question__
 
-What is the value of $x$ when $2x + 5 = 15$?
+What is the capital of France? (Accept any case variation)
 
 __Correct Answers__
 
-- 5 [kind: numeric] [options: threshold=0.01,precision=2]
-- x = 5 [kind: string] [options: caseSensitive=false,fuzzy=false]
+- Paris [kind: string] [options: caseSensitive=false,fuzzy=false]
 
 __Practice Question__
 
-Evaluate the expression: $\sqrt{16} + \sqrt{9} - \sqrt{4}$
+What is the approximate value of π? (Accept values within 0.1)
 
 __Correct Answers__
 
-- 5 [kind: numeric] [options: threshold=0.01,precision=2]
+- 3.14 [kind: numeric] [options: threshold=0.1,precision=2]
 
 __Practice Question__
 
-What is the area of a circle with radius $r = 3$? Use the formula $A = \pi r^2$. Round to two decimal places.
+How many kilograms are in 1000 grams? (Include unit)
 
 __Correct Answers__
 
-- 28.27 [kind: numeric] [options: threshold=0.1,precision=2]
-- 28.26 [kind: numeric] [options: threshold=0.1,precision=2]
-- 28.28 [kind: numeric] [options: threshold=0.1,precision=2]
+- 1 kg [kind: numeric-with-units] [options: threshold=0.01,precision=2,units=kg,g]
 
 __Practice Question__
 
-If $f(x) = x^2 + 3x - 2$, what is $f(2)$?
+What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with punctuation, spacing, and minor spelling errors)
 
 __Correct Answers__
 
-- 8 [kind: numeric] [options: threshold=0.01,precision=2]
+- Don't Repeat Yourself [kind: string] [options: caseSensitive=false,fuzzy=true]
 
 __Practice Question__
 
-Solve for $y$: $3y - 7 = 14$
+Spell the word "accommodation" (Accept minor spelling errors)
 
 __Correct Answers__
 
-- 7 [kind: numeric] [options: threshold=0.01,precision=2]
-- y = 7 [kind: string] [options: caseSensitive=false,fuzzy=false]
+- accommodation [kind: string] [options: caseSensitive=false,fuzzy=0.7]
 
 __Practice Question__
 
-What is the derivative of $f(x) = x^3$? Enter your answer in the form $f'(x) = ...$
+What is the price of a coffee? (Enter amount in dollars)
 
 __Correct Answers__
 
-- f'(x) = 3x^2 [kind: string] [options: caseSensitive=false,fuzzy=true]
-- f'(x)=3x^2 [kind: string] [options: caseSensitive=false,fuzzy=true]
-- 3x^2 [kind: string] [options: caseSensitive=false,fuzzy=true]
+- 4.50 [kind: numeric-with-currency] [options: threshold=0.01,precision=2,currency=$]
 
 __Practice Question__
 
-What is the value of $\log_2(16)$?
+Describe your approach to solving this problem. (This will be reviewed later and is not part of the score)
 
 __Correct Answers__
 
-- 4 [kind: numeric] [options: threshold=0.01,precision=2]
-
-__Practice Question__
-
-Calculate: $\frac{2^3 \cdot 3^2}{2^2 \cdot 3}$
-
-__Correct Answers__
-
-- 6 [kind: numeric] [options: threshold=0.01,precision=2]
-
-__Practice Question__
-
-What is the sum $\sum_{i=1}^{5} i$?
-
-__Correct Answers__
-
-- 15 [kind: numeric] [options: threshold=0.01,precision=2]
-
-__Practice Question__
-
-If $z = 3 + 4i$, what is $|z|$ (the magnitude)? Round to two decimal places.
-
-__Correct Answers__
-
-- 5 [kind: numeric] [options: threshold=0.01,precision=2]
-- 5.00 [kind: numeric] [options: threshold=0.01,precision=2]
-
+- [kind: validate-later]

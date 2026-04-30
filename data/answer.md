@@ -4,137 +4,99 @@ Text Input
 
 __Summary__
 
-0/10 correct
+2/6 correct
+1 unvalidated
 
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: No answer selected
-   - Correct Answer: 5
-   - Result: ✗ Incorrect
+   - Selected Answer: paris
+   - Correct Answer: Paris
+   - Result: ✓ Correct
 
 2. **Question 2**
-   - Selected Answer: No answer selected
-   - Correct Answer: 5
+   - Selected Answer: -5
+   - Correct Answer: 3.14
    - Result: ✗ Incorrect
 
 3. **Question 3**
    - Selected Answer: No answer selected
-   - Correct Answer: 28.27
+   - Correct Answer: 1 kg
    - Result: ✗ Incorrect
 
 4. **Question 4**
-   - Selected Answer: No answer selected
-   - Correct Answer: 8
+   - Selected Answer: Dont repeat you
+   - Correct Answer: Don't Repeat Yourself
    - Result: ✗ Incorrect
 
 5. **Question 5**
-   - Selected Answer: No answer selected
-   - Correct Answer: 7
+   - Selected Answer: acomodatons
+   - Correct Answer: accommodation
    - Result: ✗ Incorrect
 
 6. **Question 6**
-   - Selected Answer: No answer selected
-   - Correct Answer: f'(x) = 3x^2
-   - Result: ✗ Incorrect
+   - Selected Answer: 4.5
+   - Correct Answer: 4.50
+   - Result: ✓ Correct
 
 7. **Question 7**
-   - Selected Answer: No answer selected
-   - Correct Answer: 4
-   - Result: ✗ Incorrect
-
-8. **Question 8**
-   - Selected Answer: No answer selected
-   - Correct Answer: 6
-   - Result: ✗ Incorrect
-
-9. **Question 9**
-   - Selected Answer: No answer selected
-   - Correct Answer: 15
-   - Result: ✗ Incorrect
-
-10. **Question 10**
-   - Selected Answer: No answer selected
-   - Correct Answer: 5
-   - Result: ✗ Incorrect
+   - Selected Answer: I don't know
+   - Correct Answer: 
+   - Result: Unvalidated
 
 __Practice Question__
 
-What is the value of $x$ when $2x + 5 = 15$?
+What is the capital of France? (Accept any case variation)
 
 __Correct Answers__
 
-- 5 [kind: numeric] [options: threshold=0.01,precision=2]
+- Paris [kind: string] [options: caseSensitive=false,fuzzy=false]
 
 __Practice Question__
 
-Evaluate the expression: $\sqrt{16} + \sqrt{9} - \sqrt{4}$
+What is the approximate value of π? (Accept values within 0.1)
 
 __Correct Answers__
 
-- 5 [kind: numeric] [options: threshold=0.01,precision=2]
+- 3.14 [kind: numeric] [options: threshold=0.1,precision=2]
 
 __Practice Question__
 
-What is the area of a circle with radius $r = 3$? Use the formula $A = \pi r^2$. Round to two decimal places.
+How many kilograms are in 1000 grams? (Include unit)
 
 __Correct Answers__
 
-- 28.27 [kind: numeric] [options: threshold=0.1,precision=2]
+- 1 kg [kind: numeric-with-units] [options: threshold=0.01,precision=2,units=kg]
 
 __Practice Question__
 
-If $f(x) = x^2 + 3x - 2$, what is $f(2)$?
+What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with punctuation, spacing, and minor spelling errors)
 
 __Correct Answers__
 
-- 8 [kind: numeric] [options: threshold=0.01,precision=2]
+- Don't Repeat Yourself [kind: string] [options: caseSensitive=false,fuzzy=true]
 
 __Practice Question__
 
-Solve for $y$: $3y - 7 = 14$
+Spell the word "accommodation" (Accept minor spelling errors)
 
 __Correct Answers__
 
-- 7 [kind: numeric] [options: threshold=0.01,precision=2]
+- accommodation [kind: string] [options: caseSensitive=false,fuzzy=0.7]
 
 __Practice Question__
 
-What is the derivative of $f(x) = x^3$? Enter your answer in the form $f'(x) = ...$
+What is the price of a coffee? (Enter amount in dollars)
 
 __Correct Answers__
 
-- f'(x) = 3x^2 [kind: string] [options: caseSensitive=false,fuzzy=true]
+- 4.50 [kind: numeric-with-currency] [options: threshold=0.01,precision=2,currency=$]
 
 __Practice Question__
 
-What is the value of $\log_2(16)$?
+Describe your approach to solving this problem. (This will be reviewed later and is not part of the score)
 
 __Correct Answers__
 
-- 4 [kind: numeric] [options: threshold=0.01,precision=2]
-
-__Practice Question__
-
-Calculate: $\frac{2^3 \cdot 3^2}{2^2 \cdot 3}$
-
-__Correct Answers__
-
-- 6 [kind: numeric] [options: threshold=0.01,precision=2]
-
-__Practice Question__
-
-What is the sum $\sum_{i=1}^{5} i$?
-
-__Correct Answers__
-
-- 15 [kind: numeric] [options: threshold=0.01,precision=2]
-
-__Practice Question__
-
-If $z = 3 + 4i$, what is $|z|$ (the magnitude)? Round to two decimal places.
-
-__Correct Answers__
-
-- 5 [kind: numeric] [options: threshold=0.01,precision=2]
+- [kind: validate-later]
 

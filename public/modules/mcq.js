@@ -332,6 +332,7 @@ export function initMcq({
     updateResultsAndPost();
   }
   
+  // Same rules as `evaluateMcqSelection` in `lib/activity-results-validation.js` (server + tests).
   function arraysEqual(a, b) {
     if (a.length !== b.length) return false;
     const sortedA = [...a].sort();

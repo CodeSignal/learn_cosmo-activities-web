@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test \"test/**/*.test.js\"",
     "start": "node server.js",
     "examples": "node server.js --examples",
     "dev:reload": "concurrently \"node server.js\" \"browser-sync start --proxy http://localhost:3000 --files '**/*.css, **/*.html, **/*.js, data/question.md' --ignore node_modules\""

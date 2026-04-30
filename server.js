@@ -3,6 +3,15 @@ const fs = require('fs');
 const path = require('path');
 const { Lexer, marked } = require('marked');
 const WebSocket = require('ws');
+const {
+  parseTextInputAnswerItems
+} = require('./lib/text-input-validation');
+const {
+  questionIndexFromOrderedResult,
+  evaluateActivityResultCorrect,
+  isTextInputResultValidateLater,
+  countValidateLaterTextInputResults
+} = require('./lib/activity-results-validation');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -202,18 +211,6 @@ function parseExplainYourAnswerSection(rawText) {
   if (lines.length === 1) return { enabled: true, label: null };
   const label = lines.slice(1).join('\n').trim();
   return { enabled: true, label: label || null };
-}
-
-/** Client posts one result per question in order; label may be a custom name or legacy "Question N". */
-function questionIndexFromOrderedResult(result, resultIndex, numQuestions) {
-  const n = numQuestions | 0;
-  if (typeof resultIndex === 'number' && resultIndex >= 0 && resultIndex < n) return resultIndex;
-  const m = /^Question\s+(\d+)\s*$/i.exec(String(result?.text || '').trim());
-  if (m) {
-    const i = parseInt(m[1], 10) - 1;
-    if (i >= 0 && i < n) return i;
-  }
-  return -1;
 }
 
 function readListItems(sectionTokens) {
@@ -888,108 +885,6 @@ function buildActivityFromMarkdown(markdownText) {
       }
     }
     
-    function parseValidationOptions(answerText) {
-      // Parse validation options from answer text
-      // Format: "answer [kind: string|numeric|numeric-with-units] [options: key=value,key=value]"
-      // Examples:
-      // "Hello World [kind: string] [options: caseInsensitive=true,fuzzy=false]"
-      // "42.5 [kind: numeric] [options: threshold=0.01,precision=2]"
-      // "100 kg [kind: numeric-with-units] [options: threshold=0.1,precision=1,units=kg,g]"
-
-      const trimmedAnswer = answerText.trim();
-      const startsWithKind = trimmedAnswer.startsWith('[kind:');
-      let validationMatch;
-
-      if (startsWithKind) {
-        // Support empty correct-answer entries such as "[kind: validate-later]".
-        validationMatch = trimmedAnswer.match(/^\[kind:\s*([^\]]+)\](?:\s+\[options:\s*([^\]]+)\])?$/);
-        if (validationMatch) {
-          const kind = validationMatch[1] ? validationMatch[1].trim() : 'string';
-          const optionsText = validationMatch[2] ? validationMatch[2].trim() : '';
-          const options = {};
-
-          if (optionsText) {
-            const optionPairs = optionsText.split(',');
-            optionPairs.forEach(pair => {
-              const [key, value] = pair.split('=').map(s => s.trim());
-              if (key && value !== undefined) {
-                if (value === 'true') {
-                  options[key] = true;
-                } else if (value === 'false') {
-                  options[key] = false;
-                } else if (!isNaN(value)) {
-                  options[key] = parseFloat(value);
-                } else {
-                  options[key] = value;
-                }
-              }
-            });
-          }
-
-          if (kind === 'numeric-with-units' && typeof options.units === 'string') {
-            options.units = options.units.split(',').map(u => u.trim()).filter(Boolean);
-          }
-
-          return {
-            correctAnswer: '',
-            validation: {
-              kind,
-              options
-            }
-          };
-        }
-      } else {
-        validationMatch = trimmedAnswer.match(/^(.+?)(?:\s+\[kind:\s*([^\]]+)\])?(?:\s+\[options:\s*([^\]]+)\])?$/);
-      }
-
-      if (!validationMatch) {
-        return {
-          correctAnswer: trimmedAnswer,
-          validation: {}
-        };
-      }
-      
-      const correctAnswer = validationMatch[1].trim();
-      const kind = validationMatch[2] ? validationMatch[2].trim() : 'string';
-      const optionsText = validationMatch[3] ? validationMatch[3].trim() : '';
-      
-      // Parse options
-      const options = {};
-      if (optionsText) {
-        const optionPairs = optionsText.split(',');
-        optionPairs.forEach(pair => {
-          const [key, value] = pair.split('=').map(s => s.trim());
-          if (key && value !== undefined) {
-            // Convert string booleans and numbers
-            if (value === 'true') {
-              options[key] = true;
-            } else if (value === 'false') {
-              options[key] = false;
-            } else if (!isNaN(value)) {
-              options[key] = parseFloat(value);
-            } else {
-              options[key] = value;
-            }
-          }
-        });
-      }
-      
-      // Parse units if present (comma-separated list)
-      if (kind === 'numeric-with-units' && options.units) {
-        if (typeof options.units === 'string') {
-          options.units = options.units.split(',').map(u => u.trim()).filter(Boolean);
-        }
-      }
-      
-      return {
-        correctAnswer,
-        validation: {
-          kind,
-          options
-        }
-      };
-    }
-    
     function processAnswers() {
       if (!currentQuestion || answerBuffer.length === 0) return;
       
@@ -997,23 +892,10 @@ function buildActivityFromMarkdown(markdownText) {
       
       // For text-input, support multiple correct answers.
       if (answerItems.length > 0) {
-        const parsedAnswers = answerItems
-          .map(item => parseValidationOptions(item.trim()))
-          .filter(entry => {
-            const hasAnswerText = String(entry.correctAnswer || '').trim().length > 0;
-            const isValidateLater = entry.validation && entry.validation.kind === 'validate-later';
-            return hasAnswerText || isValidateLater;
-          });
-
-        if (parsedAnswers.length > 0) {
-          currentQuestion.correctAnswers = parsedAnswers.map(entry => ({
-            correctAnswer: entry.correctAnswer,
-            validation: entry.validation || {}
-          }));
-          // Backward compatibility with existing consumers expecting singular fields.
-          currentQuestion.correctAnswer = parsedAnswers[0].correctAnswer;
-          currentQuestion.validation = parsedAnswers[0].validation || {};
-        }
+        const parsed = parseTextInputAnswerItems(answerItems);
+        currentQuestion.correctAnswers = parsed.correctAnswers;
+        currentQuestion.correctAnswer = parsed.correctAnswer;
+        currentQuestion.validation = parsed.validation;
       }
       
       // Add to questions array
@@ -1589,319 +1471,12 @@ const server = http.createServer((req, res) => {
         
         // Format results as markdown
         const activity = data.activity;
-        
-        // Helper function for array comparison
-        function arraysEqual(a, b) {
-          if (a.length !== b.length) return false;
-          const sortedA = [...a].sort();
-          const sortedB = [...b].sort();
-          return sortedA.every((val, idx) => val === sortedB[idx]);
-        }
-        
-        // Calculate Levenshtein distance between two strings
-        function levenshteinDistance(str1, str2) {
-          const len1 = str1.length;
-          const len2 = str2.length;
-          const matrix = [];
-          
-          // Initialize matrix
-          for (let i = 0; i <= len1; i++) {
-            matrix[i] = [i];
-          }
-          for (let j = 0; j <= len2; j++) {
-            matrix[0][j] = j;
-          }
-          
-          // Fill matrix
-          for (let i = 1; i <= len1; i++) {
-            for (let j = 1; j <= len2; j++) {
-              if (str1[i - 1] === str2[j - 1]) {
-                matrix[i][j] = matrix[i - 1][j - 1];
-              } else {
-                matrix[i][j] = Math.min(
-                  matrix[i - 1][j] + 1,     // deletion
-                  matrix[i][j - 1] + 1,     // insertion
-                  matrix[i - 1][j - 1] + 1  // substitution
-                );
-              }
-            }
-          }
-          
-          return matrix[len1][len2];
-        }
-        
-        // Calculate similarity percentage (0-1) between two strings
-        function calculateSimilarity(str1, str2) {
-          const maxLen = Math.max(str1.length, str2.length);
-          if (maxLen === 0) return 1.0;
-          
-          const distance = levenshteinDistance(str1, str2);
-          return 1 - (distance / maxLen);
-        }
-        
-        // Validation functions for text input
-        function validateTextInputString(userAnswer, correctAnswer, options = {}) {
-          const caseSensitive = options.caseSensitive === true; // Default false (case-insensitive)
-          const fuzzy = options.fuzzy; // Can be true, false, or a number (0-1)
-          
-          let user = String(userAnswer).trim();
-          let correct = String(correctAnswer).trim();
-          
-          if (!caseSensitive) {
-            // Default to case-insensitive matching
-            user = user.toLowerCase();
-            correct = correct.toLowerCase();
-          }
-          
-          // Handle fuzzy matching
-          if (fuzzy !== false && fuzzy !== undefined) {
-            // Normalize fuzzy threshold: true = 0.8, number = that number
-            let threshold = fuzzy === true ? 0.8 : parseFloat(fuzzy);
-            
-            // If threshold is invalid, default to 0.8
-            if (isNaN(threshold) || threshold < 0 || threshold > 1) {
-              threshold = 0.8;
-            }
-            
-            // Normalize spacing and punctuation
-            const normalizedUser = user.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
-            const normalizedCorrect = correct.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
-            
-            // If exact match after normalization, accept
-            if (normalizedUser === normalizedCorrect) {
-              return true;
-            }
-            
-            // Calculate similarity and compare to threshold
-            const similarity = calculateSimilarity(normalizedUser, normalizedCorrect);
-            return similarity >= threshold;
-          }
-          
-          // No fuzzy matching - exact match required
-          return user === correct;
-        }
-        
-        function validateTextInputNumeric(userAnswer, correctAnswer, options = {}) {
-          const threshold = options.threshold !== undefined ? options.threshold : 0.01;
-          const precision = options.precision !== undefined ? options.precision : 2;
-          
-          const user = parseFloat(userAnswer);
-          const correct = parseFloat(correctAnswer);
-          
-          if (isNaN(user) || isNaN(correct)) {
-            return false;
-          }
-          
-          // Round to specified precision
-          const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
-          const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
-          
-          return Math.abs(userRounded - correctRounded) <= threshold;
-        }
-        
-        function validateTextInputNumericWithUnits(userAnswer, correctAnswer, options = {}) {
-          const threshold = options.threshold !== undefined ? options.threshold : 0.01;
-          const precision = options.precision !== undefined ? options.precision : 2;
-          const units = options.units || [];
-          
-          // Escape unit symbols for regex (handle special regex characters)
-          const escapedUnits = units.map(u => u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-          const unitsPattern = escapedUnits.length > 0 ? escapedUnits.join('|') : '';
-          
-          // Remove unit symbols and any whitespace from user answer (similar to currency)
-          let userStr = String(userAnswer).trim();
-          if (unitsPattern) {
-            // Remove unit symbols (could be at start or end, with or without space)
-            const unitRegex = new RegExp(`^\\s*(${unitsPattern})\\s*|\\s*(${unitsPattern})\\s*$`, 'gi');
-            userStr = userStr.replace(unitRegex, '');
-            userStr = userStr.trim();
-          }
-          
-          // Remove unit symbols from correct answer
-          let correctStr = String(correctAnswer).trim();
-          if (unitsPattern) {
-            const unitRegex = new RegExp(`^\\s*(${unitsPattern})\\s*|\\s*(${unitsPattern})\\s*$`, 'gi');
-            correctStr = correctStr.replace(unitRegex, '');
-            correctStr = correctStr.trim();
-          }
-          
-          // Normalize decimal separators: replace comma with period
-          // This allows both "4.50" and "4,50" to be accepted
-          userStr = userStr.replace(',', '.');
-          correctStr = correctStr.replace(',', '.');
-          
-          // Parse numeric values (parseFloat handles trailing zeros automatically: 4.50 = 4.5)
-          const userValue = parseFloat(userStr);
-          const correctValue = parseFloat(correctStr);
-          
-          if (isNaN(userValue) || isNaN(correctValue)) {
-            return false;
-          }
-          
-          // Compare numeric values directly (parseFloat normalizes trailing zeros)
-          // Use threshold to allow small differences
-          return Math.abs(userValue - correctValue) <= threshold;
-        }
-        
-        function validateTextInputNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
-          const threshold = options.threshold !== undefined ? options.threshold : 0.01;
-          const currency = options.currency !== undefined ? options.currency : '$';
-          
-          // Escape currency symbol for regex
-          const escapedCurrency = currency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          
-          // Remove currency symbol and any whitespace from user answer
-          let userStr = String(userAnswer).trim();
-          // Remove currency symbol (could be at start or end, with or without space)
-          userStr = userStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, 'g'), '');
-          userStr = userStr.trim();
-          
-          // Remove currency symbol from correct answer
-          let correctStr = String(correctAnswer).trim();
-          correctStr = correctStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, 'g'), '');
-          correctStr = correctStr.trim();
-          
-          // Normalize decimal separators: replace comma with period
-          // This allows both "4.50" and "4,50" to be accepted
-          userStr = userStr.replace(',', '.');
-          correctStr = correctStr.replace(',', '.');
-          
-          // Parse numeric values (parseFloat handles trailing zeros automatically: 4.50 = 4.5)
-          const userValue = parseFloat(userStr);
-          const correctValue = parseFloat(correctStr);
-          
-          if (isNaN(userValue) || isNaN(correctValue)) {
-            return false;
-          }
-          
-          // Compare numeric values directly (parseFloat normalizes trailing zeros)
-          // Use threshold to allow small differences
-          return Math.abs(userValue - correctValue) <= threshold;
-        }
-        
-        function getTextInputValidationCandidates(question) {
-          const candidates = Array.isArray(question.correctAnswers) && question.correctAnswers.length > 0
-            ? question.correctAnswers
-            : [{ correctAnswer: question.correctAnswer, validation: question.validation || {} }];
 
-          return candidates
-            .map(candidate => {
-              if (typeof candidate === 'string') {
-                return { correctAnswer: candidate, validation: question.validation || {} };
-              }
-              return {
-                correctAnswer: candidate.correctAnswer || '',
-                validation: candidate.validation || question.validation || {}
-              };
-            })
-            .filter(candidate => {
-              const kind = candidate.validation && candidate.validation.kind;
-              if (kind === 'validate-later') return true;
-              return String(candidate.correctAnswer || '').trim().length > 0;
-            });
-        }
+        const correctCount = data.results.filter((result, resultIndex) =>
+          evaluateActivityResultCorrect(activity, result, resultIndex)
+        ).length;
 
-        function validateTextInputAnswer(question, userAnswer) {
-          const candidates = getTextInputValidationCandidates(question);
-          const scorableCandidates = candidates.filter(c => (c.validation?.kind || '') !== 'validate-later');
-
-          // "validate-later" questions require a non-empty response but are excluded from score.
-          if (scorableCandidates.length === 0) {
-            return userAnswer && userAnswer.trim() ? null : false;
-          }
-
-          if (!userAnswer || !userAnswer.trim()) {
-            return false;
-          }
-
-          return scorableCandidates.some(candidate => {
-            const validation = candidate.validation || {};
-            const options = validation.options || {};
-
-            switch (validation.kind) {
-              case 'string':
-                return validateTextInputString(userAnswer, candidate.correctAnswer, options);
-              case 'numeric':
-                return validateTextInputNumeric(userAnswer, candidate.correctAnswer, options);
-              case 'numeric-with-units':
-                return validateTextInputNumericWithUnits(userAnswer, candidate.correctAnswer, options);
-              case 'numeric-with-currency':
-                return validateTextInputNumericWithCurrency(userAnswer, candidate.correctAnswer, options);
-              default:
-                // Default to exact string match (case-insensitive)
-                return validateTextInputString(userAnswer, candidate.correctAnswer, { caseSensitive: false });
-            }
-          });
-        }
-        
-        // For MCQ, compare sorted arrays; for Text Input, use validation logic; for others, exact string match
-        const correctCount = data.results.filter((result, resultIndex) => {
-          if (activity && /^multiple choice$/i.test(activity.type)) {
-            // For MCQ, check based on multi-select mode
-            const questionIndex = questionIndexFromOrderedResult(
-              result,
-              resultIndex,
-              activity.mcq?.questions?.length ?? 0
-            );
-            if (activity.mcq && activity.mcq.questions && activity.mcq.questions[questionIndex]) {
-              const question = activity.mcq.questions[questionIndex];
-              const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean);
-              const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean);
-              
-              // Check if "any" mode is enabled
-              if (question.isMultiSelect && question.multiSelectMode === 'any') {
-                // For "any" mode: at least one correct answer selected, and no incorrect answers
-                const hasCorrectAnswer = selected.some(sel => correct.includes(sel));
-                const hasIncorrectAnswer = selected.some(sel => !correct.includes(sel));
-                return hasCorrectAnswer && !hasIncorrectAnswer && selected.length > 0;
-              } else {
-                // For "all" mode (default): must match exactly
-                return arraysEqual(selected.sort(), correct.sort());
-              }
-            }
-            // Fallback to exact match if question not found
-            const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
-            const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
-            return selected === correct;
-          } else if (activity && /^text input$/i.test(activity.type)) {
-            // For Text Input, use validation logic based on question validation options
-            const questionIndex = questionIndexFromOrderedResult(
-              result,
-              resultIndex,
-              activity.textInput?.questions?.length ?? 0
-            );
-            if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
-              const question = activity.textInput.questions[questionIndex];
-              const validationResult = validateTextInputAnswer(question, result.selected);
-              // Exclude "validate-later" questions from scoring (null result)
-              return validationResult === true;
-            }
-            // Fallback to simple string comparison if question not found
-            return result.selected === result.correct;
-          } else if (activity && /^matrix$/i.test(activity.type)) {
-            const sel = (result.selected || '').trim();
-            const cor = (result.correct || '').trim();
-            return Boolean(sel) && sel === cor;
-          }
-          return result.selected === result.correct;
-        }).length;
-        
-        // Count validate-later questions for text input
-        let validateLaterCount = 0;
-        if (activity && /^text input$/i.test(activity.type)) {
-          validateLaterCount = data.results.filter((result, resultIndex) => {
-            const questionIndex = questionIndexFromOrderedResult(
-              result,
-              resultIndex,
-              activity.textInput?.questions?.length ?? 0
-            );
-            if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
-              const question = activity.textInput.questions[questionIndex];
-              return question.validation && question.validation.kind === 'validate-later';
-            }
-            return false;
-          }).length;
-        }
+        const validateLaterCount = countValidateLaterTextInputResults(activity, data.results);
         
         // Total count excludes "validate-later" questions from scoring
         const totalCount = data.results.length - validateLaterCount;
@@ -1924,69 +1499,22 @@ const server = http.createServer((req, res) => {
             markdown += `${index + 1}. **${result.text}**\n`;
             markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
             markdown += `   - Correct Answer: ${result.correct}\n`;
-            // For MCQ, compare based on multi-select mode; for Text Input, use validation logic; for others, exact match
-            let isCorrect = false;
-            let isValidateLater = false;
+            const isValidateLater = isTextInputResultValidateLater(activity, result, index);
             if (activity && /^multiple choice$/i.test(activity.type)) {
               const questionIndex = questionIndexFromOrderedResult(
                 result,
                 index,
                 activity.mcq?.questions?.length ?? 0
               );
-              if (activity.mcq && activity.mcq.questions && activity.mcq.questions[questionIndex]) {
-                const question = activity.mcq.questions[questionIndex];
-                const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean);
-                const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean);
-                
-                // Add Multi Mode line if question has multiple correct answers
-                if (question.isMultiSelect) {
-                  const multiMode = question.multiSelectMode === 'any' ? 'any' : 'all';
-                  markdown += `   - Multi Mode: ${multiMode}\n`;
-                }
-                
-                // Check if "any" mode is enabled
-                if (question.isMultiSelect && question.multiSelectMode === 'any') {
-                  // For "any" mode: at least one correct answer selected, and no incorrect answers
-                  const hasCorrectAnswer = selected.some(sel => correct.includes(sel));
-                  const hasIncorrectAnswer = selected.some(sel => !correct.includes(sel));
-                  isCorrect = hasCorrectAnswer && !hasIncorrectAnswer && selected.length > 0;
-                } else {
-                  // For "all" mode (default): must match exactly
-                  isCorrect = arraysEqual(selected.sort(), correct.sort());
-                }
-              } else {
-                // Fallback to exact match if question not found
-                const selected = (result.selected || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
-                const correct = (result.correct || '').split(',').map(s => s.trim()).filter(Boolean).sort().join(', ');
-                isCorrect = selected === correct;
+              const question = activity.mcq?.questions?.[questionIndex];
+              if (question && question.isMultiSelect) {
+                const multiMode = question.multiSelectMode === 'any' ? 'any' : 'all';
+                markdown += `   - Multi Mode: ${multiMode}\n`;
               }
-            } else if (activity && /^text input$/i.test(activity.type)) {
-              // For Text Input, use validation logic based on question validation options
-              const questionIndex = questionIndexFromOrderedResult(
-                result,
-                index,
-                activity.textInput?.questions?.length ?? 0
-              );
-              if (activity.textInput && activity.textInput.questions && activity.textInput.questions[questionIndex]) {
-                const question = activity.textInput.questions[questionIndex];
-                isValidateLater = question.validation && question.validation.kind === 'validate-later';
-                if (isValidateLater) {
-                  // Skip validation for validate-later questions
-                } else {
-                  const validationResult = validateTextInputAnswer(question, result.selected);
-                  isCorrect = validationResult === true;
-                }
-              } else {
-                // Fallback to simple string comparison if question not found
-                isCorrect = result.selected === result.correct;
-              }
-            } else if (activity && /^matrix$/i.test(activity.type)) {
-              const sel = (result.selected || '').trim();
-              const cor = (result.correct || '').trim();
-              isCorrect = Boolean(sel) && sel === cor;
-            } else {
-              isCorrect = result.selected === result.correct;
             }
+            const isCorrect = isValidateLater
+              ? false
+              : evaluateActivityResultCorrect(activity, result, index);
 
             // Show result status
             if (isValidateLater) {
