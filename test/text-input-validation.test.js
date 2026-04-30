@@ -43,6 +43,25 @@ test('validateTextInputString supports case-insensitive matching', () => {
   assert.equal(validateTextInputString('PARIS', 'Paris', { caseSensitive: true }), false);
 });
 
+test('validateTextInputString ignoreWhitespace defaults off', () => {
+  assert.equal(validateTextInputString('s + 3', 's+3', { caseSensitive: true, fuzzy: false }), false);
+});
+
+test('validateTextInputString ignoreWhitespace strips all whitespace for comparison', () => {
+  const opts = { caseSensitive: true, fuzzy: false, ignoreWhitespace: true };
+  assert.equal(validateTextInputString('s + 3', 's+3', opts), true);
+  assert.equal(validateTextInputString('  s\n+\t3  ', 's+3', opts), true);
+  assert.equal(validateTextInputString('s + 4', 's+3', opts), false);
+});
+
+test('parseValidationOptions parses ignoreWhitespace option', () => {
+  const parsed = parseValidationOptions(
+    's+3 [kind: string] [options: caseSensitive=true,fuzzy=false,ignoreWhitespace=true]'
+  );
+  assert.equal(parsed.correctAnswer, 's+3');
+  assert.equal(parsed.validation.options.ignoreWhitespace, true);
+});
+
 test('validateTextInputString supports fuzzy matching and punctuation normalization', () => {
   assert.equal(validateTextInputString("dont repeat yourself", "Don't Repeat Yourself", { fuzzy: true }), true);
   assert.equal(validateTextInputString('accomxodation', 'accommodation', { fuzzy: 0.95 }), false);

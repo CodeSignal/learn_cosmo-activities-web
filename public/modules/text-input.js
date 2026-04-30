@@ -85,9 +85,14 @@ export function initTextInput({
   }
   
   // Validation functions
+  function stripAllWhitespace(s) {
+    return String(s).replace(/\s/g, '');
+  }
+
   function validateString(userAnswer, correctAnswer, options = {}) {
     const caseSensitive = options.caseSensitive === true; // Default false (case-insensitive)
     const fuzzy = options.fuzzy; // Can be true, false, or a number (0-1)
+    const ignoreWhitespace = options.ignoreWhitespace === true;
     
     let user = String(userAnswer).trim();
     let correct = String(correctAnswer).trim();
@@ -96,6 +101,11 @@ export function initTextInput({
       // Default to case-insensitive matching
       user = user.toLowerCase();
       correct = correct.toLowerCase();
+    }
+
+    if (ignoreWhitespace) {
+      user = stripAllWhitespace(user);
+      correct = stripAllWhitespace(correct);
     }
     
     // Handle fuzzy matching
