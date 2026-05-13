@@ -12,6 +12,7 @@ const {
   isTextInputResultValidateLater,
   countValidateLaterTextInputResults
 } = require('./lib/activity-results-validation');
+const { buildActivityReportMarkdown } = require('./lib/build-activity-report');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -1468,6 +1469,7 @@ const server = http.createServer((req, res) => {
       try {
         const data = JSON.parse(body);
         const answerFile = path.join(DATA_DIR, 'answer.md');
+        const reportFile = path.join(DATA_DIR, 'report.md');
         
         // Format results as markdown
         const activity = data.activity;
@@ -1679,12 +1681,20 @@ const server = http.createServer((req, res) => {
           }
         }
         
+        const reportMarkdown = buildActivityReportMarkdown(activity, data.results || []);
+
         fs.writeFile(answerFile, markdown, 'utf8', (err) => {
           if (err) {
             respondJson(res, 500, { error: 'Failed to save results' });
             return;
           }
-          respondJson(res, 200, { success: true });
+          fs.writeFile(reportFile, reportMarkdown, 'utf8', (err2) => {
+            if (err2) {
+              respondJson(res, 500, { error: 'Failed to save report' });
+              return;
+            }
+            respondJson(res, 200, { success: true });
+          });
         });
       } catch (e) {
         respondJson(res, 400, { error: 'Invalid JSON' });
