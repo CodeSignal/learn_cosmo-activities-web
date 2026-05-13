@@ -1,11 +1,11 @@
 # Activity report
 
-**Activity type:** Text Input
-**Generated:** 2026-05-13T11:35:17.611Z
+**Activity type:** Multiple Choice
+**Generated:** 2026-05-13T12:07:39.943Z
 
 ## Summary
 
-**Score:** 6 / 6 correct (1 response not included in score)
+**Score:** 0 / 2 correct
 
 ---
 
@@ -13,56 +13,34 @@
 
 ### Question 1
 
-What is the capital of France? (Accept any case variation)
+Maria is a freelance designer who wants to be known for &quot;high-quality, timely work.&quot; She delivers beautiful designs but always misses deadlines. According to the brand triangle, what&#39;s her main problem?
 
-- **Candidate's Answer:** Paris
-- **Accepted answer(s):** Paris
-- **Result:** Correct
+**Options**
+
+- **A.** Her brand identity is wrong
+- **B.** Her actual brand doesn&#39;t match her identity
+- **C.** Her brand image is too positive
+- **D.** She needs a better logo
+
+**Response**
+
+- **Candidate's Answer:** D
+- **Correct answer(s):** B
+- **Result:** Incorrect
 
 ### Question 2
 
-What is the approximate value of π? (Accept values within 0.1)
+Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing &quot;efficient, bug-free code delivered on time&quot;? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
 
-- **Candidate's Answer:** 3.14
-- **Accepted answer(s):** 3.14
-- **Result:** Correct
+**Options**
 
-### Question 3
+- **A.** His actual brand doesn&#39;t match his intended identity
+- **B.** He needs to improve his communication skills
+- **C.** His brand image is inconsistent with his identity
+- **D.** He needs a new logo
 
-How many kilograms are in 1000 grams? (Include unit)
+**Response**
 
-- **Candidate's Answer:** 1
-- **Accepted answer(s):** 1 kg
-- **Result:** Correct
-
-### Question 4
-
-What is the famous programming principle that states &quot;Don&#39;t Repeat Yourself&quot;? (Accept variations with punctuation, spacing, and minor spelling errors)
-
-- **Candidate's Answer:** Dont Repeat Yourself
-- **Accepted answer(s):** Don't Repeat Yourself
-- **Result:** Correct
-
-### Question 5
-
-Spell the word &quot;accommodation&quot; (Accept minor spelling errors)
-
-- **Candidate's Answer:** acomodation
-- **Accepted answer(s):** accommodation
-- **Result:** Correct
-
-### Question 6
-
-What is the price of a coffee? (Enter amount in dollars)
-
-- **Candidate's Answer:** 4.5
-- **Accepted answer(s):** 4.50
-- **Result:** Correct
-
-### Question 7
-
-Describe your approach to solving this problem. (This will be reviewed later and is not part of the score)
-
-- **Candidate's Answer:** I'll try real real hard.
-- **Accepted answer(s):** _No answer_
-- **Result:** Not scored (submitted for later review)
+- **Candidate's Answer:** A, B
+- **Correct answer(s):** A, C
+- **Result:** Incorrect

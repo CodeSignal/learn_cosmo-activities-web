@@ -1,102 +1,53 @@
 __Type__
 
-Text Input
+Multiple Choice
 
 __Summary__
 
-6/6 correct
-1 unvalidated
+0/2 correct
 
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: Paris
-   - Correct Answer: Paris
-   - Result: ✓ Correct
+   - Selected Answer: D
+   - Correct Answer: B
+   - Result: ✗ Incorrect
 
 2. **Question 2**
-   - Selected Answer: 3.14
-   - Correct Answer: 3.14
-   - Result: ✓ Correct
-
-3. **Question 3**
-   - Selected Answer: 1
-   - Correct Answer: 1 kg
-   - Result: ✓ Correct
-
-4. **Question 4**
-   - Selected Answer: Dont Repeat Yourself
-   - Correct Answer: Don't Repeat Yourself
-   - Result: ✓ Correct
-
-5. **Question 5**
-   - Selected Answer: acomodation
-   - Correct Answer: accommodation
-   - Result: ✓ Correct
-
-6. **Question 6**
-   - Selected Answer: 4.5
-   - Correct Answer: 4.50
-   - Result: ✓ Correct
-
-7. **Question 7**
-   - Selected Answer: I'll try real real hard.
-   - Correct Answer: 
-   - Result: Unvalidated
+   - Selected Answer: A, B
+   - Correct Answer: A, C
+   - Multi Mode: all
+   - Result: ✗ Incorrect
 
 __Practice Question__
 
-What is the capital of France? (Accept any case variation)
+Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-__Correct Answers__
+B. Her actual brand doesn't match her identity
+A. Her brand identity is wrong
+C. Her brand image is too positive
+D. She needs a better logo
 
-- Paris [kind: string] [options: caseSensitive=false,fuzzy=false]
+__Suggested Answers__
 
-__Practice Question__
-
-What is the approximate value of π? (Accept values within 0.1)
-
-__Correct Answers__
-
-- 3.14 [kind: numeric] [options: threshold=0.1,precision=2]
-
-__Practice Question__
-
-How many kilograms are in 1000 grams? (Include unit)
-
-__Correct Answers__
-
-- 1 kg [kind: numeric-with-units] [options: threshold=0.01,precision=2,units=kg]
+- B - Correct
+- A
+- C
+- D
 
 __Practice Question__
 
-What is the famous programming principle that states "Don't Repeat Yourself"? (Accept variations with punctuation, spacing, and minor spelling errors)
+Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
 
-__Correct Answers__
+D. He needs a new logo
+A. His actual brand doesn't match his intended identity
+B. He needs to improve his communication skills
+C. His brand image is inconsistent with his identity
 
-- Don't Repeat Yourself [kind: string] [options: caseSensitive=false,fuzzy=true]
+__Suggested Answers__
 
-__Practice Question__
-
-Spell the word "accommodation" (Accept minor spelling errors)
-
-__Correct Answers__
-
-- accommodation [kind: string] [options: caseSensitive=false,fuzzy=0.7]
-
-__Practice Question__
-
-What is the price of a coffee? (Enter amount in dollars)
-
-__Correct Answers__
-
-- 4.50 [kind: numeric-with-currency] [options: threshold=0.01,precision=2,currency=$]
-
-__Practice Question__
-
-Describe your approach to solving this problem. (This will be reviewed later and is not part of the score)
-
-__Correct Answers__
-
-- [kind: validate-later]
+- D
+- A - Correct
+- B
+- C - Correct
 
