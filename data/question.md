@@ -1,36 +1,25 @@
 __Type__
 
-Multiple Choice
+Fill In The Blanks
 
-__Practice Question__
+__Markdown With Blanks__
 
-Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
+Match the bosses with their style
 
-A. Her brand identity is wrong  
-B. Her actual brand doesn't match her identity  
-C. Her brand image is too positive  
-D. She needs a better logo
+> **Boss 1**: You start your presentation with a bold vision and a simple chart showing the potential for rapid market growth. You avoid lengthy details and focus on the big win, using compelling visuals to capture attention. [[blank:Charismatic]]
 
-__Suggested Answers__
+> **Boss 2**: You provide a detailed spreadsheet with raw data and multiple scenarios, allowing your boss to analyze the numbers independently. You avoid drawing conclusions for them and instead give them all the information they need to verify on their own. [[blank:Controller]]
 
-- A  
-- B - Correct  
-- C  
-- D
+**Boss 3**: You open your pitch by referencing endorsements from respected colleagues and industry experts. You anticipate tough questions and are prepared to defend every data point, knowing your boss will challenge your credibility and sources. [[blank:Skeptic]]
 
-__Practice Question__
+**Boss 4**: You organize your proposal with comprehensive research, case studies, and a clear explanation of your methodology. You give your boss time to process the information and invite them to discuss the logic behind your recommendations. [[blank:Thinker]]
 
-Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
-
-A. His actual brand doesn't match his intended identity  
-B. He needs to improve his communication skills  
-C. His brand image is inconsistent with his identity  
-D. He needs a new logo
+**Boss 5**: You highlight how similar companies have successfully implemented your idea, providing testimonials and references. You focus on proven results and established brands to reassure your boss that your proposal is a safe choice. [[blank:Follower]]
 
 __Suggested Answers__
 
-- A - Correct  
-- B  
-- C - Correct  
-- D
-
+- Thinker
+- Follower
+- Charismatic
+- Skeptic
+- Controller

@@ -13,6 +13,7 @@ const {
   countValidateLaterTextInputResults
 } = require('./lib/activity-results-validation');
 const { buildActivityReportMarkdown } = require('./lib/build-activity-report');
+const { buildScoreJson } = require('./lib/build-score-json');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -1470,6 +1471,7 @@ const server = http.createServer((req, res) => {
         const data = JSON.parse(body);
         const answerFile = path.join(DATA_DIR, 'answer.md');
         const reportFile = path.join(DATA_DIR, 'report.md');
+        const scoreFile = path.join(DATA_DIR, 'score.json');
         
         // Format results as markdown
         const activity = data.activity;
@@ -1682,6 +1684,7 @@ const server = http.createServer((req, res) => {
         }
         
         const reportMarkdown = buildActivityReportMarkdown(activity, data.results || []);
+        const scoreJson = JSON.stringify(buildScoreJson(activity, data.results || []), null, 2);
 
         fs.writeFile(answerFile, markdown, 'utf8', (err) => {
           if (err) {
@@ -1693,7 +1696,13 @@ const server = http.createServer((req, res) => {
               respondJson(res, 500, { error: 'Failed to save report' });
               return;
             }
-            respondJson(res, 200, { success: true });
+            fs.writeFile(scoreFile, scoreJson, 'utf8', (err3) => {
+              if (err3) {
+                respondJson(res, 500, { error: 'Failed to save score' });
+                return;
+              }
+              respondJson(res, 200, { success: true });
+            });
           });
         });
       } catch (e) {
