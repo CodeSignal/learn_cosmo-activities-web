@@ -1,4 +1,5 @@
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { Lexer, marked } = require('marked');
@@ -1181,17 +1182,19 @@ function shouldProxyToSim(pathname) {
   return false;
 }
 
-function proxyToSim(req, res, pathname) {
+function proxyToSim(req, res, pathname, search) {
   const subpath = simUpstreamPath(pathname);
   const target = new URL(subpath, SIM_ORIGIN);
+  const isHttps = target.protocol === 'https:';
+  const transport = isHttps ? https : http;
   const options = {
     hostname: target.hostname,
-    port: target.port || (target.protocol === 'https:' ? 443 : 80),
-    path: target.pathname + target.search,
+    port: target.port || (isHttps ? 443 : 80),
+    path: target.pathname + (search || ''),
     method: req.method,
     headers: { ...req.headers, host: target.host }
   };
-  const proxyReq = http.request(options, (proxyRes) => {
+  const proxyReq = transport.request(options, (proxyRes) => {
     res.writeHead(proxyRes.statusCode, proxyRes.headers);
     proxyRes.pipe(res);
   });
@@ -1214,7 +1217,7 @@ const server = http.createServer((req, res) => {
   let pathname = decodeURIComponent(urlObj.pathname || '/');
 
   if (shouldProxyToSim(pathname)) {
-    proxyToSim(req, res, pathname);
+    proxyToSim(req, res, pathname, urlObj.search);
     return;
   }
 
