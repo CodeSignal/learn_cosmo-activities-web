@@ -1160,7 +1160,11 @@ function buildActivityFromMarkdown(markdownText) {
 function simUpstreamPath(pathname) {
   if (pathname === SIM_MOUNT_PATH) return '/';
   const prefix = `${SIM_MOUNT_PATH}/`;
-  if (pathname.startsWith(prefix)) return pathname.slice(SIM_MOUNT_PATH.length) || '/';
+  if (pathname.startsWith(prefix)) {
+    const subpath = pathname.slice(SIM_MOUNT_PATH.length) || '/';
+    // Collapse leading slashes so subpath cannot resolve as a scheme-relative URL via new URL().
+    return `/${subpath.replace(/^\/+/, '')}`;
+  }
   return pathname;
 }
 
