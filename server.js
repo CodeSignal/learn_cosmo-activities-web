@@ -1170,8 +1170,9 @@ function simUpstreamPath(pathname) {
 }
 
 function shouldProxyToSim(pathname) {
-  if (!SIM_ORIGIN) return false;
+  // Always intercept /sim/* so it never falls through to the activity page.
   if (pathname === SIM_MOUNT_PATH || pathname.startsWith(`${SIM_MOUNT_PATH}/`)) return true;
+  if (!SIM_ORIGIN) return false;
   for (const entry of SIM_ROOT_PROXY_PATHS) {
     if (entry.endsWith('/')) {
       if (pathname.startsWith(entry)) return true;
@@ -1182,7 +1183,51 @@ function shouldProxyToSim(pathname) {
   return false;
 }
 
+function simErrorHtml(message) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulation not found</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8fafc;
+      color: #64748b;
+    }
+    .icon { font-size: 2.5rem; }
+    h1 { margin: 0; font-size: 1.1rem; font-weight: 600; color: #0f172a; }
+    p { margin: 0; font-size: 0.875rem; }
+    code {
+      font-size: 0.8rem;
+      background: #e2e8f0;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">⚠️</div>
+  <h1>Simulation not reachable</h1>
+  <p>${message}</p>
+</body>
+</html>`;
+}
+
 function proxyToSim(req, res, pathname, search) {
+  if (!SIM_ORIGIN) {
+    res.writeHead(502, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(simErrorHtml('No simulation configured — <code>SIM_ORIGIN</code> is not set.'));
+    return;
+  }
   const subpath = simUpstreamPath(pathname);
   const target = new URL(subpath, SIM_ORIGIN);
   const isHttps = target.protocol === 'https:';
@@ -1199,8 +1244,8 @@ function proxyToSim(req, res, pathname, search) {
     proxyRes.pipe(res);
   });
   proxyReq.on('error', () => {
-    res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('Simulation not running on ' + SIM_ORIGIN);
+    res.writeHead(502, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(simErrorHtml(`Nothing is running at <code>${SIM_ORIGIN}</code>`));
   });
   if (req.method === 'GET' || req.method === 'HEAD') {
     proxyReq.end();
