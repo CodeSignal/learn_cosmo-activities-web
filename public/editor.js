@@ -16,6 +16,17 @@ function parseContentTextToStructure(contentText) {
     if (contentWidth) out.contentWidth = contentWidth;
     return out;
   }
+
+  const pathLines = contentWithoutWidth.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const pathFirst = pathLines[0] || '';
+  if (pathFirst.startsWith('/')) {
+    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+    const url = pathFirst.replace(/\s+\[openInNewTab\]\s*$/i, '').trim();
+    const out = { type: 'url', value: url, openInNewTab: !!openInNewTab };
+    if (contentWidth) out.contentWidth = contentWidth;
+    return out;
+  }
+
   const out = { type: 'markdown', value: contentWithoutWidth };
   if (contentWidth) out.contentWidth = contentWidth;
   return out;
@@ -179,7 +190,7 @@ function parseAnswerLine(answerLine) {
   // Check if the line starts with [kind: (empty answer case)
   const trimmedLine = answerLine.trim();
   const startsWithKind = trimmedLine.startsWith('[kind:');
-  
+
   let validationMatch;
   if (startsWithKind) {
     // Handle case where answer is empty: "[kind: string] [options: ...]"
@@ -197,7 +208,7 @@ function parseAnswerLine(answerLine) {
     // Normal case: "answer [kind: string] [options: ...]"
     validationMatch = trimmedLine.match(/^(.+?)(?:\s+\[kind:\s*([^\]]+)\])?(?:\s+\[options:\s*([^\]]+)\])?$/);
   }
-  
+
   if (!validationMatch) {
     return {
       correctAnswer: trimmedLine,
@@ -206,9 +217,9 @@ function parseAnswerLine(answerLine) {
   }
 
   const correctAnswer = startsWithKind ? '' : validationMatch[1].trim();
-  const kind = (startsWithKind ? validationMatch[1] : validationMatch[2]) ? 
+  const kind = (startsWithKind ? validationMatch[1] : validationMatch[2]) ?
     (startsWithKind ? validationMatch[1].trim() : validationMatch[2].trim()) : 'string';
-  const optionsText = (startsWithKind ? validationMatch[2] : validationMatch[3]) ? 
+  const optionsText = (startsWithKind ? validationMatch[2] : validationMatch[3]) ?
     (startsWithKind ? validationMatch[2] : validationMatch[3].trim()) : '';
 
   const options = parseOptions(optionsText);
@@ -383,7 +394,7 @@ function renderQuestion(question, index) {
 
   const header = document.createElement('div');
   header.className = 'question-item-header';
-  
+
   const title = document.createElement('div');
   title.className = 'question-item-title';
   title.textContent = `Question ${index + 1}`;
@@ -391,7 +402,7 @@ function renderQuestion(question, index) {
   const kindDropdownContainer = document.createElement('div');
   kindDropdownContainer.style.marginLeft = 'var(--UI-Spacing-spacing-l)';
   kindDropdownContainer.style.width = '240px';
-  
+
   const kindDropdown = new Dropdown(kindDropdownContainer, {
     items: [
       { value: 'string', label: 'String' },
@@ -408,7 +419,7 @@ function renderQuestion(question, index) {
       renderValidationOptions(container, question, index);
     }
   });
-  
+
   // Store dropdown instance for potential updates
   questionDropdowns.set(index, kindDropdown);
 
@@ -1707,7 +1718,7 @@ function parseMcqMarkdownToStructure(markdown) {
         currentQuestion.options = options;
       }
     }
-    
+
     // Process question options if we're in that section
     if (questionOptionsBuffer.length > 0) {
       const optionsText = questionOptionsBuffer.join('\n').trim().toLowerCase();
@@ -1715,7 +1726,7 @@ function parseMcqMarkdownToStructure(markdown) {
         currentQuestion.shuffleOptions = false;
       }
     }
-    
+
     // Process answers if we have answer buffer (we were in answers section)
     if (answerBuffer.length > 0 && currentQuestion.options && currentQuestion.options.length > 0) {
       const answerItems = answerBuffer.map(line => line.trim()).filter(line => line.startsWith('-'));
@@ -1735,7 +1746,7 @@ function parseMcqMarkdownToStructure(markdown) {
       });
       currentQuestion.isMultiSelect = correctAnswers.size > 1;
     }
-    
+
     // Process explain answer if we're in explain section
     if (explainAnswerBuffer.length > 0) {
       const { enabled, label } = parseExplainYourAnswerBody(explainAnswerBuffer.join('\n'));
@@ -1774,13 +1785,13 @@ function mcqStructureToMarkdown(structure) {
       markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;
     }
     markdown += `__Practice Question__\n\n${q.text}\n\n`;
-    
+
     // Add options
     q.options.forEach(opt => {
       markdown += `${opt.label}. ${opt.text}\n`;
     });
     markdown += '\n';
-    
+
     // Add question options if shuffle is disabled or multi-select mode is "any"
     const hasOptions = q.shuffleOptions === false || (q.multiSelectMode === 'any');
     if (hasOptions) {
@@ -1793,7 +1804,7 @@ function mcqStructureToMarkdown(structure) {
       }
       markdown += '\n';
     }
-    
+
     // Add suggested answers
     markdown += `__Suggested Answers__\n\n`;
     q.options.forEach(opt => {
@@ -1801,7 +1812,7 @@ function mcqStructureToMarkdown(structure) {
       markdown += `- ${opt.label}${correctMarker}\n`;
     });
     markdown += '\n';
-    
+
     // Add explain your answer if enabled
     if (q.explainAnswer) {
       markdown += `__Explain Your Answer__\n\ntrue\n`;
@@ -1842,7 +1853,7 @@ function renderMcqQuestion(question, index) {
 
   const header = document.createElement('div');
   header.className = 'question-item-header';
-  
+
   const title = document.createElement('div');
   title.className = 'question-item-title';
   title.textContent = `Question ${index + 1}`;
@@ -1955,7 +1966,7 @@ function renderMcqQuestion(question, index) {
     const correctCheckbox = document.createElement('label');
     correctCheckbox.className = 'input-checkbox';
     correctCheckbox.style.flexShrink = '0';
-    
+
     const checkboxInput = document.createElement('input');
     checkboxInput.type = 'checkbox';
     checkboxInput.checked = option.correct || false;
@@ -2062,7 +2073,7 @@ function renderMcqQuestion(question, index) {
       const correctCheckbox = document.createElement('label');
       correctCheckbox.className = 'input-checkbox';
       correctCheckbox.style.flexShrink = '0';
-      
+
       const checkboxInput = document.createElement('input');
       checkboxInput.type = 'checkbox';
       checkboxInput.checked = opt.correct || false;
@@ -2223,7 +2234,7 @@ function renderMcqQuestion(question, index) {
   modeLabel.className = 'input-checkbox';
   modeLabel.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
   modeLabel.style.display = 'none'; // Hidden by default
-  
+
   const modeInput = document.createElement('input');
   modeInput.type = 'checkbox';
   modeInput.checked = question.multiSelectMode === 'any';
@@ -2231,22 +2242,22 @@ function renderMcqQuestion(question, index) {
     question.multiSelectMode = modeInput.checked ? 'any' : 'all';
     updateStructure();
   };
-  
+
   const modeBox = document.createElement('span');
   modeBox.className = 'input-checkbox-box';
   const modeCheckmark = document.createElement('span');
   modeCheckmark.className = 'input-checkbox-checkmark';
   modeBox.appendChild(modeCheckmark);
-  
+
   const modeText = document.createElement('span');
   modeText.className = 'input-checkbox-label';
   modeText.textContent = 'Any Correct Answer is Sufficient';
-  
+
   modeLabel.appendChild(modeInput);
   modeLabel.appendChild(modeBox);
   modeLabel.appendChild(modeText);
   questionOptionsDiv.appendChild(modeLabel);
-  
+
   // Function to update multi-select mode checkbox visibility
   function updateMultiSelectModeVisibility() {
     const correctCount = question.options.filter(opt => opt.correct).length;
@@ -2261,10 +2272,10 @@ function renderMcqQuestion(question, index) {
       modeInput.checked = false;
     }
   }
-  
+
   // Initial check
   updateMultiSelectModeVisibility();
-  
+
   // Store the update function on the container so we can call it when options change
   container.updateMultiSelectModeVisibility = updateMultiSelectModeVisibility;
 
@@ -2617,7 +2628,7 @@ function wireContentEditorPanel() {
 
     function createContentInput(type, value, openInNewTab = false, contentWidth = '') {
       contentInputContainer.innerHTML = '';
-      
+
       if (type === 'url') {
         contentInput = document.createElement('input');
         contentInput.type = 'text';
@@ -2626,7 +2637,7 @@ function wireContentEditorPanel() {
         contentInput.placeholder = 'https://example.com';
         contentInput.value = value || '';
         contentInputContainer.appendChild(contentInput);
-        
+
         contentInput.oninput = debounce(() => {
           if (currentStructure.content) {
             currentStructure.content.value = contentInput.value;
@@ -2696,7 +2707,7 @@ function wireContentEditorPanel() {
         contentInput.placeholder = 'Enter markdown content...';
         contentInput.value = value || '';
         contentInputContainer.appendChild(contentInput);
-        
+
         contentInput.oninput = debounce(() => {
           if (currentStructure.content) {
             currentStructure.content.value = contentInput.value;
@@ -2730,12 +2741,12 @@ function wireContentEditorPanel() {
         contentInputContainer.appendChild(contentWidthGroup);
       }
     }
-    
+
     function createOpenUrlButton() {
       if (openUrlButton) {
         openUrlButton.remove();
       }
-      
+
       if (contentTypeDropdown && contentTypeDropdown.getValue() === 'url') {
         openUrlButton = document.createElement('button');
         openUrlButton.id = 'content-open-url-btn';
@@ -2749,47 +2760,47 @@ function wireContentEditorPanel() {
         openUrlButton.style.verticalAlign = 'middle';
         openUrlButton.style.lineHeight = '1';
         openUrlButton.setAttribute('aria-label', 'Open URL in new tab');
-        
+
         const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         iconSvg.setAttribute('width', '16');
         iconSvg.setAttribute('height', '16');
         iconSvg.setAttribute('viewBox', '0 0 16 16');
         iconSvg.setAttribute('fill', 'none');
         iconSvg.style.display = 'block';
-        
+
         const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path1.setAttribute('d', 'M10 2H4C3.44772 2 3 2.44772 3 3V12C3 12.5523 3.44772 13 4 13H13C13.5523 13 14 12.5523 14 12V6');
         path1.setAttribute('stroke', 'currentColor');
         path1.setAttribute('stroke-width', '1.5');
         path1.setAttribute('stroke-linecap', 'round');
         path1.setAttribute('stroke-linejoin', 'round');
-        
+
         const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path2.setAttribute('d', 'M11 1H14V4');
         path2.setAttribute('stroke', 'currentColor');
         path2.setAttribute('stroke-width', '1.5');
         path2.setAttribute('stroke-linecap', 'round');
         path2.setAttribute('stroke-linejoin', 'round');
-        
+
         const path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path3.setAttribute('d', 'M6 10L14 2');
         path3.setAttribute('stroke', 'currentColor');
         path3.setAttribute('stroke-width', '1.5');
         path3.setAttribute('stroke-linecap', 'round');
         path3.setAttribute('stroke-linejoin', 'round');
-        
+
         iconSvg.appendChild(path1);
         iconSvg.appendChild(path2);
         iconSvg.appendChild(path3);
         openUrlButton.appendChild(iconSvg);
-        
+
         const updateButtonState = () => {
           if (contentInput && openUrlButton) {
             const urlValue = contentInput.value.trim();
             openUrlButton.disabled = !urlValue || !/^https?:\/\//i.test(urlValue);
           }
         };
-        
+
         openUrlButton.onclick = (e) => {
           e.preventDefault();
           if (contentInput) {
@@ -2799,10 +2810,10 @@ function wireContentEditorPanel() {
             }
           }
         };
-        
+
         contentLabel.parentNode.insertBefore(openUrlButton, contentLabel.nextSibling);
         updateButtonState();
-        
+
         if (contentInput) {
           const originalOnInput = contentInput.oninput;
           contentInput.oninput = debounce(() => {
@@ -2832,16 +2843,16 @@ function wireContentEditorPanel() {
         } else {
           contentInputGroup.style.display = 'block';
           contentLabel.textContent = value === 'url' ? 'URL' : 'Markdown Content';
-          
+
           const currentValue = currentStructure.content ? currentStructure.content.value : '';
           if (!currentStructure.content) {
             currentStructure.content = { type: value, value: '' };
           } else {
             currentStructure.content.type = value;
           }
-          
+
           createContentInput(value, currentValue, currentStructure.content?.openInNewTab, currentStructure.content?.contentWidth);
-          
+
           if (value === 'url') {
             createOpenUrlButton();
           } else {

@@ -1,4 +1,5 @@
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { Lexer, marked } = require('marked');
@@ -20,6 +21,15 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = path.join(__dirname, 'data');
 const EXAMPLES_DIR = path.join(DATA_DIR, 'examples');
 const QUESTION_MD_PATH = path.join(DATA_DIR, 'question.md');
+
+/** When set, requests under /sim/ (and configured root paths) reverse-proxy to the simulation backend. */
+const SIM_ORIGIN = process.env.SIM_ORIGIN || null;
+const SIM_MOUNT_PATH = '/sim';
+/** Root-absolute paths some simulations request when embedded (e.g. bundled /assets/*). Override via SIM_ROOT_PROXY_PATHS. */
+const SIM_ROOT_PROXY_PATHS = (process.env.SIM_ROOT_PROXY_PATHS || '/assets/,/configs/,/api/logs')
+  .split(',')
+  .map((entry) => entry.trim())
+  .filter(Boolean);
 
 // Parse command line arguments for --edit, --copy-markdown, and --examples
 let EDIT_MODE = false;
@@ -166,6 +176,7 @@ function renderMarkdown(markdown) {
 
 /**
  * Parse __Content__ section tokens into { url } or { markdown } plus optional contentWidth, openInNewTab.
+ * URLs may be absolute (https://...) or site-relative paths (/sim/...) for split-screen simulations.
  */
 function parseSideContentFromSectionTokens(sectionTokens) {
   if (!sectionTokens || sectionTokens.length === 0) return null;
@@ -186,6 +197,17 @@ function parseSideContentFromSectionTokens(sectionTokens) {
     if (contentWidth) out.contentWidth = contentWidth;
     return out;
   }
+
+  const pathLines = contentWithoutWidth.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const pathFirst = pathLines[0] || '';
+  if (pathFirst.startsWith('/')) {
+    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+    const url = pathFirst.replace(/\s+\[openInNewTab\]\s*$/i, '').trim();
+    const out = { url, openInNewTab: !!openInNewTab };
+    if (contentWidth) out.contentWidth = contentWidth;
+    return out;
+  }
+
   const out = { markdown: contentWithoutWidth };
   if (contentWidth) out.contentWidth = contentWidth;
   return out;
@@ -240,11 +262,11 @@ function parseAnswersFromMarkdown(markdownText) {
   const sections = parseSectionsFromTokens(tokens);
   const type = ((sections.get('Type') || []).map(t => t.raw || t.text).join('\n') || '').trim();
   const responsesSection = sections.get('Responses') || [];
-  
+
   // Parse responses to extract selected answers
   const responsesText = responsesSection.map(t => t.raw || t.text || '').join('\n');
   const answers = {};
-  
+
   if (/^multiple choice$/i.test(type)) {
     // Parse MCQ responses: "Selected Answer: D" or "Selected Answer: B, D"
     // Also parse explanations if present: "Explanation: ..." (comes after Result line)
@@ -267,7 +289,7 @@ function parseAnswersFromMarkdown(markdownText) {
         }
       }
     });
-    
+
     // Then parse selected answers
     const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
     let match;
@@ -362,13 +384,13 @@ function buildActivityFromMarkdown(markdownText) {
     const fibTokens = sections.get('Markdown With Blanks') || [];
     const fibMarkdown = fibTokens.map(t => t.raw || t.text || '').join('\n').trim();
     const suggested = readListItems(sections.get('Suggested Answers'));
-    
+
     // Split the content into prompt and fill-in-the-blanks content
     const lines = fibMarkdown.split(/\r?\n/);
     let promptLines = [];
     let contentLines = [];
     let foundBlockquote = false;
-    
+
     for (const line of lines) {
       if (/^\s*>/.test(line)) {
         foundBlockquote = true;
@@ -384,10 +406,10 @@ function buildActivityFromMarkdown(markdownText) {
         }
       }
     }
-    
+
     const prompt = promptLines.join('\n').trim();
     const content = contentLines.join('\n').trim();
-    
+
     const blanks = [];
     let idx = 0;
     // Replace blank tokens with actual HTML spans that will be preserved by the markdown renderer
@@ -457,7 +479,7 @@ function buildActivityFromMarkdown(markdownText) {
     // Parse MCQ with support for multiple questions
     const questions = [];
     const allTokens = Lexer.lex(markdownText);
-    
+
     let currentQuestion = null;
     let currentSection = null;
     let questionBuffer = [];
@@ -475,7 +497,7 @@ function buildActivityFromMarkdown(markdownText) {
         s = (s * 9301 + 49297) % 233280;
         return s / 233280;
       }
-      
+
       // Fisher-Yates shuffle with seeded random
       const shuffled = [...array];
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -484,7 +506,7 @@ function buildActivityFromMarkdown(markdownText) {
       }
       return shuffled;
     }
-    
+
     // Generate seed from question text and all option texts
     function generateSeed(questionText, options) {
       const allText = questionText + options.map(opt => opt.text + opt.label).join('');
@@ -496,14 +518,14 @@ function buildActivityFromMarkdown(markdownText) {
       }
       return Math.abs(hash);
     }
-    
+
     function processQuestion() {
       if (!currentQuestion || questionBuffer.length === 0) return;
-      
+
       // Parse options from question text
       const questionText = questionBuffer.map(t => t.raw || t.text || '').join('\n').trim();
       const options = [];
-      
+
       // Extract options (A., B., C., etc.)
       const optionRegex = /^([A-Z])\.\s*(.+)$/gm;
       let match;
@@ -512,10 +534,10 @@ function buildActivityFromMarkdown(markdownText) {
         const label = match[1];
         const text = match[2].trim();
         optionMap.set(label, text);
-        
+
         // Parse markdown to HTML for rendering (supports images, bold, etc.)
         const textHtml = renderMarkdown(text);
-        
+
         options.push({
           label: label,
           text: text, // Keep raw text for backward compatibility
@@ -523,23 +545,23 @@ function buildActivityFromMarkdown(markdownText) {
           correct: false // Will be set from Suggested Answers
         });
       }
-      
+
       // Extract question text without options
       const questionTextOnly = questionText.replace(/^[A-Z]\.\s*.+$/gm, '').trim();
-      
+
       // Store raw markdown text (for answer.md generation)
       currentQuestion.text = questionTextOnly || questionText;
-      
+
       // Parse markdown to HTML for rendering (supports multiple paragraphs, blockquotes, etc.)
       if (currentQuestion.text) {
         currentQuestion.textHtml = renderMarkdown(currentQuestion.text);
       } else {
         currentQuestion.textHtml = '';
       }
-      
+
       currentQuestion.options = options;
     }
-    
+
     function processExplainAnswer() {
       if (!currentQuestion) return;
       const raw = explainAnswerBuffer.map(t => t.raw || t.text || '').join('\n').trim();
@@ -551,20 +573,20 @@ function buildActivityFromMarkdown(markdownText) {
         delete currentQuestion.explainAnswerLabel;
       }
     }
-    
+
     function processQuestionOptions() {
       if (!currentQuestion) return;
-      
+
       // Parse question options section
       const optionsText = questionOptionsBuffer.map(t => t.raw || t.text || '').join('\n').trim().toLowerCase();
-      
+
       // Check for shuffle option
       if (optionsText.includes('shuffle=false') || optionsText.includes('don\'t shuffle') || optionsText.includes('dont shuffle') || optionsText === 'no shuffle') {
         currentQuestion.shuffleOptions = false;
       } else {
         currentQuestion.shuffleOptions = true; // Default to shuffling
       }
-      
+
       // Check for multi-select mode (any vs all)
       // Default is 'all' - must select all correct answers
       // 'any' means any correct answer is sufficient
@@ -574,10 +596,10 @@ function buildActivityFromMarkdown(markdownText) {
         currentQuestion.multiSelectMode = 'all'; // Default
       }
     }
-    
+
     function processAnswers() {
       if (!currentQuestion) return;
-      
+
       // Process explain answer first if buffer exists (even if no answers yet)
       if (explainAnswerBuffer.length > 0) {
         processExplainAnswer();
@@ -585,7 +607,7 @@ function buildActivityFromMarkdown(markdownText) {
         currentQuestion.explainAnswer = false;
         delete currentQuestion.explainAnswerLabel;
       }
-      
+
       // Process question options if buffer exists
       if (questionOptionsBuffer.length > 0) {
         processQuestionOptions();
@@ -593,12 +615,12 @@ function buildActivityFromMarkdown(markdownText) {
         currentQuestion.shuffleOptions = true; // Default to shuffling
         currentQuestion.multiSelectMode = 'all'; // Default multi-select mode
       }
-      
+
       // Process answers if buffer has content
       if (answerBuffer.length > 0) {
         const answerItems = readListItems(answerBuffer);
         const correctAnswers = new Set();
-        
+
         answerItems.forEach(item => {
           const trimmed = item.trim();
           // Match patterns like "A", "A - Correct", "B - Correct", etc.
@@ -610,26 +632,26 @@ function buildActivityFromMarkdown(markdownText) {
             }
           }
         });
-        
+
         // Mark correct options
         currentQuestion.options.forEach(opt => {
           opt.correct = correctAnswers.has(opt.label);
         });
-        
+
         // Determine if multi-select
         currentQuestion.isMultiSelect = correctAnswers.size > 1;
       }
-      
+
       // Shuffle options only if shuffleOptions is true (default behavior)
       if (currentQuestion.shuffleOptions !== false) {
         const seed = generateSeed(currentQuestion.text, currentQuestion.options);
         currentQuestion.options = seededShuffle(currentQuestion.options, seed);
       }
-      
+
       // Add to questions array
       questions.push(currentQuestion);
     }
-    
+
     // Parse tokens sequentially
     for (const token of allTokens) {
       if (token.type === 'paragraph') {
@@ -637,13 +659,13 @@ function buildActivityFromMarkdown(markdownText) {
         const m = text.match(/^__([^_]+)__\s*$/);
         if (m) {
           const sectionName = m[1].trim();
-          
+
           if (sectionName === 'Practice Question') {
             // Process previous question/answers if any
             if (currentQuestion) {
               processAnswers();
             }
-            
+
             // Start new question
             const nameFromBuffer = questionNameBuffer.map(t => t.raw || t.text || '').join('\n').trim();
             questionNameBuffer = [];
@@ -735,12 +757,12 @@ function buildActivityFromMarkdown(markdownText) {
         explainAnswerBuffer.push(token);
       }
     }
-    
+
     // Process last question and answers
     if (currentQuestion) {
       processAnswers();
     }
-    
+
     if (questions.length === 0) {
       throw new Error('No MCQ questions found');
     }
@@ -760,13 +782,13 @@ function buildActivityFromMarkdown(markdownText) {
     const matchingTokens = sections.get('Markdown With Blanks') || [];
     const matchingMarkdown = matchingTokens.map(t => t.raw || t.text || '').join('\n').trim();
     const suggested = readListItems(sections.get('Suggested Answers'));
-    
+
     // Split the content into prompt and matching items
     const lines = matchingMarkdown.split(/\r?\n/);
     let promptLines = [];
     let itemLines = [];
     let foundBlockquote = false;
-    
+
     for (const line of lines) {
       if (/^\s*>/.test(line)) {
         foundBlockquote = true;
@@ -782,9 +804,9 @@ function buildActivityFromMarkdown(markdownText) {
         }
       }
     }
-    
+
     const prompt = promptLines.join('\n').trim();
-    
+
     const items = [];
     let idx = 0;
     // Parse each blockquote line as a separate item
@@ -794,13 +816,13 @@ function buildActivityFromMarkdown(markdownText) {
         const itemLine = line.replace(/^\s*>\s?/, '').trim();
         const blankMatch = itemLine.match(/\[\[blank:([^\]]+)\]\]/i);
         if (!blankMatch) continue;
-        
+
         const answer = String(blankMatch[1]).trim();
         const textBeforeBlank = itemLine.replace(/\[\[blank:[^\]]+\]\]/gi, '').trim();
-        
+
         // Render text without blank to HTML
         const textHtml = renderMarkdown(textBeforeBlank);
-        
+
         items.push({
           index: idx++,
           text: textBeforeBlank,
@@ -809,7 +831,7 @@ function buildActivityFromMarkdown(markdownText) {
         });
       }
     }
-    
+
     // Build choices preserving duplicates from Suggested Answers, and ensure
     // at least as many copies of each correct answer as there are blanks.
     const suggestedTrimmed = suggested.map(s => s.trim()).filter(Boolean);
@@ -827,7 +849,7 @@ function buildActivityFromMarkdown(markdownText) {
       const have = suggestedCounts.get(k) || 0;
       for (let i = have; i < req; i++) choices.push(k);
     });
-    
+
     // Shuffle choices using deterministic shuffle
     let s = (markdownText.length || 1337) % 2147483647 || 1337;
     function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }
@@ -835,7 +857,7 @@ function buildActivityFromMarkdown(markdownText) {
       const j = Math.floor(rand() * (i + 1));
       [choices[i], choices[j]] = [choices[j], choices[i]];
     }
-    
+
     // Render markdown to HTML for prompt
     const promptHtml = prompt ? renderMarkdown(prompt) : '';
 
@@ -864,21 +886,21 @@ function buildActivityFromMarkdown(markdownText) {
     // Parse Text Input with support for multiple questions
     const questions = [];
     const allTokens = Lexer.lex(markdownText);
-    
+
     let currentQuestion = null;
     let currentSection = null;
     let questionBuffer = [];
     let answerBuffer = [];
     let headingBuffer = [];
     let questionNameBuffer = [];
-    
+
     function processQuestion() {
       if (!currentQuestion || questionBuffer.length === 0) return;
-      
+
       // Extract question text
       const questionText = questionBuffer.map(t => t.raw || t.text || '').join('\n').trim();
       currentQuestion.text = questionText;
-      
+
       // Parse markdown to HTML for rendering (supports LaTeX, images, bold, etc.)
       if (currentQuestion.text) {
         currentQuestion.textHtml = renderMarkdown(currentQuestion.text);
@@ -886,12 +908,12 @@ function buildActivityFromMarkdown(markdownText) {
         currentQuestion.textHtml = '';
       }
     }
-    
+
     function processAnswers() {
       if (!currentQuestion || answerBuffer.length === 0) return;
-      
+
       const answerItems = readListItems(answerBuffer);
-      
+
       // For text-input, support multiple correct answers.
       if (answerItems.length > 0) {
         const parsed = parseTextInputAnswerItems(answerItems);
@@ -899,11 +921,11 @@ function buildActivityFromMarkdown(markdownText) {
         currentQuestion.correctAnswer = parsed.correctAnswer;
         currentQuestion.validation = parsed.validation;
       }
-      
+
       // Add to questions array
       questions.push(currentQuestion);
     }
-    
+
     // Parse tokens sequentially
     for (const token of allTokens) {
       if (token.type === 'paragraph') {
@@ -911,7 +933,7 @@ function buildActivityFromMarkdown(markdownText) {
         const m = text.match(/^__([^_]+)__\s*$/);
         if (m) {
           const sectionName = m[1].trim();
-          
+
           if (sectionName === 'Practice Question') {
             // Process previous question/answers if any
             if (currentQuestion) {
@@ -961,7 +983,7 @@ function buildActivityFromMarkdown(markdownText) {
           }
         }
       }
-      
+
       if (currentSection === 'questionName') {
         questionNameBuffer.push(token);
       } else if (currentSection === 'question' && currentQuestion) {
@@ -972,16 +994,16 @@ function buildActivityFromMarkdown(markdownText) {
         headingBuffer.push(token);
       }
     }
-    
+
     // Process last question and answers
     if (currentQuestion) {
       processAnswers();
     }
-    
+
     if (questions.length === 0) {
       throw new Error('No text input questions found');
     }
-    
+
     // Process heading section if present
     let heading = null;
     if (headingBuffer.length > 0) {
@@ -990,7 +1012,7 @@ function buildActivityFromMarkdown(markdownText) {
         heading = { markdown: headingText, html: renderMarkdown(headingText) };
       }
     }
-    
+
     const activity = { type, question: null, textInput: { questions, heading } };
     attachSideContent(activity, sections);
     const side = activity.content || null;
@@ -1136,12 +1158,113 @@ function buildActivityFromMarkdown(markdownText) {
   return attachSideContent({ type, question, labels: { left, right }, items }, sections);
 }
 
+function simUpstreamPath(pathname) {
+  if (pathname === SIM_MOUNT_PATH) return '/';
+  const prefix = `${SIM_MOUNT_PATH}/`;
+  if (pathname.startsWith(prefix)) {
+    const subpath = pathname.slice(SIM_MOUNT_PATH.length) || '/';
+    // Collapse leading slashes so subpath cannot resolve as a scheme-relative URL via new URL().
+    return `/${subpath.replace(/^\/+/, '')}`;
+  }
+  return pathname;
+}
+
+function shouldProxyToSim(pathname) {
+  // Always intercept /sim/* so it never falls through to the activity page.
+  if (pathname === SIM_MOUNT_PATH || pathname.startsWith(`${SIM_MOUNT_PATH}/`)) return true;
+  if (!SIM_ORIGIN) return false;
+  for (const entry of SIM_ROOT_PROXY_PATHS) {
+    if (entry.endsWith('/')) {
+      if (pathname.startsWith(entry)) return true;
+    } else if (pathname === entry || pathname.startsWith(`${entry}/`)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function simErrorHtml(message) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulation not found</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8fafc;
+      color: #64748b;
+    }
+    .icon { font-size: 2.5rem; }
+    h1 { margin: 0; font-size: 1.1rem; font-weight: 600; color: #0f172a; }
+    p { margin: 0; font-size: 0.875rem; }
+    code {
+      font-size: 0.8rem;
+      background: #e2e8f0;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">⚠️</div>
+  <h1>Simulation not reachable</h1>
+  <p>${message}</p>
+</body>
+</html>`;
+}
+
+function proxyToSim(req, res, pathname, search) {
+  if (!SIM_ORIGIN) {
+    res.writeHead(502, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(simErrorHtml('No simulation configured — <code>SIM_ORIGIN</code> is not set.'));
+    return;
+  }
+  const subpath = simUpstreamPath(pathname);
+  const target = new URL(subpath, SIM_ORIGIN);
+  const isHttps = target.protocol === 'https:';
+  const transport = isHttps ? https : http;
+  const options = {
+    hostname: target.hostname,
+    port: target.port || (isHttps ? 443 : 80),
+    path: target.pathname + (search || ''),
+    method: req.method,
+    headers: { ...req.headers, host: target.host }
+  };
+  const proxyReq = transport.request(options, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(res);
+  });
+  proxyReq.on('error', () => {
+    res.writeHead(502, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(simErrorHtml(`Nothing is running at <code>${SIM_ORIGIN}</code>`));
+  });
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    proxyReq.end();
+  } else {
+    req.pipe(proxyReq);
+  }
+}
+
 // Store active WebSocket connections
 const clients = new Set();
 
 const server = http.createServer((req, res) => {
   const urlObj = new URL(req.url, 'http://localhost');
   let pathname = decodeURIComponent(urlObj.pathname || '/');
+
+  if (shouldProxyToSim(pathname)) {
+    proxyToSim(req, res, pathname, urlObj.search);
+    return;
+  }
 
   // Examples mode: shell at /, activity app in iframe at /play
   if (EXAMPLES_MODE && pathname === '/') {
@@ -1203,13 +1326,13 @@ const server = http.createServer((req, res) => {
       try {
         const data = JSON.parse(body);
         const markdown = data.markdown || '';
-        
+
         // Ensure directory exists
         const dir = path.dirname(EDIT_FILE_PATH);
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir, { recursive: true });
         }
-        
+
         fs.writeFile(EDIT_FILE_PATH, markdown, 'utf8', (err) => {
           if (err) {
             respondJson(res, 500, { error: 'Failed to save file' });
@@ -1311,7 +1434,7 @@ const server = http.createServer((req, res) => {
   if (pathname === '/api/answers') {
     const answerFile = path.join(DATA_DIR, 'answer.md');
     const activityFile = path.join(DATA_DIR, 'question.md');
-    
+
     // Read both answer.md and question.md to map result indices to question IDs
     fs.readFile(answerFile, 'utf8', (err, answerData) => {
       if (err) {
@@ -1319,7 +1442,7 @@ const server = http.createServer((req, res) => {
         respondJson(res, 200, { answers: null, type: null, explanations: null });
         return;
       }
-      
+
       // Also read activity to map indices to question IDs
       fs.readFile(activityFile, 'utf8', (err, activityData) => {
         if (err) {
@@ -1333,11 +1456,11 @@ const server = http.createServer((req, res) => {
           }
           return;
         }
-        
+
         try {
           const parsed = parseAnswersFromMarkdown(answerData);
           let { answers, type, explanations } = parsed;
-          
+
           // For MCQ, map result indices to question IDs
           if (/^multiple choice$/i.test(type) && explanations) {
             const activity = buildActivityFromMarkdown(activityData);
@@ -1356,7 +1479,7 @@ const server = http.createServer((req, res) => {
               explanations = mappedExplanations;
             }
           }
-          
+
           respondJson(res, 200, { answers, type, explanations: explanations || null });
         } catch (e) {
           respondJson(res, 500, { error: 'Failed to parse answers' });
@@ -1374,9 +1497,9 @@ const server = http.createServer((req, res) => {
         client.send(JSON.stringify({ type: 'validate' }));
       }
     });
-    
-    respondJson(res, 200, { 
-      status: 'success', 
+
+    respondJson(res, 200, {
+      status: 'success',
       message: 'Validation message sent to all connected clients',
       clientCount: clients.size
     });
@@ -1394,7 +1517,7 @@ const server = http.createServer((req, res) => {
         const data = JSON.parse(body);
         const markdown = data.markdown || '';
         const html = renderMarkdown(markdown);
-        
+
         // Return HTML wrapped in a proper document with styles
         const fullHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -1447,8 +1570,8 @@ const server = http.createServer((req, res) => {
   </script>
 </body>
 </html>`;
-        
-        res.writeHead(200, { 
+
+        res.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'no-store'
         });
@@ -1472,7 +1595,7 @@ const server = http.createServer((req, res) => {
         const answerFile = path.join(DATA_DIR, 'answer.md');
         const reportFile = path.join(DATA_DIR, 'report.md');
         const scoreFile = path.join(DATA_DIR, 'score.json');
-        
+
         // Format results as markdown
         const activity = data.activity;
 
@@ -1481,16 +1604,16 @@ const server = http.createServer((req, res) => {
         ).length;
 
         const validateLaterCount = countValidateLaterTextInputResults(activity, data.results);
-        
+
         // Total count excludes "validate-later" questions from scoring
         const totalCount = data.results.length - validateLaterCount;
-        
+
         let markdown = '';
-        
+
         // Include original activity details
         if (activity) {
           markdown += `__Type__\n\n${activity.type}\n\n`;
-          
+
           // Add results section with summary
           let summaryText = `${correctCount}/${totalCount} correct`;
           if (validateLaterCount > 0) {
@@ -1498,7 +1621,7 @@ const server = http.createServer((req, res) => {
           }
           markdown += `__Summary__\n\n${summaryText}\n\n`;
           markdown += '__Responses__\n\n';
-          
+
           data.results.forEach((result, index) => {
             markdown += `${index + 1}. **${result.text}**\n`;
             markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
@@ -1526,7 +1649,7 @@ const server = http.createServer((req, res) => {
             } else {
               markdown += `   - Result: ${isCorrect ? '✓ Correct' : '✗ Incorrect'}\n`;
             }
-            
+
             // Add explanation if present (for MCQ questions with explainAnswer enabled)
             if (result.explanation) {
               markdown += `   - Explanation: ${result.explanation}\n`;
@@ -1669,7 +1792,7 @@ const server = http.createServer((req, res) => {
             if (activity.question) {
               markdown += `__Practice Question__\n\n${activity.question}\n\n`;
             }
-            
+
             if (activity.labels) {
               markdown += `__Labels__\n\n`;
               if (/^sort into boxes$/i.test(activity.type)) {
@@ -1682,7 +1805,7 @@ const server = http.createServer((req, res) => {
             }
           }
         }
-        
+
         const reportMarkdown = buildActivityReportMarkdown(activity, data.results || []);
         const scoreJson = JSON.stringify(buildScoreJson(activity, data.results || []), null, 2);
 
@@ -1767,13 +1890,13 @@ wss.on('connection', (ws, req) => {
   // Add new client to the Set
   clients.add(ws);
   console.log('WebSocket connection established, total clients:', clients.size);
-  
+
   // Handle WebSocket connection close
   ws.on('close', () => {
     clients.delete(ws);
     console.log('WebSocket connection closed, remaining clients:', clients.size);
   });
-  
+
   // Handle errors
   ws.on('error', (error) => {
     console.error('WebSocket error:', error);
