@@ -195,8 +195,8 @@
 
 .text-input-field-wrapper-units .text-input-field[type="number"] {
   padding-right: calc(
-    var(--UI-Spacing-spacing-ms, 16px) + 2ch + var(--UI-Spacing-spacing-xs, 8px) +
-    var(--text-input-units-spinner-width)
+    var(--UI-Spacing-spacing-ms, 16px) + 2ch + var(--UI-Spacing-spacing-xs, 8px)
+    + var(--text-input-units-spinner-width)
   );
 }
 
