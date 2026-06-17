@@ -162,6 +162,24 @@
   box-sizing: border-box;
 }
 
+/* Misplaced chip after a /validate request */
+.categorization-chip.incorrect {
+  background: var(--Colors-Alert-Error-Light);
+  color: var(--Colors-Alert-Error-Dark);
+  box-shadow: inset 0 0 0 1.5px var(--Colors-Alert-Error-Default);
+}
+
+.categorization-chip.incorrect:hover {
+  background: var(--Colors-Alert-Error-Light);
+}
+
+.categorization-chip-status {
+  display: inline-flex;
+  align-items: center;
+  color: var(--Colors-Alert-Error-Default);
+  flex-shrink: 0;
+}
+
 /* Tray (pool of unplaced items) */
 .categorization-tray {
   display: flex;

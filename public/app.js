@@ -292,6 +292,9 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
         persistedAnswers,
         elContainer
       });
+      if (currentActivity && typeof currentActivity.validate === 'function') {
+        validationHandler = currentActivity.validate;
+      }
     } else if (/^multiple choice$/i.test(activity.type)) {
       currentActivity = initMcq({
         activity,

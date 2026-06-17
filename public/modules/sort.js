@@ -37,6 +37,7 @@ export function initSort({
   });
 
   let activeItemIndex = null; // currently selected (click model)
+  let validating = false; // true after a /validate request highlights mistakes
 
   // Build the static shell.
   elContainer.innerHTML = `
@@ -76,6 +77,10 @@ export function initSort({
     return `<span class="categorization-chip-handle" aria-hidden="true"><svg viewBox="0 0 6 14" width="6" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="1.25" cy="1.25" r="1.25" fill="currentColor"/><circle cx="4.75" cy="1.25" r="1.25" fill="currentColor"/><circle cx="1.25" cy="7" r="1.25" fill="currentColor"/><circle cx="4.75" cy="7" r="1.25" fill="currentColor"/><circle cx="1.25" cy="12.75" r="1.25" fill="currentColor"/><circle cx="4.75" cy="12.75" r="1.25" fill="currentColor"/></svg></span>`;
   }
 
+  function incorrectIconSvg() {
+    return `<span class="categorization-chip-status" aria-hidden="true"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="8" fill="currentColor"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></span>`;
+  }
+
   function instructionIconSvg() {
     return `<svg viewBox="0 0 28 28" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect x="2.5" y="6.5" width="14" height="11" rx="2.5" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 3"/>
@@ -85,16 +90,19 @@ export function initSort({
 
   function makeChip(itemIndex, { placed }) {
     const item = items[itemIndex];
+    // Only mark chips that are placed in the wrong category; never flag the tray.
+    const misplaced = placed && validating && placement[itemIndex] !== (item.correct || '');
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = `categorization-chip${placed ? ' placed' : ''}`;
+    chip.className = `categorization-chip${placed ? ' placed' : ''}${misplaced ? ' incorrect' : ''}`;
     chip.dataset.itemIndex = String(itemIndex);
     chip.setAttribute('draggable', 'true');
-    chip.innerHTML = `${placed ? '' : dragHandleSvg()}<span class="categorization-chip-label">${chipInnerHtml(item)}</span>`;
+    if (misplaced) chip.setAttribute('aria-invalid', 'true');
+    chip.innerHTML = `${placed ? '' : dragHandleSvg()}<span class="categorization-chip-label">${chipInnerHtml(item)}</span>${misplaced ? incorrectIconSvg() : ''}`;
     chip.setAttribute(
       'aria-label',
       placed
-        ? `${item.text}, placed in ${placement[itemIndex]}. Activate to return to the tray.`
+        ? `${item.text}, placed in ${placement[itemIndex]}.${misplaced ? ' This placement is incorrect.' : ''} Activate to return to the tray.`
         : `${item.text}. Activate to select, then choose a category.`
     );
     if (!placed && activeItemIndex === itemIndex) {
@@ -239,7 +247,17 @@ export function initSort({
 
   function setPlacement(itemIndex, category) {
     placement[itemIndex] = category || '';
+    // Any change invalidates a previous validation pass.
+    validating = false;
     updateResultsAndPost();
+  }
+
+  // Highlight placed chips that are in the wrong category. Triggered by a
+  // POST to /validate (delivered via the WebSocket "validate" message).
+  // Unplaced items are intentionally left untouched.
+  function validateAnswers() {
+    validating = true;
+    render();
   }
 
   function updateResultsAndPost() {
@@ -257,6 +275,7 @@ export function initSort({
       placement[idx] = '';
     });
     activeItemIndex = null;
+    validating = false;
     render();
     updateResultsAndPost();
   }
@@ -282,7 +301,8 @@ export function initSort({
     cleanup: () => {
       toolbar.unregisterTool('sort-clear-all');
       elContainer.innerHTML = '';
-    }
+    },
+    validate: validateAnswers
   };
 }
 
