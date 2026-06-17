@@ -329,6 +329,17 @@ function parseAnswersFromMarkdown(markdownText) {
         answers[itemIndex] = selectedAnswer;
       }
     }
+  } else if (/^sort into boxes$/i.test(type)) {
+    // Parse Sort/Categorization responses: index maps to the chosen category label.
+    const responseRegex = /(\d+)\.\s*\*\*[\s\S]*?\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
+    let match;
+    while ((match = responseRegex.exec(responsesText)) !== null) {
+      const itemIndex = parseInt(match[1], 10) - 1; // Convert to 0-indexed
+      const selectedAnswer = match[2].trim();
+      if (selectedAnswer && selectedAnswer !== 'No answer selected') {
+        answers[itemIndex] = selectedAnswer;
+      }
+    }
   } else if (/^text input$/i.test(type)) {
     // Parse Text Input responses: "Selected Answer: [value]"
     const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
@@ -1117,24 +1128,71 @@ function buildActivityFromMarkdown(markdownText) {
 
   const labels = readListItems(sections.get('Labels'));
   if (/^sort into boxes$/i.test(type)) {
-    let first = '', second = '';
-    for (const entry of labels) {
-      const [k, ...rest] = entry.split(':');
-      const v = rest.join(':').trim();
-      const nk = (k || '').toLowerCase();
-      if (nk.includes('first')) first = v;
-      if (nk.includes('second')) second = v;
+    // Preferred schema (supports N categories):
+    //   __Categories__  -> list of category labels
+    //   __Items__       -> list of "Item text: Category"
+    // Falls back to the legacy two-box schema (First/Second Box Label + Items).
+    const categoriesRaw = readListItems(sections.get('Categories'));
+    const itemEntries = readListItems(sections.get('Items'));
+
+    let categories = [];
+    let items = [];
+
+    if (categoriesRaw.length > 0 || itemEntries.length > 0) {
+      categories = categoriesRaw.map(c => c.trim()).filter(Boolean);
+      items = itemEntries
+        .map(entry => {
+          const sep = entry.lastIndexOf(':');
+          if (sep === -1) return { text: entry.trim(), correct: '' };
+          return {
+            text: entry.slice(0, sep).trim(),
+            correct: entry.slice(sep + 1).trim()
+          };
+        })
+        .filter(it => it.text);
+      // Make sure every category referenced by an item exists (preserve declared order first).
+      items.forEach(it => {
+        if (it.correct && !categories.includes(it.correct)) categories.push(it.correct);
+      });
+    } else {
+      // Legacy two-box schema.
+      let first = '', second = '';
+      for (const entry of labels) {
+        const [k, ...rest] = entry.split(':');
+        const v = rest.join(':').trim();
+        const nk = (k || '').toLowerCase();
+        if (nk.includes('first')) first = v;
+        if (nk.includes('second')) second = v;
+      }
+      categories = [first || 'First Box', second || 'Second Box'];
+      const firstItems = readListItems(sections.get('First Box Items'));
+      const secondItems = readListItems(sections.get('Second Box Items'));
+      items = [
+        ...firstItems.map(text => ({ text, correct: categories[0] })),
+        ...secondItems.map(text => ({ text, correct: categories[1] })),
+      ];
     }
-    const firstItems = readListItems(sections.get('First Box Items'));
-    const secondItems = readListItems(sections.get('Second Box Items'));
-    const items = [
-      ...firstItems.map(text => ({ text, correct: 'first' })),
-      ...secondItems.map(text => ({ text, correct: 'second' })),
-    ];
+
+    // Render markdown/LaTeX for each chip's display text.
+    items = items.map(it => ({ ...it, textHtml: renderMarkdown(it.text) }));
+
     let s = (markdownText.length || 1337) % 2147483647 || 1337;
     function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }
     for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
-    return attachSideContent({ type, question, labels: { first, second }, items }, sections);
+
+    const questionHtml = question ? renderMarkdown(question) : '';
+    return attachSideContent(
+      {
+        type,
+        question,
+        questionHtml,
+        categories,
+        items,
+        // Retained for backward compatibility with older consumers.
+        labels: { first: categories[0] || '', second: categories[1] || '' }
+      },
+      sections
+    );
   }
 
   // default swipe left/right
@@ -1793,7 +1851,20 @@ const server = http.createServer((req, res) => {
               markdown += `__Practice Question__\n\n${activity.question}\n\n`;
             }
 
-            if (activity.labels) {
+            if (/^sort into boxes$/i.test(activity.type) && Array.isArray(activity.categories)) {
+              markdown += `__Categories__\n\n`;
+              activity.categories.forEach(c => {
+                markdown += `- ${c}\n`;
+              });
+              markdown += '\n';
+              if (Array.isArray(activity.items)) {
+                markdown += `__Items__\n\n`;
+                activity.items.forEach(it => {
+                  markdown += `- ${it.text}: ${it.correct}\n`;
+                });
+                markdown += '\n';
+              }
+            } else if (activity.labels) {
               markdown += `__Labels__\n\n`;
               if (/^sort into boxes$/i.test(activity.type)) {
                 markdown += `- First Box Label: ${activity.labels.first || activity.labels.left || 'First Box'}\n`;

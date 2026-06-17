@@ -94,7 +94,7 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
     const currentType = activity.type || '';
     const persistedType = persistedData.type || '';
     
-    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType) && !/^matching$/i.test(currentType) && !/^text input$/i.test(currentType) && !/^matrix$/i.test(currentType)) {
+    if (!/^multiple choice$/i.test(currentType) && !/^fill in the blanks$/i.test(currentType) && !/^matching$/i.test(currentType) && !/^text input$/i.test(currentType) && !/^matrix$/i.test(currentType) && !/^sort into boxes$/i.test(currentType)) {
       // Only validate persisted answers for types that support them
       return { answers: null, explanations: null };
     }
@@ -105,7 +105,8 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
       (/^fill in the blanks$/i.test(currentType) && /^fill in the blanks$/i.test(persistedType)) ||
       (/^matching$/i.test(currentType) && /^matching$/i.test(persistedType)) ||
       (/^text input$/i.test(currentType) && /^text input$/i.test(persistedType)) ||
-      (/^matrix$/i.test(currentType) && /^matrix$/i.test(persistedType));
+      (/^matrix$/i.test(currentType) && /^matrix$/i.test(persistedType)) ||
+      (/^sort into boxes$/i.test(currentType) && /^sort into boxes$/i.test(persistedType));
 
     if (!typeMatches) {
       return { answers: null, explanations: null };
@@ -242,6 +243,27 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
         });
       }
       return { answers: validatedAnswers, explanations: validatedExplanations };
+    } else if (/^sort into boxes$/i.test(currentType)) {
+      // For Sort/Categorization: validate item indices exist and the saved
+      // category is still one of the activity's categories.
+      if (!activity.items) {
+        return { answers: null, explanations: null };
+      }
+      const validItemIndices = new Set(activity.items.map((_, idx) => idx));
+      const validCategories = new Set(activity.categories || []);
+      const persistedItemIndices = Object.keys(persistedData.answers).map(idx => parseInt(idx, 10));
+      const allIndicesValid = persistedItemIndices.every(idx => validItemIndices.has(idx));
+      if (!allIndicesValid) {
+        return { answers: null, explanations: null };
+      }
+      const validatedAnswers = {};
+      persistedItemIndices.forEach(idx => {
+        const val = persistedData.answers[idx];
+        if (validItemIndices.has(idx) && validCategories.has(val)) {
+          validatedAnswers[idx] = val;
+        }
+      });
+      return { answers: validatedAnswers, explanations: null };
     }
 
     return { answers: null, explanations: null };
@@ -264,11 +286,10 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
       currentActivity = initFib({ activity, state, postResults, persistedAnswers, elContainer });
     } else if (/^sort into boxes$/i.test(activity.type)) {
       currentActivity = initSort({
-        items: state.items,
-        labels: activity.labels,
-        question: activity.question,
+        activity,
         state,
         postResults,
+        persistedAnswers,
         elContainer
       });
     } else if (/^multiple choice$/i.test(activity.type)) {

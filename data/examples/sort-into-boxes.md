@@ -4,23 +4,16 @@ Sort Into Boxes
 
 __Practice Question__
 
-Sort these people leadership behaviors into the correct dimension categories:
+Sort each phrase by the tone it conveys.
 
-__Labels__
+__Categories__
 
-- First Box Label: Directive Behavior
-- Second Box Label: Supportive Behavior
+- Positive
+- Negative
 
-__First Box Items__
+__Items__
 
-- Setting expectations
-- Giving guidancey
-- Tracking progress
-
-__Second Box Items__
-
-- Active listening
-- Recognizing wins
-- Offering assistance
-
-
+- That was absolutely brilliant!: Positive
+- I'm really proud of your progress: Positive
+- You clearly didn't even try: Negative
+- This is the worst idea ever: Negative
