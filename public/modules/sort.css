@@ -5,6 +5,12 @@
   --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-100);
   --Colors-Learn-Practice-Interactive-Choice-Main-Label: var(--Colors-Base-Accent-Sky-Blue-900);
   --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-200);
+  /* Empty drop zones / placeholder slots. Figma uses a semi-transparent
+     stroke (Main Stroke Empty) that reads as a faint dashed outline in both
+     themes, plus an elevated fill (Main Background Empty). The plain
+     --Colors-Stroke-Default token renders too bright in dark mode. */
+  --Colors-Learn-Practice-Interactive-Choice-Main-Stroke-Empty: rgba(103, 113, 142, 0.2);
+  --Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty: var(--Colors-Backgrounds-Main-Light);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,6 +19,8 @@
     --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-700);
     --Colors-Learn-Practice-Interactive-Choice-Main-Label: var(--Colors-Base-Neutral-00);
     --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-600);
+    /* Elevate the empty fill above the page/card so slots stay visible. */
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty: var(--Colors-Backgrounds-Main-Medium);
   }
 }
 
@@ -86,7 +94,7 @@
   gap: var(--UI-Spacing-spacing-ms, 16px);
   margin: 0 var(--UI-Spacing-spacing-mxl, 24px) var(--UI-Spacing-spacing-mxl, 24px);
   padding: var(--UI-Spacing-spacing-mxl, 24px);
-  border: 1.5px dashed var(--Colors-Stroke-Default);
+  border: 1.5px dashed var(--Colors-Learn-Practice-Interactive-Choice-Main-Stroke-Empty);
   border-radius: var(--UI-Radius-radius-s, 8px);
   min-height: 96px;
   flex: 1;
@@ -103,7 +111,7 @@
 
 .categorization-category.drag-over .categorization-dropzone {
   border-color: var(--Colors-Primary-Default);
-  background: var(--Colors-Backgrounds-Main-Light);
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty);
 }
 
 /* Item chips (shared by tray + placed) */
@@ -199,9 +207,9 @@
   min-width: 120px;
   min-height: 56px;
   flex: 0 1 auto;
-  border: 1.5px dashed var(--Colors-Stroke-Default);
+  border: 1.5px dashed var(--Colors-Learn-Practice-Interactive-Choice-Main-Stroke-Empty);
   border-radius: var(--UI-Radius-radius-s, 8px);
-  background: var(--Colors-Backgrounds-Main-Light);
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty);
 }
 
 /* Instructions */
