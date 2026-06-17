@@ -177,13 +177,18 @@ export function initSort({
 
   function renderCategories() {
     elCategories.innerHTML = '';
-    categories.forEach((label) => {
+    categories.forEach((label, categoryIdx) => {
       const card = document.createElement('div');
       card.className = 'categorization-category';
 
       const head = document.createElement('div');
       head.className = 'categorization-category-head heading-small';
-      head.textContent = label;
+      const labelHtml = activity.categoriesHtml && activity.categoriesHtml[categoryIdx];
+      if (labelHtml) {
+        head.innerHTML = labelHtml;
+      } else {
+        head.textContent = label;
+      }
       renderMath(head);
 
       const zone = document.createElement('div');

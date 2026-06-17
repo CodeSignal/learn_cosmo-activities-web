@@ -169,9 +169,45 @@ function escapeMathDollars(markdown) {
   return markdown.replace(/\\\$/g, '<span class="no-math">$</span>');
 }
 
-function renderMarkdown(markdown) {
+/**
+ * Stash math regions ($$...$$, \[...\], \(...\), $...$) behind placeholders so
+ * markdown parsing can't mangle their delimiters (marked treats `\(` and `\)`
+ * as escaped punctuation and drops the backslash). The original math is
+ * restored verbatim after parsing, leaving the delimiters intact for KaTeX.
+ */
+function protectMathRegions(markdown) {
+  const store = [];
+  const patterns = [
+    /\$\$[\s\S]+?\$\$/g,
+    /\\\[[\s\S]+?\\\]/g,
+    /\\\([\s\S]+?\\\)/g,
+    /\$[^\n$]+?\$/g
+  ];
+  let text = markdown;
+  for (const re of patterns) {
+    text = text.replace(re, (match) => {
+      const token = `MATHPROTECT${store.length}ENDMATHPROTECT`;
+      store.push(match);
+      return token;
+    });
+  }
+  return { text, store };
+}
+
+function renderMarkdown(markdown, options = {}) {
   if (!markdown || typeof markdown !== 'string') return '';
-  return marked.parse(escapeMathDollars(markdown), { renderer: MARKDOWN_RENDERER });
+  let text = escapeMathDollars(markdown);
+  let store = [];
+  if (options.preserveMathDelimiters) {
+    ({ text, store } = protectMathRegions(text));
+  }
+  let html = marked.parse(text, { renderer: MARKDOWN_RENDERER });
+  if (store.length) {
+    store.forEach((math, i) => {
+      html = html.replace(`MATHPROTECT${i}ENDMATHPROTECT`, () => math);
+    });
+  }
+  return html;
 }
 
 /**
@@ -1174,19 +1210,22 @@ function buildActivityFromMarkdown(markdownText) {
     }
 
     // Render markdown/LaTeX for each chip's display text.
-    items = items.map(it => ({ ...it, textHtml: renderMarkdown(it.text) }));
+    items = items.map(it => ({ ...it, textHtml: renderMarkdown(it.text, { preserveMathDelimiters: true }) }));
 
     let s = (markdownText.length || 1337) % 2147483647 || 1337;
     function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }
     for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
 
-    const questionHtml = question ? renderMarkdown(question) : '';
+    const categoriesHtml = categories.map(c => renderMarkdown(c, { preserveMathDelimiters: true }));
+
+    const questionHtml = question ? renderMarkdown(question, { preserveMathDelimiters: true }) : '';
     return attachSideContent(
       {
         type,
         question,
         questionHtml,
         categories,
+        categoriesHtml,
         items,
         // Retained for backward compatibility with older consumers.
         labels: { first: categories[0] || '', second: categories[1] || '' }

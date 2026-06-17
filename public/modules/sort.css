@@ -78,6 +78,10 @@
   color: var(--Colors-Learn-Practice-Interactive-Choice-Main-Label);
 }
 
+.categorization-category-head :is(p) {
+  margin: 0;
+}
+
 /* Drop zone */
 .categorization-dropzone {
   display: flex;
