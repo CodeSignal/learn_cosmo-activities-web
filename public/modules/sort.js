@@ -204,8 +204,9 @@ export function initSort({
         });
       }
 
-      // Clicking an empty/active zone drops the selected item there.
-      zone.addEventListener('click', (e) => {
+      // The whole card is a click/drop target, not just the chip area — this
+      // gives a much larger surface to hit, especially for click-to-place.
+      card.addEventListener('click', (e) => {
         if (e.target.closest('.categorization-chip')) return;
         if (activeItemIndex !== null) {
           setPlacement(activeItemIndex, label);
@@ -213,7 +214,7 @@ export function initSort({
           render();
         }
       });
-      wireDropZone(zone, label);
+      wireDropZone(card, label);
 
       card.appendChild(head);
       card.appendChild(zone);
