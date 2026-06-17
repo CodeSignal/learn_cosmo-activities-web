@@ -46,7 +46,7 @@ export function initSort({
       <div class="categorization-categories" id="categorization-categories"></div>
       <div class="categorization-instructions">
         <span class="categorization-instructions-icon" aria-hidden="true">${instructionIconSvg()}</span>
-        <p class="categorization-instructions-text">Click or drag the items onto the cards above</p>
+        <p class="categorization-instructions-text body-xxsmall">Click or drag the items onto the cards above</p>
       </div>
       <div class="categorization-tray" id="categorization-tray" role="list" aria-label="Items to sort"></div>
     </div>
@@ -94,7 +94,7 @@ export function initSort({
     const misplaced = placed && validating && placement[itemIndex] !== (item.correct || '');
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = `categorization-chip${placed ? ' placed' : ''}${misplaced ? ' incorrect' : ''}`;
+    chip.className = `categorization-chip body-large${placed ? ' placed' : ''}${misplaced ? ' incorrect' : ''}`;
     chip.dataset.itemIndex = String(itemIndex);
     chip.setAttribute('draggable', 'true');
     if (misplaced) chip.setAttribute('aria-invalid', 'true');
