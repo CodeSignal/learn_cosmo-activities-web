@@ -180,6 +180,9 @@ export function initSort({
     categories.forEach((label, categoryIdx) => {
       const card = document.createElement('div');
       card.className = 'categorization-category';
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', `Place selected item in ${label}`);
 
       const head = document.createElement('div');
       head.className = 'categorization-category-head heading-small';
@@ -214,6 +217,18 @@ export function initSort({
       card.addEventListener('click', (e) => {
         if (e.target.closest('.categorization-chip')) return;
         if (activeItemIndex !== null) {
+          setPlacement(activeItemIndex, label);
+          activeItemIndex = null;
+          render();
+        }
+      });
+      // Keyboard users select a chip, then press Enter on a category card to
+      // place it — mirroring the click handler above.
+      card.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        if (e.target.closest('.categorization-chip')) return;
+        if (activeItemIndex !== null) {
+          e.preventDefault();
           setPlacement(activeItemIndex, label);
           activeItemIndex = null;
           render();
