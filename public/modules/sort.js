@@ -222,10 +222,11 @@ export function initSort({
           render();
         }
       });
-      // Keyboard users select a chip, then press Enter on a category card to
-      // place it — mirroring the click handler above.
+      // Keyboard users select a chip, then press Enter or Space on a category
+      // card to place it — mirroring the click handler above. ARIA buttons
+      // should respond to both keys.
       card.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter') return;
+        if (e.key !== 'Enter' && e.key !== ' ') return;
         if (e.target.closest('.categorization-chip')) return;
         if (activeItemIndex !== null) {
           e.preventDefault();
