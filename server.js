@@ -169,9 +169,45 @@ function escapeMathDollars(markdown) {
   return markdown.replace(/\\\$/g, '<span class="no-math">$</span>');
 }
 
-function renderMarkdown(markdown) {
+/**
+ * Stash math regions ($$...$$, \[...\], \(...\), $...$) behind placeholders so
+ * markdown parsing can't mangle their delimiters (marked treats `\(` and `\)`
+ * as escaped punctuation and drops the backslash). The original math is
+ * restored verbatim after parsing, leaving the delimiters intact for KaTeX.
+ */
+function protectMathRegions(markdown) {
+  const store = [];
+  const patterns = [
+    /\$\$[\s\S]+?\$\$/g,
+    /\\\[[\s\S]+?\\\]/g,
+    /\\\([\s\S]+?\\\)/g,
+    /\$[^\n$]+?\$/g
+  ];
+  let text = markdown;
+  for (const re of patterns) {
+    text = text.replace(re, (match) => {
+      const token = `MATHPROTECT${store.length}ENDMATHPROTECT`;
+      store.push(match);
+      return token;
+    });
+  }
+  return { text, store };
+}
+
+function renderMarkdown(markdown, options = {}) {
   if (!markdown || typeof markdown !== 'string') return '';
-  return marked.parse(escapeMathDollars(markdown), { renderer: MARKDOWN_RENDERER });
+  let text = escapeMathDollars(markdown);
+  let store = [];
+  if (options.preserveMathDelimiters) {
+    ({ text, store } = protectMathRegions(text));
+  }
+  let html = marked.parse(text, { renderer: MARKDOWN_RENDERER });
+  if (store.length) {
+    store.forEach((math, i) => {
+      html = html.replace(`MATHPROTECT${i}ENDMATHPROTECT`, () => math);
+    });
+  }
+  return html;
 }
 
 /**
@@ -321,6 +357,17 @@ function parseAnswersFromMarkdown(markdownText) {
   } else if (/^matching$/i.test(type)) {
     // Parse Matching responses: "Selected Answer: [value]"
     const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
+    let match;
+    while ((match = responseRegex.exec(responsesText)) !== null) {
+      const itemIndex = parseInt(match[1], 10) - 1; // Convert to 0-indexed
+      const selectedAnswer = match[2].trim();
+      if (selectedAnswer && selectedAnswer !== 'No answer selected') {
+        answers[itemIndex] = selectedAnswer;
+      }
+    }
+  } else if (/^sort into boxes$/i.test(type)) {
+    // Parse Sort/Categorization responses: index maps to the chosen category label.
+    const responseRegex = /(\d+)\.\s*\*\*[\s\S]*?\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
     let match;
     while ((match = responseRegex.exec(responsesText)) !== null) {
       const itemIndex = parseInt(match[1], 10) - 1; // Convert to 0-indexed
@@ -1117,24 +1164,92 @@ function buildActivityFromMarkdown(markdownText) {
 
   const labels = readListItems(sections.get('Labels'));
   if (/^sort into boxes$/i.test(type)) {
-    let first = '', second = '';
-    for (const entry of labels) {
-      const [k, ...rest] = entry.split(':');
-      const v = rest.join(':').trim();
-      const nk = (k || '').toLowerCase();
-      if (nk.includes('first')) first = v;
-      if (nk.includes('second')) second = v;
+    // Preferred schema (supports N categories):
+    //   __Categories__  -> list of category labels
+    //   __Items__       -> list of "Item text: Category"
+    // Falls back to the legacy two-box schema (First/Second Box Label + Items).
+    const categoriesRaw = readListItems(sections.get('Categories'));
+    const itemEntries = readListItems(sections.get('Items'));
+
+    let categories = [];
+    let items = [];
+
+    if (categoriesRaw.length > 0 || itemEntries.length > 0) {
+      categories = categoriesRaw.map(c => c.trim()).filter(Boolean);
+      items = itemEntries
+        .map(entry => {
+          // Walk the text portion, unescaping "\\" and "\:", and stop at the
+          // first *unescaped* colon — that's the "text: category" separator.
+          // Everything after it is the category label, which may itself
+          // contain raw colons.
+          const s = String(entry);
+          let text = '';
+          let i = 0;
+          let sepFound = false;
+          for (; i < s.length; i++) {
+            const ch = s[i];
+            if (ch === '\\' && i + 1 < s.length) {
+              text += s[i + 1];
+              i++;
+              continue;
+            }
+            if (ch === ':') {
+              sepFound = true;
+              i++;
+              break;
+            }
+            text += ch;
+          }
+          const correct = sepFound ? s.slice(i) : '';
+          return { text: text.trim(), correct: correct.trim() };
+        })
+        .filter(it => it.text);
+      // Make sure every category referenced by an item exists (preserve declared order first).
+      items.forEach(it => {
+        if (it.correct && !categories.includes(it.correct)) categories.push(it.correct);
+      });
+    } else {
+      // Legacy two-box schema.
+      let first = '', second = '';
+      for (const entry of labels) {
+        const [k, ...rest] = entry.split(':');
+        const v = rest.join(':').trim();
+        const nk = (k || '').toLowerCase();
+        if (nk.includes('first')) first = v;
+        if (nk.includes('second')) second = v;
+      }
+      categories = [first || 'First Box', second || 'Second Box'];
+      const firstItems = readListItems(sections.get('First Box Items'));
+      const secondItems = readListItems(sections.get('Second Box Items'));
+      items = [
+        ...firstItems.map(text => ({ text, correct: categories[0] })),
+        ...secondItems.map(text => ({ text, correct: categories[1] })),
+      ];
     }
-    const firstItems = readListItems(sections.get('First Box Items'));
-    const secondItems = readListItems(sections.get('Second Box Items'));
-    const items = [
-      ...firstItems.map(text => ({ text, correct: 'first' })),
-      ...secondItems.map(text => ({ text, correct: 'second' })),
-    ];
+
+    // Render markdown/LaTeX for each chip's display text.
+    items = items.map(it => ({ ...it, textHtml: renderMarkdown(it.text, { preserveMathDelimiters: true }) }));
+
     let s = (markdownText.length || 1337) % 2147483647 || 1337;
     function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }
     for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
-    return attachSideContent({ type, question, labels: { first, second }, items }, sections);
+
+    const categoriesHtml = categories.map(c => renderMarkdown(c, { preserveMathDelimiters: true }));
+
+    const questionHtml = question ? renderMarkdown(question, { preserveMathDelimiters: true }) : '';
+    return attachSideContent(
+      {
+        type,
+        question,
+        questionHtml,
+        categories,
+        categoriesHtml,
+        items,
+        // Retained for backward compatibility with older consumers.
+        labels: { first: categories[0] || '', second: categories[1] || '' }
+      },
+      sections
+    );
   }
 
   // default swipe left/right
@@ -1793,7 +1908,26 @@ const server = http.createServer((req, res) => {
               markdown += `__Practice Question__\n\n${activity.question}\n\n`;
             }
 
-            if (activity.labels) {
+            if (/^sort into boxes$/i.test(activity.type) && Array.isArray(activity.categories)) {
+              markdown += `__Categories__\n\n`;
+              activity.categories.forEach(c => {
+                markdown += `- ${c}\n`;
+              });
+              markdown += '\n';
+              if (Array.isArray(activity.items)) {
+                markdown += `__Items__\n\n`;
+                activity.items.forEach(it => {
+                  // Escape backslashes and colons in the item text so a colon
+                  // here is never mistaken for the "text: category" separator
+                  // on parse. The category remainder may contain raw colons.
+                  const escapedText = String(it.text == null ? '' : it.text)
+                    .replace(/\\/g, '\\\\')
+                    .replace(/:/g, '\\:');
+                  markdown += `- ${escapedText}: ${it.correct}\n`;
+                });
+                markdown += '\n';
+              }
+            } else if (activity.labels) {
               markdown += `__Labels__\n\n`;
               if (/^sort into boxes$/i.test(activity.type)) {
                 markdown += `- First Box Label: ${activity.labels.first || activity.labels.left || 'First Box'}\n`;

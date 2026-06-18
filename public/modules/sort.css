@@ -1,0 +1,239 @@
+/* ===== CATEGORIZATION SORTING ACTIVITY STYLES ===== */
+
+:root {
+  --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Top);
+  --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-100);
+  --Colors-Learn-Practice-Interactive-Choice-Main-Label: var(--Colors-Base-Accent-Sky-Blue-900);
+  --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-200);
+  /* Empty drop zones / placeholder slots. Figma uses a semi-transparent
+     stroke (Main Stroke Empty) that reads as a faint dashed outline in both
+     themes, plus an elevated fill (Main Background Empty). The plain
+     --Colors-Stroke-Default token renders too bright in dark mode. */
+  --Colors-Learn-Practice-Interactive-Choice-Main-Stroke-Empty: rgba(103, 113, 142, 0.2);
+  --Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty: var(--Colors-Backgrounds-Main-Light);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Light);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-700);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Label: var(--Colors-Base-Neutral-00);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-600);
+    /* Elevate the empty fill above the page/card so slots stay visible. */
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty: var(--Colors-Backgrounds-Main-Medium);
+  }
+}
+
+/* Container */
+.categorization {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--UI-Spacing-spacing-xl, 32px);
+  background: var(--Colors-Backgrounds-Main-Default);
+  padding: var(--UI-Spacing-spacing-mxl, 24px);
+  min-height: calc(100vh - 120px);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Optional question prompt */
+.categorization-question {
+  width: 100%;
+  max-width: 880px;
+  text-align: center;
+}
+
+/* Category cards row */
+.categorization-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--UI-Spacing-spacing-ms, 16px);
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.categorization-category {
+  display: flex;
+  flex-direction: column;
+  background: var(--Colors-Learn-Practice-Card);
+  border-radius: var(--UI-Radius-radius-ml, 16px);
+  overflow: clip;
+  flex: 1 1 300px;
+  max-width: 460px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+/* Whole-card drop/click target highlight */
+.categorization-category.drag-over {
+  box-shadow: inset 0 0 0 2px var(--Colors-Primary-Default);
+}
+
+.categorization-category-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--UI-Spacing-spacing-mxl, 24px);
+  text-align: center;
+  color: var(--Colors-Learn-Practice-Interactive-Choice-Main-Label);
+}
+
+.categorization-category-head :is(p) {
+  margin: 0;
+}
+
+/* Drop zone */
+.categorization-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--UI-Spacing-spacing-ms, 16px);
+  margin: 0 var(--UI-Spacing-spacing-mxl, 24px) var(--UI-Spacing-spacing-mxl, 24px);
+  padding: var(--UI-Spacing-spacing-mxl, 24px);
+  border: 1.5px dashed var(--Colors-Learn-Practice-Interactive-Choice-Main-Stroke-Empty);
+  border-radius: var(--UI-Radius-radius-s, 8px);
+  min-height: 96px;
+  flex: 1;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.categorization-dropzone.empty::before {
+  content: "Drop items here";
+  color: var(--Colors-Text-Body-Lighter);
+  font-size: var(--Fonts-Body-Default-xxs, 13px);
+  align-self: center;
+  margin: auto;
+}
+
+.categorization-category.drag-over .categorization-dropzone {
+  border-color: var(--Colors-Primary-Default);
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty);
+}
+
+/* Item chips (shared by tray + placed) */
+.categorization-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--UI-Spacing-spacing-s, 8px);
+  padding: var(--UI-Spacing-spacing-ms, 16px) var(--UI-Spacing-spacing-xl, 32px);
+  border: none;
+  border-radius: var(--UI-Radius-radius-s, 8px);
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background);
+  color: var(--Colors-Learn-Practice-Interactive-Choice-Main-Label);
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.categorization-chip:hover {
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover);
+}
+
+.categorization-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--Colors-Box-Focus-Shadow);
+}
+
+.categorization-chip.active {
+  box-shadow: 0 0 0 2px var(--Colors-Primary-Default);
+}
+
+.categorization-chip.dragging {
+  opacity: 0.4;
+}
+
+.categorization-chip-label :is(p) {
+  margin: 0;
+}
+
+.categorization-chip-label {
+  display: inline-block;
+}
+
+/* Drag handle */
+.categorization-chip-handle {
+  display: inline-flex;
+  align-items: center;
+  color: var(--Colors-Learn-Practice-Interactive-Choice-Main-Label);
+  opacity: 0.55;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+/* Placed chips fill the width of the drop zone */
+.categorization-dropzone .categorization-chip.placed {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Misplaced chip after a /validate request */
+.categorization-chip.incorrect {
+  background: var(--Colors-Alert-Error-Light);
+  color: var(--Colors-Alert-Error-Dark);
+  box-shadow: inset 0 0 0 1.5px var(--Colors-Alert-Error-Default);
+}
+
+.categorization-chip.incorrect:hover {
+  background: var(--Colors-Alert-Error-Light);
+}
+
+.categorization-chip-status {
+  display: inline-flex;
+  align-items: center;
+  color: var(--Colors-Alert-Error-Default);
+  flex-shrink: 0;
+}
+
+/* Tray (pool of unplaced items) */
+.categorization-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--UI-Spacing-spacing-mxs, 12px);
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding-bottom: var(--UI-Spacing-spacing-mxl, 24px);
+}
+
+/* Empty placeholder slot left behind by a placed item */
+.categorization-slot.empty {
+  min-width: 120px;
+  min-height: 56px;
+  flex: 0 1 auto;
+  border: 1.5px dashed var(--Colors-Learn-Practice-Interactive-Choice-Main-Stroke-Empty);
+  border-radius: var(--UI-Radius-radius-s, 8px);
+  background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty);
+}
+
+/* Instructions */
+.categorization-instructions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--UI-Spacing-spacing-mxs, 12px);
+  color: var(--Colors-Text-Body-Light);
+}
+
+.categorization-instructions-icon {
+  display: inline-flex;
+  color: var(--Colors-Text-Body-Lighter);
+}
+
+.categorization-instructions-text {
+  color: var(--Colors-Text-Body-Light);
+  text-align: center;
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .categorization-category {
+    flex-basis: 100%;
+  }
+}
