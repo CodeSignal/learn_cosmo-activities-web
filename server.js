@@ -1178,12 +1178,30 @@ function buildActivityFromMarkdown(markdownText) {
       categories = categoriesRaw.map(c => c.trim()).filter(Boolean);
       items = itemEntries
         .map(entry => {
-          const sep = entry.lastIndexOf(':');
-          if (sep === -1) return { text: entry.trim(), correct: '' };
-          return {
-            text: entry.slice(0, sep).trim(),
-            correct: entry.slice(sep + 1).trim()
-          };
+          // Walk the text portion, unescaping "\\" and "\:", and stop at the
+          // first *unescaped* colon — that's the "text: category" separator.
+          // Everything after it is the category label, which may itself
+          // contain raw colons.
+          const s = String(entry);
+          let text = '';
+          let i = 0;
+          let sepFound = false;
+          for (; i < s.length; i++) {
+            const ch = s[i];
+            if (ch === '\\' && i + 1 < s.length) {
+              text += s[i + 1];
+              i++;
+              continue;
+            }
+            if (ch === ':') {
+              sepFound = true;
+              i++;
+              break;
+            }
+            text += ch;
+          }
+          const correct = sepFound ? s.slice(i) : '';
+          return { text: text.trim(), correct: correct.trim() };
         })
         .filter(it => it.text);
       // Make sure every category referenced by an item exists (preserve declared order first).
@@ -1899,7 +1917,13 @@ const server = http.createServer((req, res) => {
               if (Array.isArray(activity.items)) {
                 markdown += `__Items__\n\n`;
                 activity.items.forEach(it => {
-                  markdown += `- ${it.text}: ${it.correct}\n`;
+                  // Escape backslashes and colons in the item text so a colon
+                  // here is never mistaken for the "text: category" separator
+                  // on parse. The category remainder may contain raw colons.
+                  const escapedText = String(it.text == null ? '' : it.text)
+                    .replace(/\\/g, '\\\\')
+                    .replace(/:/g, '\\:');
+                  markdown += `- ${escapedText}: ${it.correct}\n`;
                 });
                 markdown += '\n';
               }
