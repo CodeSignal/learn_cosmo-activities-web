@@ -29,6 +29,30 @@ export function initMcq({
   const elMcq = document.getElementById('mcq');
   const elQuestions = document.getElementById('mcq-questions');
 
+  // Options carry two labels: `label` is the authored source letter (A/B/C/D tied to
+  // a specific answer text, used for grading and report/answer output) and
+  // `displayLabel` is the letter shown to the learner after shuffling. Older activity
+  // payloads (e.g. editor previews) may omit `displayLabel`, so fall back to `label`.
+  function labelForDisplay(option) {
+    return option.displayLabel || option.label;
+  }
+
+  // Translate persisted/graded source labels into the display labels the client tracks.
+  function sourceToDisplay(question, sourceLabels) {
+    return (sourceLabels || []).map(sl => {
+      const opt = question.options.find(o => o.label === sl);
+      return opt ? labelForDisplay(opt) : sl;
+    });
+  }
+
+  // Translate the display labels the client tracks back into authored source labels.
+  function displayToSource(question, displayLabels) {
+    return (displayLabels || []).map(dl => {
+      const opt = question.options.find(o => labelForDisplay(o) === dl);
+      return opt ? opt.label : dl;
+    });
+  }
+
   // Optional heading (shared pattern with Text Input)
   const hasHeading = mcq.heading && (mcq.heading.html || mcq.heading.markdown);
   if (hasHeading) {
@@ -56,9 +80,11 @@ export function initMcq({
   // Initialize selected answers from persisted answers if available
   mcq.questions.forEach(q => {
     if (persistedAnswers && persistedAnswers[q.id] !== undefined) {
-      selectedAnswers[q.id] = Array.isArray(persistedAnswers[q.id]) 
-        ? persistedAnswers[q.id] 
+      const raw = Array.isArray(persistedAnswers[q.id])
+        ? persistedAnswers[q.id]
         : [persistedAnswers[q.id]];
+      // Persisted answers are stored as source labels; track them as display labels.
+      selectedAnswers[q.id] = sourceToDisplay(q, raw);
     } else {
       selectedAnswers[q.id] = [];
     }
@@ -106,6 +132,7 @@ export function initMcq({
     
     // Create options
     question.options.forEach((option, optIdx) => {
+      const displayLabel = labelForDisplay(option);
       const optionEl = document.createElement('label');
       // Apply design system classes to the option label
       optionEl.className = question.isMultiSelect 
@@ -115,9 +142,9 @@ export function initMcq({
       const input = document.createElement('input');
       input.type = question.isMultiSelect ? 'checkbox' : 'radio';
       input.name = `question-${question.id}`;
-      input.value = option.label;
+      input.value = displayLabel;
       input.id = `q${question.id}-opt${optIdx}`;
-      input.setAttribute('aria-label', `Option ${option.label}: ${option.text}`);
+      input.setAttribute('aria-label', `Option ${displayLabel}: ${option.text}`);
       
       const optionText = document.createElement('div');
       optionText.className = 'mcq-option-text body-large markdown-content';
@@ -132,7 +159,7 @@ export function initMcq({
       
       const optionLabel = document.createElement('span');
       optionLabel.className = 'mcq-option-label';
-      optionLabel.textContent = option.label + '.';
+      optionLabel.textContent = displayLabel + '.';
       
       // Create option card structure matching Figma design
       const optionCard = document.createElement('div');
@@ -175,8 +202,8 @@ export function initMcq({
         optionCard.appendChild(textWrapper);
       }
       
-      // Apply persisted answers if available
-      if (selectedAnswers[question.id] && selectedAnswers[question.id].includes(option.label)) {
+      // Apply persisted answers if available (tracked as display labels)
+      if (selectedAnswers[question.id] && selectedAnswers[question.id].includes(displayLabel)) {
         input.checked = true;
       }
       
@@ -189,7 +216,7 @@ export function initMcq({
       input.addEventListener('change', () => {
         // Clear validation when user changes any value
         clearValidation();
-        updateSelection(question.id, option.label, input.checked);
+        updateSelection(question.id, displayLabel, input.checked);
         
         // For radio questions, scroll to the next question (no "focus" / de-emphasis UI)
         // Only if there are multiple questions AND explainAnswer is not enabled
@@ -383,7 +410,8 @@ export function initMcq({
     
     // Check each question and mark incorrect ones
     mcq.questions.forEach(q => {
-      const selected = selectedAnswers[q.id] || [];
+      // Compare in authored source-label space so highlighting matches server grading.
+      const selected = displayToSource(q, selectedAnswers[q.id] || []);
       const correct = q.options.filter(opt => opt.correct).map(opt => opt.label);
       
       let isCorrect = false;
@@ -413,7 +441,9 @@ export function initMcq({
   
   function updateResultsAndPost() {
     state.results = mcq.questions.map((q, idx) => {
-      const selected = selectedAnswers[q.id] || [];
+      // Persist/post answers as authored source labels so report.md, score.json,
+      // answer.md, and reload all stay in the original A/B/C/D space.
+      const selected = displayToSource(q, selectedAnswers[q.id] || []);
       const correct = q.options.filter(opt => opt.correct).map(opt => opt.label);
       
       let isCorrect = false;
