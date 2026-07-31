@@ -201,10 +201,16 @@
 
 }
 
+/* Visible focus indicator (WCAG 2.4.7). A solid primary-color outline stays
+   visible on both the white card (light) and dark card (dark), unlike the
+   near-invisible box-shadow token. We use :focus rather than :focus-visible
+   because arrow-key navigation moves focus programmatically, and browsers may
+   drop the :focus-visible heuristic on scripted focus — which would leave
+   keyboard users with no visible indicator. */
 .matching-selection-area:focus {
-  outline: none;
+  outline: 2px solid var(--Colors-Primary-Default);
+  outline-offset: 2px;
   border-color: var(--Colors-Learn-Practice-Selection-Area-Border-Active);
-  box-shadow: 0 0 0 4px var(--Colors-Box-Focus-Shadow);
 }
 
 /* Active card styling - when a card is active, highlight its selection area */
