@@ -201,10 +201,31 @@
 
 }
 
+/* Visible focus indicator (WCAG 2.4.7 / 2.4.11). We use a two-tone ring instead
+   of a single solid outline because no single color can clear 3:1 against every
+   surface this control lands on. The empty state sits on the dark card
+   (~#26314C, luminance ≈0.03) while the matched/hover states are light-ish blue
+   fills (~#00A1E9 / #0EB6F9, luminance ≈0.31–0.40): a color light enough for the
+   dark card fails against the light-blue fill and vice-versa.
+   So we stack two rings via box-shadow:
+     - inner dark ring hugs the control  -> ≥3:1 against the light matched/hover
+       fills (and the white card in light mode)
+     - outer light ring                  -> ≥3:1 against the dark card (dark mode)
+   At least one ring always clears 3:1 against the adjacent surface, and the two
+   rings contrast strongly with each other, so the indicator is visible on any
+   background in both themes. The transparent outline is a forced-colors /
+   Windows High Contrast fallback, where box-shadow is dropped but the outline is
+   promoted to a system color. We use :focus (not :focus-visible) because
+   arrow-key navigation moves focus programmatically, and browsers may drop the
+   :focus-visible heuristic on scripted focus — leaving keyboard users with no
+   visible indicator. */
 .matching-selection-area:focus {
-  outline: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px var(--Colors-Base-Neutral-1450),
+    0 0 0 4px var(--Colors-Base-Neutral-00);
   border-color: var(--Colors-Learn-Practice-Selection-Area-Border-Active);
-  box-shadow: 0 0 0 4px var(--Colors-Box-Focus-Shadow);
 }
 
 /* Active card styling - when a card is active, highlight its selection area */

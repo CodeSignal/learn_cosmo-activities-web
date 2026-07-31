@@ -78,13 +78,17 @@ export function initMatching({
     return usedCount < total;
   }
   
-  // Create action HTML for a card
+  // Create action HTML for a card.
+  // Controls default to tabindex="-1"; applyRovingTabindex() promotes only the
+  // active (centered) card's control to tabindex="0" so Tab order matches what
+  // is visible on screen.
   function createActionHtml(itemIndex) {
     const selected = selectedByItemIdx[itemIndex];
     if (selected) {
-      return `<div class="matching-selection-area matched button button-primary body-large" data-item-index="${itemIndex}">${selected}</div>`;
+      // Matched: the visible choice text is the accessible name (no aria-label override).
+      return `<div class="matching-selection-area matched button button-primary body-large" data-item-index="${itemIndex}" role="button" tabindex="-1">${selected}</div>`;
     } else {
-      return `<div class="matching-selection-area empty body-xxsmall" data-item-index="${itemIndex}">Best response</div>`;
+      return `<div class="matching-selection-area empty body-xxsmall" data-item-index="${itemIndex}" role="button" tabindex="-1" aria-label="Choose the best response for item ${itemIndex + 1}">Best response</div>`;
     }
   }
   
@@ -143,58 +147,61 @@ export function initMatching({
     
     horizontalCardsInstance = new HorizontalCards('#matching-cards-container', {
       cards: cardsData,
-      onCardChange: (index, card) => {
+      ariaLabel: 'Items to match',
+      onCardChange: (index) => {
         // Update active card index
         activeCardIndex = index;
         updateChoicesDisplay();
-        updateSelectionAreaListeners();
+        // Keep Tab order aligned with the visible (centered) card.
+        const activeEl = document.activeElement;
+        const focusOnCardControl = !!(activeEl &&
+          activeEl.classList &&
+          activeEl.classList.contains('matching-selection-area'));
+        applyRovingTabindex(index);
+        // Only follow the active card with focus when the user is navigating via
+        // the card controls themselves. If they're using the prev/next buttons,
+        // leave focus on the button (the carousel manages that focus) so it stays
+        // pressable. preventScroll avoids fighting the carousel's own centering.
+        if (focusOnCardControl) {
+          const area = elMatchingCardsContainer.querySelector(
+            `.matching-selection-area[data-item-index="${index}"]`
+          );
+          if (area) area.focus({ preventScroll: true });
+        }
       }
     });
     
-    // Add click handlers to selection areas after cards are created
-    setTimeout(() => {
-      updateSelectionAreaListeners();
-    }, 100);
+    // Only the centered card's control should be a Tab stop.
+    applyRovingTabindex(horizontalCardsInstance.getCurrentIndex());
   }
   
-  // Update selection area listeners
-  function updateSelectionAreaListeners() {
-    const selectionAreas = elMatchingCardsContainer.querySelectorAll('.matching-selection-area');
-    selectionAreas.forEach(area => {
-      // Remove existing listeners by cloning
-      const newArea = area.cloneNode(true);
-      area.parentNode.replaceChild(newArea, area);
-      
-      const itemIndex = parseInt(newArea.getAttribute('data-item-index'), 10);
-      
-      newArea.addEventListener('click', () => {
-        if (selectedByItemIdx[itemIndex]) {
-          // Clear selection
-          setSelection(itemIndex, '');
-        } else {
-          // Activate this card (scroll to it if needed, and set as active)
-          if (horizontalCardsInstance) {
-            const currentIndex = horizontalCardsInstance.getCurrentIndex();
-            if (currentIndex !== itemIndex) {
-              horizontalCardsInstance.scrollToIndex(itemIndex);
-            }
-          }
-          activeCardIndex = itemIndex;
-          updateChoicesDisplay();
+  // Activate a card's selection area: clear it if filled, otherwise mark the
+  // card active (and center it) so answer choices apply to it.
+  function activateSelectionArea(area) {
+    const itemIndex = parseInt(area.getAttribute('data-item-index'), 10);
+    if (Number.isNaN(itemIndex)) return;
+    if (selectedByItemIdx[itemIndex]) {
+      setSelection(itemIndex, '');
+    } else {
+      if (horizontalCardsInstance) {
+        const currentIndex = horizontalCardsInstance.getCurrentIndex();
+        if (currentIndex !== itemIndex) {
+          horizontalCardsInstance.scrollToIndex(itemIndex);
         }
-      });
-      
-      newArea.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          newArea.click();
-        }
-      });
-      
-      // Make focusable
-      newArea.setAttribute('tabindex', '0');
-      newArea.setAttribute('role', 'button');
-      newArea.setAttribute('aria-label', `Selection area for ${itemIndex + 1}`);
+      }
+      activeCardIndex = itemIndex;
+      updateChoicesDisplay();
+    }
+  }
+  
+  // Roving tabindex: exactly one selection area (the active/centered card) is
+  // reachable via Tab; the rest are removed from the Tab sequence but remain
+  // reachable via the carousel arrow keys / nav buttons.
+  function applyRovingTabindex(activeIndex) {
+    const areas = elMatchingCardsContainer.querySelectorAll('.matching-selection-area');
+    areas.forEach(area => {
+      const i = parseInt(area.getAttribute('data-item-index'), 10);
+      area.setAttribute('tabindex', i === activeIndex ? '0' : '-1');
     });
   }
   
@@ -275,12 +282,15 @@ export function initMatching({
         selectionArea.classList.remove('empty', 'body-xxsmall');
         // Add matched state classes (button styling)
         selectionArea.classList.add('matched', 'button', 'button-primary', 'body-large');
+        // Visible choice text is now the accessible name; drop the placeholder label.
+        selectionArea.removeAttribute('aria-label');
       } else {
         selectionArea.textContent = 'Best response';
         // Remove matched state classes
         selectionArea.classList.remove('matched', 'button', 'button-primary', 'body-large');
         // Add empty state classes
         selectionArea.classList.add('empty', 'body-xxsmall');
+        selectionArea.setAttribute('aria-label', `Choose the best response for item ${idx + 1}`);
       }
     }
     
@@ -331,6 +341,25 @@ export function initMatching({
     state.index = selectedByItemIdx.reduce((acc, v) => acc + (v ? 1 : 0), 0);
     postResults();
   }
+  
+  // Event delegation on the persistent container. Handlers are attached once and
+  // survive card rebuilds, so keyboard focus is never destroyed (the old approach
+  // cloned/replaced every selection area on each card change, which dropped focus
+  // to <body> and broke Tab/arrow navigation).
+  elMatchingCardsContainer.addEventListener('click', (e) => {
+    const area = e.target.closest('.matching-selection-area');
+    if (area && elMatchingCardsContainer.contains(area)) {
+      activateSelectionArea(area);
+    }
+  });
+  elMatchingCardsContainer.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const area = e.target.closest('.matching-selection-area');
+    if (area && elMatchingCardsContainer.contains(area)) {
+      e.preventDefault();
+      activateSelectionArea(area);
+    }
+  });
   
   // Initial render
   initializeCards();
