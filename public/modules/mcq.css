@@ -166,15 +166,26 @@
   border-color: var(--Colors-Primary-Default);
 }
 
-.mcq-option.input-checkbox input[type="checkbox"]:focus ~ .mcq-option-card .input-checkbox-box,
-.mcq-option.input-radio input[type="radio"]:focus ~ .mcq-option-card .input-radio-circle {
-  outline: none;
-  border-color: var(--Colors-Input-Border-Focus);
-}
-
-.mcq-option.input-checkbox input[type="checkbox"]:checked:focus ~ .mcq-option-card .input-checkbox-box,
-.mcq-option.input-radio input[type="radio"]:checked:focus ~ .mcq-option-card .input-radio-circle {
-  border-color: var(--Colors-Primary-Default);
+/* Visible keyboard focus indicator (WCAG 2.4.7 / 2.4.11).
+   The native <input> is visually hidden, and the old indicator only tinted the
+   small circle's border — which the checked state repaints to Primary, so a
+   focused *checked* radio showed no change at all. Since a radio group tabs to
+   the checked option after a selection, focus became invisible "apart from the
+   first time". We instead ring the whole option card so the indicator can't be
+   overridden by checked/hover state, and reuse the two-tone ring from
+   matching.css: no single color clears 3:1 against both the light card fill and
+   the dark page surface, so we stack an inner dark ring (≥3:1 vs the light card)
+   and an outer light ring (≥3:1 vs the dark surface). The transparent outline is
+   the forced-colors / Windows High Contrast fallback, where box-shadow is
+   dropped but the outline is promoted to a system color. :focus-visible keeps the
+   ring for keyboard users while suppressing it on mouse clicks (native radios
+   navigate via the browser, so the heuristic is reliable here). */
+.mcq-option:has(input:focus-visible) {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px var(--Colors-Base-Neutral-1450),
+    0 0 0 4px var(--Colors-Base-Neutral-00);
 }
 
 /* Ensure checkbox/radio elements are properly sized and positioned */
