@@ -695,6 +695,13 @@ function buildActivityFromMarkdown(markdownText) {
         currentQuestion.options = seededShuffle(currentQuestion.options, seed);
       }
 
+      // Assign a display label (A, B, C, ...) by final display position so screen
+      // readers announce options in order even after shuffling. `label` stays the
+      // authored source letter used for grading and report/answer output.
+      currentQuestion.options.forEach((opt, i) => {
+        opt.displayLabel = String.fromCharCode(65 + i);
+      });
+
       // Add to questions array
       questions.push(currentQuestion);
     }
@@ -1795,13 +1802,18 @@ const server = http.createServer((req, res) => {
                 if (q.name && String(q.name).trim()) {
                   markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;
                 }
+                // List options in authored source order (A, B, C, ...) rather than
+                // shuffled display order, so the persisted question mirrors question.md.
+                const orderedOptions = q.options.slice().sort((a, b) =>
+                  String(a.label || '').localeCompare(String(b.label || ''))
+                );
                 markdown += `__Practice Question__\n\n${q.text}\n\n`;
-                q.options.forEach(opt => {
+                orderedOptions.forEach(opt => {
                   markdown += `${opt.label}. ${opt.text}\n`;
                 });
                 markdown += '\n';
                 markdown += `__Suggested Answers__\n\n`;
-                q.options.forEach(opt => {
+                orderedOptions.forEach(opt => {
                   const correctMarker = opt.correct ? ' - Correct' : '';
                   markdown += `- ${opt.label}${correctMarker}\n`;
                 });
