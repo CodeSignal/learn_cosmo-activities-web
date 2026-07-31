@@ -8,7 +8,7 @@
   --Colors-Learn-Practice-Selection-Area-Border-Active: var(--Colors-Primary-Default);
   --Colors-Learn-Practice-Selection-Area-Border-Matched: var(--Colors-Stroke-Default);
   --Colors-Learn-Practice-Selection-Area-Background: var(--Colors-Backgrounds-Main-Top);
-  --Colors-Learn-Practice-Selection-Area-Placeholder: var(--Colors-Text-Body-Lighter);
+  --Colors-Learn-Practice-Selection-Area-Placeholder: var(--Colors-Text-Body-Light);
   --Colors-Learn-Practice-Choice-Background-Used: var(--Colors-Backgrounds-Main-Light);
   --Colors-Learn-Practice-Choice-Label-Used: var(--Colors-Text-Body-Light);
   --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-100);
@@ -24,7 +24,7 @@
     --Colors-Learn-Practice-Selection-Area-Border-Active: var(--Colors-Primary-Default);
     --Colors-Learn-Practice-Selection-Area-Border-Matched: var(--Colors-Stroke-Default);
     --Colors-Learn-Practice-Selection-Area-Background: var(--Colors-Backgrounds-Main-Light);
-    --Colors-Learn-Practice-Selection-Area-Placeholder: var(--Colors-Text-Body-Light);
+    --Colors-Learn-Practice-Selection-Area-Placeholder: var(--Colors-Text-Body-Default);
     --Colors-Learn-Practice-Choice-Background-Used: var(--Colors-Backgrounds-Main-Medium);
     --Colors-Learn-Practice-Choice-Label-Used: var(--Colors-Text-Body-Medium);
     --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-700);
@@ -173,7 +173,7 @@
 
 .matching-selection-area.empty {
   /* Uses .body-xxsmall class from design system */
-  color: var(--Colors-Text-Body-Lighter);
+  color: var(--Colors-Learn-Practice-Selection-Area-Placeholder);
   background: transparent;
 }
 
