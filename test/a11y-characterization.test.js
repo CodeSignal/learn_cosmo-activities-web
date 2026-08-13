@@ -17,13 +17,14 @@ function sliceFn(src, name) {
   return src.slice(start, end);
 }
 
-test('A1 characterization: #activity-container is a polite live region', () => {
-  // Wave 1 A1 removes aria-live from this node and should flip this assertion.
+test('A1: #activity-container is not a live region', () => {
   const html = read('public/index.html');
-  assert.match(
-    html,
-    /id="activity-container"[^>]*aria-live="polite"/,
-    'activity-container currently dumps the whole activity to a live region (audit A1)'
+  const open = html.match(/<div id="activity-container"[^>]*>/);
+  assert.ok(open, 'activity-container exists');
+  assert.doesNotMatch(
+    open[0],
+    /(?:^|\s)aria-live(?:\s*=|[\s/>])/i,
+    'activity-container must not dump the whole activity to a live region (audit A1)'
   );
 });
 

@@ -2,7 +2,7 @@
 
 **Audit:** [audit.md](./audit.md) (approved)  
 **Standard:** WCAG 2.2 AA  
-**Status:** Plan only. No issues filed. No product code. Waiting on “go” to execute.
+**Status:** Wave 0 on `main` (PR #20). Wave 1 executing. Product calls P1–P7 use the recommended defaults.
 
 In scope: **A1–A11, D1–D2**. Out of this plan: A12–A20, D3 (Phase 4 after these are on `main`).
 
@@ -243,22 +243,22 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 | Audit | Issue | Wave | PR | Status |
 | --- | --- | --- | --- | --- |
-| Wave 0 CI | | 0 | | In this branch |
-| A1 | | 1 | | Open |
-| A4 | | 1 (bundle Sort) | | Open |
-| A5 | | 1 (bundle Sort) | | Open |
-| A6 | | 1 (bundle Sort) | | Open |
-| A3 | | 1 | | Open |
-| A9 | | 1 | | Open |
-| A11 | | 1 | | Open |
-| D2 | (DS repo) | 1 ∥ | | Open |
-| D1 | (DS repo) | 1 ∥ / 3 | | Open |
-| DS bump D2 | | after D2 | | Blocked |
-| DS bump D1 | | after D1 | | Blocked |
-| A2 | | 2 | | Open |
-| A10 | | 2 | | Open |
-| A7 | | 3 | | Open |
-| A8 | | 3 | | Open |
+| Wave 0 CI | #21 | 0 | #20 | Closed (PR #20) |
+| A1 | #22 | 1 | | Open |
+| A4 | #23 | 1 (bundle Sort) | | Open |
+| A5 | #24 | 1 (bundle Sort) | | Open |
+| A6 | #25 | 1 (bundle Sort) | | Open |
+| A3 | #26 | 1 | | Open |
+| A9 | #27 | 1 | | Open |
+| A11 | #28 | 1 | | Open |
+| D2 | [DS #28](https://github.com/CodeSignal/learn_bespoke-design-system/issues/28) | 1 ∥ | | Open |
+| D1 | [DS #29](https://github.com/CodeSignal/learn_bespoke-design-system/issues/29) | 1 ∥ / 3 | | Open |
+| DS bump D2 | #29 | after D2 | | Blocked |
+| DS bump D1 | #30 | after D1 | | Blocked |
+| A2 | #31 | 2 | | Open |
+| A10 | #32 | 2 | | Open |
+| A7 | #33 | 3 | | Open |
+| A8 | #34 | 3 | | Open |
 
 ---
 
@@ -273,4 +273,4 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 ## Next step
 
-Confirm product calls **P1–P7** (or say “use the recommendations”). Then say **go** and the next actions are: create labels + milestone, file issues from this map, land Wave 0, then Wave 1.
+P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). Wave 1 starts at A1 (`fix/a11y-live-region`, #22).
