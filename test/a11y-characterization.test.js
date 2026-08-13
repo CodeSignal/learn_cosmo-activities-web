@@ -23,7 +23,7 @@ test('A1: #activity-container is not a live region', () => {
   assert.ok(open, 'activity-container exists');
   assert.doesNotMatch(
     open[0],
-    /aria-live/,
+    /(?:^|\s)aria-live(?:\s*=|[\s/>])/i,
     'activity-container must not dump the whole activity to a live region (audit A1)'
   );
 });
