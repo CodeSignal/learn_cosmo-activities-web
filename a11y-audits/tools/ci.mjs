@@ -44,6 +44,20 @@ const CI_SCENARIOS = [
       await page.locator('.categorization-chip').first().click();
     }
   },
+  {
+    id: 'sort-chip-placed',
+    example: 'sort-into-boxes.md',
+    setup: async (page) => {
+      // Prefer a tray chip. Enter on an already-placed chip returns it to the tray
+      // (and a prior CI state may have persisted that placement).
+      const placed = page.locator('.categorization-chip.placed');
+      if ((await placed.count()) === 0) {
+        await page.locator('.categorization-tray .categorization-chip').first().click();
+        await page.locator('.categorization-category-head').first().click();
+      }
+      await placed.first().waitFor({ state: 'visible', timeout: 5000 });
+    }
+  },
   { id: 'mcq-unanswered', example: 'mcq.md', setup: async () => {} },
   { id: 'matrix-unanswered', example: 'matrix.md', setup: async () => {} },
   { id: 'text-unanswered', example: 'text-input-simple.md', setup: async () => {} },

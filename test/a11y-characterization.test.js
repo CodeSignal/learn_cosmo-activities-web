@@ -51,3 +51,25 @@ test('A3 characterization: updateBlankDisplays does not clear aria-label', () =>
     'filled blanks still keep aria-label="blank N" (audit A3)'
   );
 });
+
+test('A9 characterization: side-content iframe is created without a title', () => {
+  // Wave 1 A9 should set title (or aria-label) before appending the iframe.
+  const src = read('public/utils/activity-content-shell.js');
+  const start = src.indexOf("document.createElement('iframe')");
+  const end = src.indexOf('leftPanel.appendChild(iframe)', start);
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+  const create = src.slice(start, end);
+  assert.match(create, /activity-content-iframe/);
+  assert.doesNotMatch(create, /\.title\s*=/);
+  assert.doesNotMatch(create, /setAttribute\(\s*['"]title['"]/);
+  assert.doesNotMatch(create, /setAttribute\(\s*['"]aria-label['"]/);
+});
+
+test('A11 characterization: Matching choices are buttons with role=option in a listbox', () => {
+  // Wave 1 A11 drops listbox/option on native buttons.
+  const src = read('public/modules/matching.js');
+  assert.match(src, /role="listbox"/);
+  assert.match(src, /createElement\('button'\)/);
+  assert.match(src, /setAttribute\(\s*'role',\s*'option'\s*\)/);
+});

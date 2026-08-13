@@ -88,7 +88,7 @@ Axe CI must **not** run all 69 audit states (~7 min). Run a **floor set**, both 
 | --- | --- |
 | `fib-simple.md` | unanswered; dropdown open |
 | `matching.md` | empty |
-| `sort-into-boxes.md` | tray; one chip selected |
+| `sort-into-boxes.md` | tray; one chip selected; one chip placed |
 | `mcq.md` | unanswered |
 | `matrix.md` | unanswered |
 | `text-input-simple.md` | unanswered |
@@ -101,7 +101,7 @@ Reuse `a11y-audits/tools` (keep Playwright out of the app `package.json` unless 
 ### Wave 0 DoD
 
 - PR checks run on every pull request (`.github/workflows/pr.yml`: `unit` + `axe`)
-- `npm test` green, including `test/a11y-characterization.test.js` (A1, A3, A5, A6 current contracts)
+- `npm test` green, including `test/a11y-characterization.test.js` (A1, A3, A5, A6, A9, A11 current contracts)
 - Axe baseline committed (`a11y-audits/tools/axe-baseline.json`); CI is shrink-only (`npm run a11y:ci`)
 - Characterization tests exist for the A1 path (and Sort/FIB if cheap)
 
