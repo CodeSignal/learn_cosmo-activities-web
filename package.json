@@ -4,6 +4,7 @@
   "main": "server.js",
   "scripts": {
     "test": "node --test \"test/**/*.test.js\"",
+    "a11y:ci": "npm --prefix a11y-audits/tools run a11y:ci",
     "start": "node server.js",
     "examples": "SIM_ORIGIN=http://127.0.0.1:8080 concurrently --kill-others \"node sim-server.js\" \"node server.js --examples\"",
     "dev:reload": "concurrently \"node server.js\" \"browser-sync start --proxy http://localhost:3000 --files '**/*.css, **/*.html, **/*.js, data/question.md' --ignore node_modules\""

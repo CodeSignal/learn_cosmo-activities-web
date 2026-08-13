@@ -100,9 +100,9 @@ Reuse `a11y-audits/tools` (keep Playwright out of the app `package.json` unless 
 
 ### Wave 0 DoD
 
-- PR checks run on every pull request
-- `npm test` green
-- Axe baseline committed; CI is shrink-only
+- PR checks run on every pull request (`.github/workflows/pr.yml`: `unit` + `axe`)
+- `npm test` green, including `test/a11y-characterization.test.js` (A1, A3, A5, A6 current contracts)
+- Axe baseline committed (`a11y-audits/tools/axe-baseline.json`); CI is shrink-only (`npm run a11y:ci`)
 - Characterization tests exist for the A1 path (and Sort/FIB if cheap)
 
 ---
@@ -243,7 +243,7 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 | Audit | Issue | Wave | PR | Status |
 | --- | --- | --- | --- | --- |
-| Wave 0 CI | | 0 | | Open |
+| Wave 0 CI | | 0 | | In this branch |
 | A1 | | 1 | | Open |
 | A4 | | 1 (bundle Sort) | | Open |
 | A5 | | 1 (bundle Sort) | | Open |

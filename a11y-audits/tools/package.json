@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "audit": "node scan.mjs",
+    "a11y:ci": "node ci.mjs",
+    "a11y:ci:write-baseline": "WRITE_BASELINE=1 node ci.mjs",
     "postinstall": "playwright install chromium"
   },
   "devDependencies": {
