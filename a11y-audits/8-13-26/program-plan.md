@@ -26,8 +26,8 @@ How we will run the ChatCPT (`learn_cosmo-chat`) process on this repo, adapted f
 | How to start (examples / audit driver) | `npm run examples` → `http://localhost:3000` (picker) and activity iframe at `/play` |
 | Themes | **System only.** `prefers-color-scheme` + `<meta name="color-scheme" content="light dark">`. No in-app toggle. Playwright must emulate `colorScheme: 'light' \| 'dark'`. |
 | i18n / `lang` | `<html lang="en">`. No i18n runtime. User-facing strings (including `aria-label`) are hardcoded English in JS. |
-| Existing tests | `npm test` → Node’s built-in test runner on `test/**/*.test.js` (scoring / report / validation). **No browser, axe, or DOM tests today.** |
-| Existing CI | `.github/workflows/build-release.yaml` runs on **release only**. **No pull-request CI.** |
+| Existing tests | **Pre-Wave 0:** `npm test` → Node’s built-in test runner on `test/**/*.test.js` (scoring / report / validation). **No browser, axe, or DOM tests today.** |
+| Existing CI | **Pre-Wave 0:** `.github/workflows/build-release.yaml` runs on **release only**. **No pull-request CI.** |
 | DS tests / CI | Design system already has Playwright + `@axe-core/playwright`, including token contrast and component a11y specs, on PR. |
 
 ### Learner activity types (in scope)
@@ -150,7 +150,7 @@ Viewport for screenshots: 1280×800. Spot-check one tall activity at 375×667 fo
 
 Keep tooling **out of the app build**, same as ChatCPT:
 
-```
+```text
 a11y-audits/
   8-13-26/
     program-plan.md      ← this file

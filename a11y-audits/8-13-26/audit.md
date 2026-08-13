@@ -58,13 +58,13 @@ Axe is a floor. Several findings below (live region, FIB keyboard, focus surviva
 | A9 | serious | Side-content `<iframe>` has no `title` / `aria-label` | 4.1.2, 2.4.1 | both |
 | A10 | serious | Validate errors are visual only (icon/color); not `aria-invalid`, not named, not a status message | 3.3.1, 4.1.3, 1.3.3 | both |
 | A11 | serious | Matching choices are `<button role="option">` in a `role="listbox"` | 4.1.2 | both |
-| A12 | moderate | No `h1`; most activities have no headings at all | 1.3.1, 2.4.6 | both |
+| A12 | moderate | Most activities have no headings; one `h1` per activity is product guidance | 1.3.1, 2.4.6 | both |
 | A13 | moderate | Toolbar sits outside `<main>` with no `nav` / complementary landmark | 1.3.1, 2.4.1 | both |
 | A14 | moderate | Sort copy omits the keyboard path that already exists | 2.5.7, 3.3.2 | both |
 | A15 | moderate | Text Input builds a Next button but never mounts it | 2.4.3 | both |
 | A16 | moderate | Scroll indicator is visible and not `aria-hidden` | 1.1.1, 4.1.2 | both |
 | A17 | moderate | Matrix table uses `role="grid"` without a grid keyboard model | 4.1.2 | both |
-| A18 | moderate | MCQ `fieldset` has no `legend`; option `aria-label` duplicates visible text | 1.3.1, 2.5.3 | both |
+| A18 | moderate | MCQ `fieldset` has no accessible name; option `aria-label` may mismatch the visible label | 1.3.1, 2.5.3 | both |
 | A19 | moderate | KaTeX roots are `aria-hidden`; math has no accessible alternative | 1.1.1 | both |
 | A20 | minor | FIB blanks and toolbar tools have no designed `:focus-visible` (UA outline only) | 2.4.7, 2.4.11 | both |
 
@@ -264,9 +264,9 @@ Axe did not flag these (often skips cross-origin / excluded iframes). Still 4.1.
 
 **Evidence:** `shell-no-side` headings `[{ tag: 'h2', text: 'Fill in the blanks' }]`. `mcq-unanswered` / `matrix-unanswered` headings `[]`.
 
-**Impact:** AT heading-rotor is empty or starts at level 2. Moderate 1.3.1 / 2.4.6.
+**Impact:** AT heading-rotor is empty or starts at level 2. Activities with no headings at all (MCQ, Matrix, Text input, Matching, Sort) fail 1.3.1 / 2.4.6. A missing `h1` by itself is not a WCAG failure.
 
-**Direction:** One `h1` per activity (visible or visually hidden) from the activity type or practice question. Do not skip to `h2`.
+**Direction:** Restore a heading structure where the rotor is empty. One `h1` per activity (visible or visually hidden) from the activity type or practice question, and do not skip to `h2`, is **product guidance**, not a conformance acceptance criterion.
 
 ---
 
@@ -336,9 +336,9 @@ Axe did not flag these (often skips cross-origin / excluded iframes). Still 4.1.
 
 **Evidence:** DOM review; axe did not flag. Multi-question legend is a `div.mcq-legend`, not associated with the fieldset.
 
-**Impact:** Duplicate accessible names; fieldset unnamed. Moderate 1.3.1 / 2.5.3.
+**Impact:** The fieldset has no accessible name. Option `aria-label` may create a 2.5.3 label-in-name mismatch with the visible letter + text. Moderate 1.3.1 / 2.5.3.
 
-**Direction:** `legend` = question text (or visually hidden). Drop redundant `aria-label` if the visible label is enough.
+**Direction:** Associate the question text with the fieldset via `legend` (or a visually hidden legend). Remove or align `aria-label` only if testing confirms the visible-label mismatch.
 
 ---
 
@@ -427,7 +427,7 @@ Sequence by dependency (AT first), not only severity.
 
 | Phase | IDs | Why first |
 | --- | --- | --- |
-| **0** | — | Characterization tests around `#activity-container` + one widget (FIB or Sort). PR CI: `npm test` + shrink-only axe baseline. This repo has **no PR CI** today. |
+| **0** | — | Characterization tests around `#activity-container` + one widget (FIB or Sort). PR CI: `npm test` + shrink-only axe baseline. **Pre-Wave 0:** this repo had **no PR CI**. |
 | **1 — AT / structure** | A1, A5, A6, A2 (ARIA), A3, A11, A9, A17, D2 (name) | Restore roles and names before restyling. |
 | **2 — Keyboard** | A2 (keys/Escape), A4, A15 | FIB menu and Sort focus survival. |
 | **3 — Contrast / target** | A7, A8, D1, D2 (24px), D3 | Dark choice tokens; faded cards; splitter. |
@@ -435,7 +435,7 @@ Sequence by dependency (AT first), not only severity.
 
 DS items (D1–D3) can proceed in parallel in `learn_bespoke-design-system`, then a **submodule bump PR** here.
 
-Do **not** implement until you approve a resolution plan for **critical + serious** (A1–A11, A5, D1–D2). Moderate/minor wait for Phase 4 of the program.
+Do **not** implement until you approve a resolution plan for **critical + serious** (A1–A11, D1–D2). Moderate/minor wait for Phase 4 of the program.
 
 ---
 

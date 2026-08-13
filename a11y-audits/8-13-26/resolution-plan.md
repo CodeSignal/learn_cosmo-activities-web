@@ -109,7 +109,7 @@ Reuse `a11y-audits/tools` (keep Playwright out of the app `package.json` unless 
 
 ## Waves 1–3 — sequence by dependency
 
-```
+```text
 Wave 0 ──► Wave 1 (AT / names) ──► Wave 2 (keyboard / errors) ──► Wave 3 (contrast / target)
                 │
                 └── DS D1 & D2 in parallel after Wave 0

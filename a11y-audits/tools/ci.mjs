@@ -82,7 +82,7 @@ function tally(records) {
       continue;
     }
     for (const v of rec.axe.violations) {
-      const n = v.nodes.length;
+      const n = v.nodeCount;
       byRule[v.id] = (byRule[v.id] || 0) + n;
       byState[stateKey][v.id] = n;
     }

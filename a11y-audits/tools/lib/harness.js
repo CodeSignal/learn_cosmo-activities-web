@@ -84,12 +84,14 @@ export async function runAxe(page) {
       tags: v.tags,
       help: v.help,
       helpUrl: v.helpUrl,
+      nodeCount: v.nodes.length,
       nodes: slim(v.nodes)
     })),
     incomplete: results.incomplete.map((v) => ({
       id: v.id,
       impact: v.impact,
       help: v.help,
+      nodeCount: v.nodes.length,
       nodes: slim(v.nodes)
     })),
     passes: results.passes.length

@@ -4,10 +4,22 @@
  */
 
 export function runPageChecks() {
+  const effectiveOpacity = (el) => {
+    let o = 1;
+    let n = el;
+    while (n && n !== document.documentElement) {
+      const op = getComputedStyle(n).opacity;
+      o *= op === '' ? 1 : Number(op);
+      n = n.parentElement;
+    }
+    return o;
+  };
+
   const isVisible = (el) => {
     if (!el || !(el instanceof Element)) return false;
+    if (effectiveOpacity(el) === 0) return false;
     const style = getComputedStyle(el);
-    if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+    if (style.display === 'none' || style.visibility === 'hidden') {
       return false;
     }
     const rect = el.getBoundingClientRect();
@@ -46,17 +58,6 @@ export function runPageChecks() {
     const hi = Math.max(l1, l2);
     const lo = Math.min(l1, l2);
     return (hi + 0.05) / (lo + 0.05);
-  };
-
-  const effectiveOpacity = (el) => {
-    let o = 1;
-    let n = el;
-    while (n && n !== document.documentElement) {
-      const op = getComputedStyle(n).opacity;
-      o *= op === '' ? 1 : Number(op);
-      n = n.parentElement;
-    }
-    return o;
   };
 
   const effectiveBackground = (el) => {
