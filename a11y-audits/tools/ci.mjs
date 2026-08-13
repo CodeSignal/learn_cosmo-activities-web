@@ -146,7 +146,7 @@ async function main() {
     }
   } finally {
     await browser.close();
-    stopServer();
+    await stopServer();
   }
 
   const errors = records.filter((r) => r.error);
@@ -165,7 +165,7 @@ async function main() {
     await writeFile(BASELINE_PATH, JSON.stringify(current, null, 2) + '\n');
     console.log('\nWrote', BASELINE_PATH);
     console.log('byRule', current.byRule);
-    return;
+    process.exit(0);
   }
 
   let baseline;
@@ -184,6 +184,7 @@ async function main() {
     process.exit(1);
   }
   console.log('\nAxe baseline OK', current.byRule);
+  process.exit(0);
 }
 
 main().catch((err) => {

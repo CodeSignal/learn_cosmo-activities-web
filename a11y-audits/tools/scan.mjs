@@ -295,7 +295,7 @@ async function main() {
     }
   } finally {
     await browser.close();
-    stopServer();
+    await stopServer();
   }
 
   const report = {

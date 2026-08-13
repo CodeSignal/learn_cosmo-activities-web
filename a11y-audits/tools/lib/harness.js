@@ -25,12 +25,54 @@ async function waitForServer(timeoutMs = 30000) {
   throw new Error(`Examples server did not respond at ${BASE}`);
 }
 
+function killProcessTree(child) {
+  if (!child.pid) return;
+  try {
+    // SIGTERM on the npm pid does not always reach concurrently's grandchildren
+    // (Linux CI). Kill the process group we created with detached: true.
+    process.kill(-child.pid, 'SIGTERM');
+  } catch {
+    try {
+      child.kill('SIGTERM');
+    } catch {
+      /* already gone */
+    }
+  }
+}
+
+async function waitForExit(child, timeoutMs) {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  await Promise.race([
+    new Promise((resolve) => child.once('exit', resolve)),
+    sleep(timeoutMs)
+  ]);
+}
+
+async function stopChild(child) {
+  killProcessTree(child);
+  await waitForExit(child, 4000);
+  if (child.exitCode === null && child.signalCode === null) {
+    try {
+      process.kill(-child.pid, 'SIGKILL');
+    } catch {
+      try {
+        child.kill('SIGKILL');
+      } catch {
+        /* already gone */
+      }
+    }
+    await waitForExit(child, 2000);
+  }
+  child.stdout?.destroy();
+  child.stderr?.destroy();
+}
+
 export async function ensureServer() {
   try {
     const res = await fetch(`${BASE}/api/examples/list`);
     if (res.ok) {
       console.log('Reusing existing examples server at', BASE);
-      return () => {};
+      return async () => {};
     }
   } catch {
     /* start our own */
@@ -39,14 +81,13 @@ export async function ensureServer() {
   const child = spawn('npm', ['run', 'examples'], {
     cwd: REPO_ROOT,
     env: { ...process.env, SIM_ORIGIN: process.env.SIM_ORIGIN || 'http://127.0.0.1:8080' },
-    stdio: 'pipe'
+    stdio: 'pipe',
+    detached: true
   });
   child.stdout.on('data', (d) => process.stdout.write(`[server] ${d}`));
   child.stderr.on('data', (d) => process.stderr.write(`[server] ${d}`));
   await waitForServer();
-  return () => {
-    child.kill('SIGTERM');
-  };
+  return () => stopChild(child);
 }
 
 export async function selectExample(filename) {
