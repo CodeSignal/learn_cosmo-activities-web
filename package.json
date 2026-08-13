@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "node --test \"test/**/*.test.js\"",
+    "test": "node --test test/*.test.js",
     "a11y:ci": "npm --prefix a11y-audits/tools run a11y:ci",
     "start": "node server.js",
     "examples": "SIM_ORIGIN=http://127.0.0.1:8080 concurrently --kill-others \"node sim-server.js\" \"node server.js --examples\"",
