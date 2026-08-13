@@ -1,0 +1,13 @@
+{
+  "name": "cosmo-activities-a11y-audit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "audit": "node scan.mjs",
+    "postinstall": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "playwright": "^1.55.0"
+  }
+}
