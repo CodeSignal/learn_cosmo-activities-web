@@ -152,13 +152,17 @@
   background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover);
 }
 
-.categorization-chip:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 4px var(--Colors-Box-Focus-Shadow);
-}
-
 .categorization-chip.active {
   box-shadow: 0 0 0 2px var(--Colors-Primary-Default);
+}
+
+/* Same two-tone ring as matching.css: the grey box token disappears on the chip fill. */
+.categorization-chip:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px var(--Colors-Base-Neutral-1450),
+    0 0 0 4px var(--Colors-Base-Neutral-00);
 }
 
 .categorization-chip.dragging {
@@ -198,6 +202,13 @@
 
 .categorization-chip.incorrect:hover {
   background: var(--Colors-Alert-Error-Light);
+}
+
+.categorization-chip.incorrect:focus-visible {
+  box-shadow:
+    inset 0 0 0 1.5px var(--Colors-Alert-Error-Default),
+    0 0 0 2px var(--Colors-Base-Neutral-1450),
+    0 0 0 4px var(--Colors-Base-Neutral-00);
 }
 
 .categorization-chip-status {
