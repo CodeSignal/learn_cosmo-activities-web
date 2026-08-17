@@ -94,8 +94,7 @@ test('A3: filled blank accessible name is the chosen value', () => {
   );
 });
 
-test('A9 characterization: side-content iframe is created and sourced without a title', () => {
-  // Wave 1 A9 should set title (or aria-label) on the iframe.
+test('A9: side-content iframe has a title from content type', () => {
   const src = read('public/utils/activity-content-shell.js');
   const start = src.indexOf("document.createElement('iframe')");
   const end = src.indexOf('const cleanup', start);
@@ -105,9 +104,16 @@ test('A9 characterization: side-content iframe is created and sourced without a 
   assert.match(block, /activity-content-iframe/);
   assert.match(block, /leftPanel\.appendChild\(iframe\)/);
   assert.match(block, /iframe\.src\s*=/);
-  assert.doesNotMatch(block, /\.title\s*=/);
-  assert.doesNotMatch(block, /setAttribute\(\s*['"]title['"]/);
-  assert.doesNotMatch(block, /setAttribute\(\s*['"]aria-label['"]/);
+  assert.match(
+    block,
+    /iframe\.title\s*=[\s\S]*\? ['"]Simulation['"] : ['"]Reference['"]/,
+    'markdown and external URLs are Reference; /sim/ is Simulation'
+  );
+  assert.match(
+    block,
+    /startsWith\(\s*['"]\/sim\//,
+    '/sim/ content is titled Simulation'
+  );
 });
 
 test('A11 characterization: Matching choices are buttons with role=option in a listbox', () => {
