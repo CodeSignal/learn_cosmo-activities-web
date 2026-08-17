@@ -71,21 +71,26 @@ test('A4: render restores focus via data-item-index after rebuild', () => {
   assert.match(src, /next\.focus\(\)/);
 });
 
-test('A3 characterization: filled blank accessible name stays "blank N"', () => {
+test('A3: filled blank accessible name is the chosen value', () => {
   const server = read('server.js');
   assert.match(
     server,
     /aria-label="blank \$\{currentIndex \+ 1\}"/,
-    'server stamps aria-label="blank N" on each blank span'
+    'server stamps aria-label="blank N" on each empty blank span'
   );
 
   const src = read('public/modules/fib.js');
   const fn = sliceFn(src, 'updateBlankDisplays');
   assert.match(fn, /blank\.textContent\s*=\s*value/);
-  assert.doesNotMatch(
+  assert.match(
     fn,
-    /aria-label/,
-    'updateBlankDisplays never updates the accessible name when filling a blank'
+    /if\s*\(\s*value\s*\)[\s\S]*removeAttribute\(\s*['"]aria-label['"]\)/,
+    'filled blanks drop aria-label so the visible value is the accessible name'
+  );
+  assert.match(
+    fn,
+    /setAttribute\(\s*['"]aria-label['"],\s*`blank \$\{i \+ 1\}`/,
+    'empty blanks restore the placeholder name'
   );
 });
 
