@@ -245,9 +245,9 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | --- | --- | --- | --- | --- |
 | Wave 0 CI | #21 | 0 | #20 | Closed (PR #20) |
 | A1 | #22 | 1 | #35 | Closed (PR #35) |
-| A4 | #23 | 1 (bundle Sort) | | Open |
-| A5 | #24 | 1 (bundle Sort) | | Open |
-| A6 | #25 | 1 (bundle Sort) | | Open |
+| A4 | #23 | 1 (bundle Sort) | #36 | Closed (PR #36) |
+| A5 | #24 | 1 (bundle Sort) | #36 | Closed (PR #36) |
+| A6 | #25 | 1 (bundle Sort) | #36 | Closed (PR #36) |
 | A3 | #26 | 1 | | Open |
 | A9 | #27 | 1 | | Open |
 | A11 | #28 | 1 | | Open |
@@ -273,4 +273,4 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 ## Next step
 
-P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Wave 1 continues with the Sort bundle (`fix/a11y-sort-widget`, #23 #24 #25).
+P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). Wave 1 continues with A3 (`fix/a11y-fib-blank-name`, #26).
