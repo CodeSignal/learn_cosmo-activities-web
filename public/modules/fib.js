@@ -120,6 +120,12 @@ export function initFib({
       const value = selectedByBlankIdx[i];
       blank.textContent = value || '';
       blank.classList.toggle('empty', !value);
+      if (value) {
+        // Visible choice text is the accessible name; drop the placeholder label.
+        blank.removeAttribute('aria-label');
+      } else {
+        blank.setAttribute('aria-label', `blank ${i + 1}`);
+      }
     });
   }
 
