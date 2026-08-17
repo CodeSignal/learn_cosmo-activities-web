@@ -248,7 +248,7 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | A4 | #23 | 1 (bundle Sort) | #36 | Closed (PR #36) |
 | A5 | #24 | 1 (bundle Sort) | #36 | Closed (PR #36) |
 | A6 | #25 | 1 (bundle Sort) | #36 | Closed (PR #36) |
-| A3 | #26 | 1 | | Open |
+| A3 | #26 | 1 | #37 | Closed (PR #37) |
 | A9 | #27 | 1 | | Open |
 | A11 | #28 | 1 | | Open |
 | D2 | [DS #28](https://github.com/CodeSignal/learn_bespoke-design-system/issues/28) | 1 ∥ | | Open |
@@ -273,4 +273,4 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 ## Next step
 
-P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). Wave 1 continues with A3 (`fix/a11y-fib-blank-name`, #26).
+P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). A3 is on `main` (PR #37). Wave 1 continues with A9 (`fix/a11y-iframe-title`, #27).
