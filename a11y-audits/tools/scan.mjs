@@ -127,7 +127,7 @@ const SCENARIOS = [
   scenario('sort-keyboard-place', 'sort-into-boxes.md', async (page) => {
     await page.locator('.categorization-chip').first().focus();
     await page.keyboard.press('Enter');
-    await page.locator('.categorization-category').first().focus();
+    await page.locator('.categorization-category-head').first().focus();
     await page.keyboard.press('Enter');
     await sleep(200);
   }),

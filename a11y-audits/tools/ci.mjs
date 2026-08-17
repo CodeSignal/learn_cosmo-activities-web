@@ -48,14 +48,15 @@ const CI_SCENARIOS = [
     id: 'sort-chip-placed',
     example: 'sort-into-boxes.md',
     setup: async (page) => {
-      // Prefer a tray chip. Enter on an already-placed chip returns it to the tray
-      // (and a prior CI state may have persisted that placement).
-      const placed = page.locator('.categorization-chip.placed');
-      if ((await placed.count()) === 0) {
-        await page.locator('.categorization-tray .categorization-chip').first().click();
-        await page.locator('.categorization-category-head').first().click();
+      // Always select-then-place so A4 can assert focus survived render().
+      // A prior CI state may have persisted placements into data/.
+      const trayChip = page.locator('.categorization-tray .categorization-chip').first();
+      if ((await trayChip.count()) === 0) {
+        await page.locator('.categorization-chip.placed').first().click();
       }
-      await placed.first().waitFor({ state: 'visible', timeout: 5000 });
+      await page.locator('.categorization-tray .categorization-chip').first().click();
+      await page.locator('.categorization-category-head').first().click();
+      await page.locator('.categorization-chip.placed').first().waitFor({ state: 'visible', timeout: 5000 });
     }
   },
   { id: 'mcq-unanswered', example: 'mcq.md', setup: async () => {} },
@@ -134,6 +135,12 @@ async function main() {
           await selectExample(spec.example);
           await openPlay(page);
           await spec.setup(page);
+          if (spec.id === 'sort-chip-selected' || spec.id === 'sort-chip-placed') {
+            const tag = await page.evaluate(() => document.activeElement?.tagName);
+            if (!tag || tag === 'BODY' || tag === 'HTML') {
+              throw new Error(`${spec.id}: focus landed on ${tag || 'null'} after select/place`);
+            }
+          }
           rec.axe = await runAxe(page);
           console.log(`violations=${rec.axe.violations.length}`);
         } catch (err) {

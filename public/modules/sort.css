@@ -80,6 +80,17 @@
   padding: var(--UI-Spacing-spacing-mxl, 24px);
   text-align: center;
   color: var(--Colors-Learn-Practice-Interactive-Choice-Main-Label);
+  border: none;
+  background: transparent;
+  width: 100%;
+  font: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.categorization-category-head:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--Colors-Box-Focus-Shadow);
 }
 
 .categorization-category-head :is(p) {
@@ -200,6 +211,10 @@
   justify-content: center;
   width: 100%;
   padding-bottom: var(--UI-Spacing-spacing-mxl, 24px);
+}
+
+.categorization-tray-item {
+  display: inline-flex;
 }
 
 /* Empty placeholder slot left behind by a placed item */

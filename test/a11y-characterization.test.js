@@ -34,8 +34,7 @@ test('A1 characterization: learner document has lang and a main landmark', () =>
   assert.match(html, /<main class="main">/);
 });
 
-test('A5 characterization: the same tray chip is a button with role=listitem and aria-pressed', () => {
-  // Wave 1 Sort widget PR must not leave role=listitem on the same node as aria-pressed.
+test('A5: tray chip is a button with aria-pressed; listitem stays on a wrapper', () => {
   const src = read('public/modules/sort.js');
   const makeChip = sliceFn(src, 'makeChip');
   assert.match(makeChip, /document\.createElement\('button'\)/);
@@ -43,20 +42,33 @@ test('A5 characterization: the same tray chip is a button with role=listitem and
     makeChip,
     /if\s*\(\s*!placed\s*&&\s*activeItemIndex\s*===\s*itemIndex\s*\)[\s\S]*setAttribute\(\s*'aria-pressed',\s*'true'\s*\)/
   );
+  assert.doesNotMatch(makeChip, /setAttribute\(\s*'role',\s*'listitem'\s*\)/);
 
   const tray = sliceFn(src, 'renderTray');
-  assert.match(
+  assert.doesNotMatch(
     tray,
-    /const chip = makeChip\(idx,\s*\{\s*placed:\s*false\s*\}\);\s*chip\.setAttribute\(\s*'role',\s*'listitem'\s*\)/
+    /chip\.setAttribute\(\s*'role',\s*'listitem'\s*\)/
   );
+  assert.match(tray, /setAttribute\(\s*'role',\s*'listitem'\s*\)/);
+  assert.match(tray, /item\.appendChild\(chip\)/);
 });
 
-test('A6 characterization: category role=button cards nest placed chip buttons', () => {
+test('A6: category cards are labeled groups, not role=button wrappers around chips', () => {
   const src = read('public/modules/sort.js');
   const cats = sliceFn(src, 'renderCategories');
-  assert.match(cats, /card\.setAttribute\(\s*'role',\s*'button'\s*\)/);
+  assert.doesNotMatch(cats, /card\.setAttribute\(\s*'role',\s*'button'\s*\)/);
+  assert.match(cats, /card\.setAttribute\(\s*'role',\s*'group'\s*\)/);
   assert.match(cats, /zone\.appendChild\(makeChip\(idx,\s*\{\s*placed:\s*true\s*\}\)\)/);
   assert.match(cats, /card\.appendChild\(zone\)/);
+  assert.match(cats, /head = document\.createElement\('button'\)/);
+});
+
+test('A4: render restores focus via data-item-index after rebuild', () => {
+  const src = read('public/modules/sort.js');
+  assert.match(src, /function render\(\) \{\s*const target = captureFocus\(\);/);
+  assert.match(src, /function restoreFocus\(/);
+  assert.match(src, /dataset\.itemIndex/);
+  assert.match(src, /next\.focus\(\)/);
 });
 
 test('A3 characterization: filled blank accessible name stays "blank N"', () => {

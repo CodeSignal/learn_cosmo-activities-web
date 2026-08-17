@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-13T14:59:07.869Z",
+  "generatedAt": "2026-08-13T19:40:38.426Z",
   "tags": [
     "wcag2a",
     "wcag2aa",
@@ -9,9 +9,7 @@
   ],
   "byRule": {
     "aria-input-field-name": 2,
-    "color-contrast": 25,
-    "aria-allowed-attr": 2,
-    "nested-interactive": 2
+    "color-contrast": 25
   },
   "byState": {
     "fib-unanswered/light": {},
@@ -35,20 +33,16 @@
       "color-contrast": 4
     },
     "sort-chip-selected/light": {
-      "aria-allowed-attr": 1,
       "color-contrast": 2
     },
     "sort-chip-selected/dark": {
-      "aria-allowed-attr": 1,
       "color-contrast": 4
     },
     "sort-chip-placed/light": {
-      "color-contrast": 1,
-      "nested-interactive": 1
+      "color-contrast": 1
     },
     "sort-chip-placed/dark": {
-      "color-contrast": 4,
-      "nested-interactive": 1
+      "color-contrast": 4
     },
     "mcq-unanswered/light": {},
     "mcq-unanswered/dark": {},

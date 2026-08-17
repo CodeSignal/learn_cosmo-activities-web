@@ -180,12 +180,14 @@ export function initSort({
     categories.forEach((label, categoryIdx) => {
       const card = document.createElement('div');
       card.className = 'categorization-category';
-      card.setAttribute('tabindex', '0');
-      card.setAttribute('role', 'button');
-      card.setAttribute('aria-label', `Place selected item in ${label}`);
+      card.dataset.categoryIndex = String(categoryIdx);
+      card.setAttribute('role', 'group');
+      card.setAttribute('aria-label', label);
 
-      const head = document.createElement('div');
+      const head = document.createElement('button');
+      head.type = 'button';
       head.className = 'categorization-category-head heading-small';
+      head.setAttribute('aria-label', `Place selected item in ${label}`);
       const labelHtml = activity.categoriesHtml && activity.categoriesHtml[categoryIdx];
       if (labelHtml) {
         head.innerHTML = labelHtml;
@@ -197,8 +199,6 @@ export function initSort({
       const zone = document.createElement('div');
       zone.className = 'categorization-dropzone';
       zone.dataset.category = label;
-      zone.setAttribute('role', 'group');
-      zone.setAttribute('aria-label', `${label} category`);
 
       const placedIndexes = items
         .map((_, idx) => idx)
@@ -214,22 +214,10 @@ export function initSort({
 
       // The whole card is a click/drop target, not just the chip area — this
       // gives a much larger surface to hit, especially for click-to-place.
+      // The head button is the keyboard placement control (Enter/Space).
       card.addEventListener('click', (e) => {
         if (e.target.closest('.categorization-chip')) return;
         if (activeItemIndex !== null) {
-          setPlacement(activeItemIndex, label);
-          activeItemIndex = null;
-          render();
-        }
-      });
-      // Keyboard users select a chip, then press Enter or Space on a category
-      // card to place it — mirroring the click handler above. ARIA buttons
-      // should respond to both keys.
-      card.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter' && e.key !== ' ') return;
-        if (e.target.closest('.categorization-chip')) return;
-        if (activeItemIndex !== null) {
-          e.preventDefault();
           setPlacement(activeItemIndex, label);
           activeItemIndex = null;
           render();
@@ -253,18 +241,49 @@ export function initSort({
         slot.setAttribute('aria-hidden', 'true');
         elTray.appendChild(slot);
       } else {
+        const item = document.createElement('div');
+        item.className = 'categorization-tray-item';
+        item.setAttribute('role', 'listitem');
         const chip = makeChip(idx, { placed: false });
-        chip.setAttribute('role', 'listitem');
-        elTray.appendChild(chip);
+        item.appendChild(chip);
+        elTray.appendChild(item);
       }
     });
     // The tray is also a drop target for returning items.
     elTray.classList.toggle('has-active', activeItemIndex !== null);
   }
 
+  function captureFocus() {
+    const el = document.activeElement;
+    if (!el || !elContainer.contains(el)) return null;
+    if (el.dataset.itemIndex != null && el.dataset.itemIndex !== '') {
+      return { kind: 'item', index: el.dataset.itemIndex };
+    }
+    const card = el.closest('.categorization-category');
+    if (card && card.dataset.categoryIndex != null) {
+      return { kind: 'category', index: card.dataset.categoryIndex };
+    }
+    return null;
+  }
+
+  function restoreFocus(target) {
+    if (!target) return;
+    let next = null;
+    if (target.kind === 'item') {
+      next = elContainer.querySelector(`[data-item-index="${target.index}"]`);
+    } else if (target.kind === 'category') {
+      next = elContainer.querySelector(
+        `.categorization-category[data-category-index="${target.index}"] .categorization-category-head`
+      );
+    }
+    if (next) next.focus();
+  }
+
   function render() {
+    const target = captureFocus();
     renderCategories();
     renderTray();
+    restoreFocus(target);
   }
 
   function setPlacement(itemIndex, category) {
