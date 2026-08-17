@@ -89,7 +89,7 @@ test('A3: filled blank accessible name is the chosen value', () => {
   );
   assert.match(
     fn,
-    /setAttribute\(\s*['"]aria-label['"],\s*`blank \$\{/,
+    /setAttribute\(\s*['"]aria-label['"],\s*`blank \$\{i \+ 1\}`/,
     'empty blanks restore the placeholder name'
   );
 });
