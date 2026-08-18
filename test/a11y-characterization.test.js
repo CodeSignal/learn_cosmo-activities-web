@@ -116,10 +116,12 @@ test('A9: side-content iframe has a title from content type', () => {
   );
 });
 
-test('A11 characterization: Matching choices are buttons with role=option in a listbox', () => {
-  // Wave 1 A11 drops listbox/option on native buttons.
+test('A11: Matching choices are a labeled group of buttons', () => {
   const src = read('public/modules/matching.js');
-  assert.match(src, /role="listbox"/);
+  assert.doesNotMatch(src, /role="listbox"/);
+  assert.doesNotMatch(src, /setAttribute\(\s*'role',\s*'option'\s*\)/);
+  assert.match(src, /id="matching-choices"[^>]*role="group"/);
+  assert.match(src, /aria-label="Answer choices"/);
   assert.match(src, /createElement\('button'\)/);
-  assert.match(src, /setAttribute\(\s*'role',\s*'option'\s*\)/);
+  assert.match(src, /choiceButton\.disabled\s*=\s*true/);
 });
