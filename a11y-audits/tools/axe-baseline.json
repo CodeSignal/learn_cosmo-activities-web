@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-13T19:40:38.426Z",
+  "generatedAt": "2026-08-19T20:48:34.865Z",
   "tags": [
     "wcag2a",
     "wcag2aa",
@@ -8,18 +8,13 @@
     "wcag22aa"
   ],
   "byRule": {
-    "aria-input-field-name": 2,
     "color-contrast": 25
   },
   "byState": {
     "fib-unanswered/light": {},
     "fib-unanswered/dark": {},
-    "fib-dropdown-open/light": {
-      "aria-input-field-name": 1
-    },
-    "fib-dropdown-open/dark": {
-      "aria-input-field-name": 1
-    },
+    "fib-dropdown-open/light": {},
+    "fib-dropdown-open/dark": {},
     "matching-empty/light": {
       "color-contrast": 2
     },
