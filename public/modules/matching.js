@@ -22,7 +22,7 @@ export function initMatching({
   elContainer.innerHTML = `
     <div id="matching" class="matching">
       <div id="matching-cards-container" class="matching-cards-container"></div>
-      <div id="matching-choices" class="matching-choices" role="listbox" aria-label="Answer choices"></div>
+      <div id="matching-choices" class="matching-choices" role="group" aria-label="Answer choices"></div>
     </div>
   `;
   
@@ -212,7 +212,6 @@ export function initMatching({
       const choiceButton = document.createElement('button');
       choiceButton.className = 'matching-choice-button button button-primary body-large';
       choiceButton.textContent = choice;
-      choiceButton.setAttribute('role', 'option');
       choiceButton.setAttribute('aria-label', `Select ${choice}`);
       
       // Check if this choice is available
