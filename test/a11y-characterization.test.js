@@ -71,6 +71,27 @@ test('A4: render restores focus via data-item-index after rebuild', () => {
   assert.match(src, /next\.focus\(\)/);
 });
 
+test('A2: FIB listbox is named and keyboard-operable', () => {
+  const src = read('public/modules/fib.js');
+  const open = sliceFn(src, 'openMenuForBlank');
+  const close = sliceFn(src, 'closeMenu');
+  const keys = sliceFn(src, 'handleMenuKeydown');
+
+  assert.match(open, /setAttribute\(\s*['"]role['"],\s*['"]listbox['"]\)/);
+  assert.match(open, /setAttribute\(\s*['"]aria-labelledby['"]/);
+  assert.match(open, /setAttribute\(\s*['"]aria-controls['"]/);
+  assert.match(open, /createElement\('div'\)/);
+  assert.doesNotMatch(open, /createElement\('button'\)/);
+  assert.match(open, /setAttribute\(\s*['"]role['"],\s*['"]option['"]\)/);
+  assert.match(close, /removeAttribute\(\s*['"]aria-controls['"]\)/);
+
+  assert.match(keys, /ArrowDown/);
+  assert.match(keys, /ArrowUp/);
+  assert.match(keys, /['"]Enter['"]/);
+  assert.match(keys, /Escape/);
+  assert.match(keys, /Tab/);
+});
+
 test('A3: filled blank accessible name is the chosen value', () => {
   const server = read('server.js');
   assert.match(

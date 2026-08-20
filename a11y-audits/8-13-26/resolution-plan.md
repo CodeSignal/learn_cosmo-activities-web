@@ -250,7 +250,7 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | A6 | #25 | 1 (bundle Sort) | #36 | Closed (PR #36) |
 | A3 | #26 | 1 | #37 | Closed (PR #37) |
 | A9 | #27 | 1 | #38 | Closed (PR #38) |
-| A11 | #28 | 1 | | Open |
+| A11 | #28 | 1 | #39 | Closed (PR #39) |
 | D2 | [DS #28](https://github.com/CodeSignal/learn_bespoke-design-system/issues/28) | 1 ∥ | | Open |
 | D1 | [DS #29](https://github.com/CodeSignal/learn_bespoke-design-system/issues/29) | 1 ∥ / 3 | | Open |
 | DS bump D2 | #29 | after D2 | | Blocked |
@@ -273,4 +273,4 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 ## Next step
 
-P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). A3 is on `main` (PR #37). A9 is on `main` (PR #38). Wave 1 continues with A11 (`fix/a11y-matching-listbox`, #28).
+P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). A3 is on `main` (PR #37). A9 is on `main` (PR #38). A11 is on `main` (PR #39). Wave 2 starts with A2 (`fix/a11y-fib-listbox`, #31), then A10 (#32).

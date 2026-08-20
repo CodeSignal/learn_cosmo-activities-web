@@ -81,6 +81,7 @@ export function initFib({
   // Prepare blanks to be clickable triggers
   blanks.forEach((blank) => {
     const idx = parseInt(blank.getAttribute('data-blank') || '0', 10);
+    if (!blank.id) blank.id = `fib-blank-${idx}`;
     blank.setAttribute('role', 'button');
     blank.setAttribute('aria-haspopup', 'listbox');
     blank.setAttribute('aria-expanded', 'false');
@@ -94,6 +95,10 @@ export function initFib({
       openMenuForBlank(blank, idx);
     });
     blank.addEventListener('keydown', (e) => {
+      if (openDropdown && openDropdown.blank === blank) {
+        handleMenuKeydown(e);
+        return;
+      }
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         if (selectedByBlankIdx[idx]) {
@@ -140,11 +145,46 @@ export function initFib({
     const { container, blank } = openDropdown;
     if (container && container.parentNode) container.parentNode.removeChild(container);
     blank.setAttribute('aria-expanded', 'false');
+    blank.removeAttribute('aria-controls');
     blank.classList.remove('dropdown-open');
     document.removeEventListener('mousedown', handleOutside);
     window.removeEventListener('resize', closeMenu);
     window.removeEventListener('scroll', handleOutsideScroll, true);
     openDropdown = null;
+  }
+
+  function dismissMenu() {
+    const blank = openDropdown?.blank;
+    closeMenu();
+    if (blank && blank.isConnected) blank.focus();
+  }
+
+  function handleMenuKeydown(e) {
+    if (!openDropdown) return;
+    const items = Array.from(openDropdown.container.querySelectorAll('.fib-option'));
+    const currentIndex = items.findIndex((item) => item === document.activeElement);
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (items.length === 0) return;
+      const nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+      items[nextIndex].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (items.length === 0) return;
+      const prevIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+      items[prevIndex].focus();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (currentIndex < 0) return;
+      const blank = openDropdown.blank;
+      setSelection(openDropdown.idx, items[currentIndex].textContent);
+      closeMenu();
+      if (blank.isConnected) blank.focus();
+    } else if (e.key === 'Escape' || e.key === 'Tab') {
+      e.preventDefault();
+      dismissMenu();
+    }
   }
 
   function handleOutside(e) {
@@ -191,8 +231,10 @@ export function initFib({
     });
     
     const menu = document.createElement('div');
+    menu.id = 'fib-listbox';
     menu.className = 'fib-dropdown';
     menu.setAttribute('role', 'listbox');
+    menu.setAttribute('aria-labelledby', blank.id);
     menu.style.position = 'absolute';
     menu.style.minWidth = Math.max(rect.width, 220) + 'px';
 
@@ -208,6 +250,7 @@ export function initFib({
       const opt = document.createElement('div');
       opt.className = 'fib-option';
       opt.setAttribute('role', 'option');
+      opt.tabIndex = -1;
       opt.textContent = choice;
       
       if (choice === current) {
@@ -218,6 +261,7 @@ export function initFib({
         e.preventDefault();
         setSelection(idx, choice);
         closeMenu();
+        if (blank.isConnected) blank.focus();
       });
       menu.appendChild(opt);
     });
@@ -242,7 +286,13 @@ export function initFib({
     }
 
     blank.setAttribute('aria-expanded', 'true');
+    blank.setAttribute('aria-controls', menu.id);
     openDropdown = { container: menu, blank, idx };
+
+    menu.addEventListener('keydown', handleMenuKeydown);
+    const options = menu.querySelectorAll('.fib-option');
+    const initial = menu.querySelector('.fib-option.selected') || options[0];
+    if (initial) initial.focus();
     
     // Add mouse event listeners to maintain hover state
     menu.addEventListener('mouseenter', handleDropdownMouseEnter);

@@ -228,6 +228,11 @@
   font-weight: 500;
 }
 
+.fib-option:focus {
+  outline: 2px solid var(--Colors-Primary-Medium);
+  outline-offset: -2px;
+}
+
 .fib-option-hover-measure {
   font-weight: 500;
 }
