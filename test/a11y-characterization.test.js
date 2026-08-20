@@ -17,6 +17,63 @@ function sliceFn(src, name) {
   return src.slice(start, end);
 }
 
+// Same WCAG relative-luminance / contrast math as a11y-audits/tools/lib/page-checks.js.
+function hexToRgb(hex) {
+  const n = hex.replace('#', '');
+  return [0, 2, 4].map((i) => parseInt(n.slice(i, i + 2), 16));
+}
+
+function relLum(rgb) {
+  const f = (c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+}
+
+function contrastRatio(a, b) {
+  const l1 = relLum(a);
+  const l2 = relLum(b);
+  const hi = Math.max(l1, l2);
+  const lo = Math.min(l1, l2);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+function baseColorHex() {
+  const css = read('public/design-system/colors/colors.css');
+  const map = {};
+  const re = /(--Colors-Base-[A-Za-z0-9-]+):\s*(#[0-9A-Fa-f]{6})\b/g;
+  let m;
+  while ((m = re.exec(css))) map[m[1]] = m[2];
+  return map;
+}
+
+function darkChoiceAliases(css) {
+  const dark = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
+  const alias = (prop) => {
+    const m = dark.match(new RegExp(`${prop}:\\s*var\\((--Colors-Base-[A-Za-z0-9-]+)\\)`));
+    assert.ok(m, `dark ${prop} must alias a --Colors-Base-* token`);
+    return m[1];
+  };
+  return {
+    fg: alias('--Colors-Learn-Practice-Interactive-Choice-Main-Label'),
+    bg: alias('--Colors-Learn-Practice-Interactive-Choice-Main-Background'),
+    hover: alias('--Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover')
+  };
+}
+
+function assertChoiceContrast(file, hex, aliases, which, token) {
+  const fg = hex[aliases.fg];
+  const bg = hex[token];
+  assert.ok(fg, `${file}: unresolved ${aliases.fg}`);
+  assert.ok(bg, `${file}: unresolved ${token}`);
+  const ratio = contrastRatio(hexToRgb(fg), hexToRgb(bg));
+  assert.ok(
+    ratio + 0.01 >= 4.5,
+    `${file} dark ${which} ${aliases.fg} (${fg}) on ${token} (${bg}) is ${ratio.toFixed(2)}:1, need 4.5:1`
+  );
+}
+
 test('A1: #activity-container is not a live region', () => {
   const html = read('public/index.html');
   const open = html.match(/<div id="activity-container"[^>]*>/);
@@ -176,29 +233,11 @@ test('A11: Matching choices are a labeled group of buttons', () => {
   assert.match(src, /choiceButton\.disabled\s*=\s*true/);
 });
 
-test('A7: dark choice tokens use a 4.5:1 sky-blue pair', () => {
+test('A7: dark choice default and hover contrast are at least 4.5:1', () => {
+  const hex = baseColorHex();
   for (const file of ['public/modules/matching.css', 'public/modules/sort.css']) {
-    const src = read(file);
-    const dark = src.slice(src.indexOf('@media (prefers-color-scheme: dark)'));
-    assert.match(
-      dark,
-      /--Colors-Learn-Practice-Interactive-Choice-Main-Background:\s*var\(--Colors-Base-Accent-Sky-Blue-900\)/,
-      `${file} dark background is Sky-Blue-900 (white text is 5.7:1)`
-    );
-    assert.match(
-      dark,
-      /--Colors-Learn-Practice-Interactive-Choice-Main-Label:\s*var\(--Colors-Base-Neutral-00\)/,
-      `${file} dark label stays Neutral-00`
-    );
-    assert.match(
-      dark,
-      /--Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover:\s*var\(--Colors-Base-Accent-Sky-Blue-1000\)/,
-      `${file} dark hover is Sky-Blue-1000 (white text is 8.5:1)`
-    );
-    assert.doesNotMatch(
-      dark,
-      /Interactive-Choice-Main-Background:\s*var\(--Colors-Base-Accent-Sky-Blue-700\)/,
-      `${file} must not keep the failing Sky-Blue-700 fill`
-    );
+    const aliases = darkChoiceAliases(read(file));
+    assertChoiceContrast(file, hex, aliases, 'fill', aliases.bg);
+    assertChoiceContrast(file, hex, aliases, 'hover', aliases.hover);
   }
 });
