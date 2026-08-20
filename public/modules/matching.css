@@ -27,9 +27,9 @@
     --Colors-Learn-Practice-Selection-Area-Placeholder: var(--Colors-Text-Body-Default);
     --Colors-Learn-Practice-Choice-Background-Used: var(--Colors-Backgrounds-Main-Medium);
     --Colors-Learn-Practice-Choice-Label-Used: var(--Colors-Text-Body-Medium);
-    --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-700);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-900);
     --Colors-Learn-Practice-Interactive-Choice-Main-Label: var(--Colors-Base-Neutral-00);
-    --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-600);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-1000);
   }
 }
 

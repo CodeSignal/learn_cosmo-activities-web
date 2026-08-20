@@ -175,3 +175,30 @@ test('A11: Matching choices are a labeled group of buttons', () => {
   assert.match(src, /createElement\('button'\)/);
   assert.match(src, /choiceButton\.disabled\s*=\s*true/);
 });
+
+test('A7: dark choice tokens use a 4.5:1 sky-blue pair', () => {
+  for (const file of ['public/modules/matching.css', 'public/modules/sort.css']) {
+    const src = read(file);
+    const dark = src.slice(src.indexOf('@media (prefers-color-scheme: dark)'));
+    assert.match(
+      dark,
+      /--Colors-Learn-Practice-Interactive-Choice-Main-Background:\s*var\(--Colors-Base-Accent-Sky-Blue-900\)/,
+      `${file} dark background is Sky-Blue-900 (white text is 5.7:1)`
+    );
+    assert.match(
+      dark,
+      /--Colors-Learn-Practice-Interactive-Choice-Main-Label:\s*var\(--Colors-Base-Neutral-00\)/,
+      `${file} dark label stays Neutral-00`
+    );
+    assert.match(
+      dark,
+      /--Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover:\s*var\(--Colors-Base-Accent-Sky-Blue-1000\)/,
+      `${file} dark hover is Sky-Blue-1000 (white text is 8.5:1)`
+    );
+    assert.doesNotMatch(
+      dark,
+      /Interactive-Choice-Main-Background:\s*var\(--Colors-Base-Accent-Sky-Blue-700\)/,
+      `${file} must not keep the failing Sky-Blue-700 fill`
+    );
+  }
+});

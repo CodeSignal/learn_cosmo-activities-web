@@ -16,9 +16,9 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --Colors-Learn-Practice-Card: var(--Colors-Backgrounds-Main-Light);
-    --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-700);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background: var(--Colors-Base-Accent-Sky-Blue-900);
     --Colors-Learn-Practice-Interactive-Choice-Main-Label: var(--Colors-Base-Neutral-00);
-    --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-600);
+    --Colors-Learn-Practice-Interactive-Choice-Main-Background-Hover: var(--Colors-Base-Accent-Sky-Blue-1000);
     /* Elevate the empty fill above the page/card so slots stay visible. */
     --Colors-Learn-Practice-Interactive-Choice-Main-Background-Empty: var(--Colors-Backgrounds-Main-Medium);
   }
