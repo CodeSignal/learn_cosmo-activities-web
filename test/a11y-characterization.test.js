@@ -92,6 +92,35 @@ test('A2: FIB listbox is named and keyboard-operable', () => {
   assert.match(keys, /Tab/);
 });
 
+test('A10: validate errors are named, invalid, and announced', () => {
+  const html = read('public/index.html');
+  assert.match(html, /id="activity-status"[^>]*role="status"/);
+  assert.doesNotMatch(
+    html,
+    /id="activity-container"[^>]*aria-live/i,
+    'status lives on #activity-status, not #activity-container'
+  );
+
+  const util = read('public/utils/validate-status.js');
+  assert.match(util, /This answer is incorrect\./);
+  assert.match(util, /function setValidateStatus/);
+  assert.match(util, /setAttribute\(\s*['"]aria-invalid['"],\s*['"]true['"]\)/);
+
+  for (const file of ['mcq.js', 'text-input.js', 'matrix.js', 'sort.js']) {
+    const src = read(`public/modules/${file}`);
+    assert.match(src, /setValidateStatus/, `${file} updates the status region`);
+  }
+
+  const mcqIcon = sliceFn(read('public/modules/mcq.js'), 'addErrorIcon');
+  assert.match(mcqIcon, /aria-hidden/);
+  const textIcon = sliceFn(read('public/modules/text-input.js'), 'addErrorIcon');
+  assert.match(textIcon, /aria-hidden/);
+
+  const sortChip = sliceFn(read('public/modules/sort.js'), 'makeChip');
+  assert.match(sortChip, /setControlInvalid\(chip,\s*['"]sort-validate-error['"]\)/);
+  assert.match(read('public/modules/sort.js'), /INCORRECT_ANSWER_TEXT/);
+});
+
 test('A3: filled blank accessible name is the chosen value', () => {
   const server = read('server.js');
   assert.match(

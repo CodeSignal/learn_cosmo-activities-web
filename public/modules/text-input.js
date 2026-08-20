@@ -1,5 +1,12 @@
 import toolbar from '../components/toolbar.js';
 import { renderMath } from '../utils/katex-render.js';
+import {
+  clearControlInvalid,
+  ensureErrorText,
+  removeErrorText,
+  setControlInvalid,
+  setValidateStatus
+} from '../utils/validate-status.js';
 
 export function initTextInput({
   activity,
@@ -593,6 +600,7 @@ export function initTextInput({
     
     const errorIcon = document.createElement('div');
     errorIcon.className = 'text-input-question-error-icon';
+    errorIcon.setAttribute('aria-hidden', 'true');
     errorIcon.innerHTML = `
       <svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
         <rect x="5" y="2" width="2" height="5" rx="1" fill="white"/>
@@ -609,6 +617,22 @@ export function initTextInput({
     }
   }
   
+  function markQuestionIncorrect(questionEl, questionId, incorrect) {
+    const errorId = `text-input-error-${questionId}`;
+    const input = document.getElementById(`q${questionId}-input`);
+    if (incorrect) {
+      questionEl.classList.add('text-input-question-incorrect');
+      addErrorIcon(questionEl);
+      ensureErrorText(questionEl, errorId);
+      if (input) setControlInvalid(input, errorId);
+    } else {
+      questionEl.classList.remove('text-input-question-incorrect');
+      removeErrorIcon(questionEl);
+      removeErrorText(errorId);
+      if (input) clearControlInvalid(input);
+    }
+  }
+
   function clearValidation() {
     if (!isValidating) return;
     
@@ -616,32 +640,25 @@ export function initTextInput({
     // Remove validation classes from all questions
     textInput.questions.forEach(q => {
       const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
-      if (questionEl) {
-        questionEl.classList.remove('text-input-question-incorrect');
-        removeErrorIcon(questionEl);
-      }
+      if (questionEl) markQuestionIncorrect(questionEl, q.id, false);
     });
+    setValidateStatus(false);
   }
   
   function validateAnswers() {
     isValidating = true;
+    let hasIncorrect = false;
     
     // Check each question and mark incorrect ones
     textInput.questions.forEach(q => {
       const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
       
       const isCorrect = validateAnswer(q);
+      if (isCorrect === false) hasIncorrect = true;
       
-      if (questionEl) {
-        if (isCorrect === false) {
-          questionEl.classList.add('text-input-question-incorrect');
-          addErrorIcon(questionEl);
-        } else {
-          questionEl.classList.remove('text-input-question-incorrect');
-          removeErrorIcon(questionEl);
-        }
-      }
+      if (questionEl) markQuestionIncorrect(questionEl, q.id, isCorrect === false);
     });
+    setValidateStatus(hasIncorrect);
   }
   
   function updateResultsAndPost() {
