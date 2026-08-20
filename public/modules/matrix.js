@@ -1,6 +1,13 @@
 import toolbar from '../components/toolbar.js';
 import { detectQuoteBlockquotes } from '../design-system/typography/typography.js';
 import { renderMath } from '../utils/katex-render.js';
+import {
+  clearControlInvalid,
+  ensureErrorText,
+  removeErrorText,
+  setControlInvalid,
+  setValidateStatus
+} from '../utils/validate-status.js';
 
 export function initMatrix({
   activity,
@@ -201,22 +208,39 @@ export function initMatrix({
 
   detectQuoteBlockquotes(elContainer.querySelector('#matrix-root'));
 
+  function markRowIncorrect(tr, idx, incorrect) {
+    const errorId = `matrix-error-${idx}`;
+    const radios = tr.querySelectorAll('input[type="radio"]');
+    tr.classList.toggle('matrix-row-incorrect', incorrect);
+    if (incorrect) {
+      ensureErrorText(tr.querySelector('.matrix-row-label') || tr, errorId);
+      radios.forEach((input) => setControlInvalid(input, errorId));
+    } else {
+      removeErrorText(errorId);
+      radios.forEach(clearControlInvalid);
+    }
+  }
+
   function clearValidation() {
     if (!isValidating) return;
     isValidating = false;
-    elTbody.querySelectorAll('tr').forEach(tr => {
-      tr.classList.remove('matrix-row-incorrect');
+    elTbody.querySelectorAll('tr').forEach((tr, idx) => {
+      markRowIncorrect(tr, idx, false);
     });
+    setValidateStatus(false);
   }
 
   function validateAnswers() {
     isValidating = true;
+    let hasIncorrect = false;
     elTbody.querySelectorAll('tr').forEach((tr, idx) => {
       const sel = selectedColIndexByRow[idx];
       const correctIdx = correctColumnIndexByRow[idx];
       const ok = sel !== null && sel !== undefined && sel === correctIdx;
-      tr.classList.toggle('matrix-row-incorrect', !ok);
+      if (!ok) hasIncorrect = true;
+      markRowIncorrect(tr, idx, !ok);
     });
+    setValidateStatus(hasIncorrect);
   }
 
   function updateResultsAndPost() {

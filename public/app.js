@@ -7,6 +7,7 @@ import { initTextInput } from './modules/text-input.js';
 import { initMatrix } from './modules/matrix.js';
 import toolbar from './components/toolbar.js';
 import { mountActivityContentShell } from './utils/activity-content-shell.js';
+import { setValidateStatus } from './utils/validate-status.js';
 
 (() => {
   'use strict';
@@ -63,6 +64,7 @@ import { mountActivityContentShell } from './utils/activity-content-shell.js';
       contentShellCleanup = null;
     }
     toolbar.clear();
+    setValidateStatus(false);
   }
 
   async function loadActivityJson() {

@@ -1,6 +1,13 @@
 import toolbar from '../components/toolbar.js';
 import { detectQuoteBlockquotes } from '../design-system/typography/typography.js';
 import { renderMath } from '../utils/katex-render.js';
+import {
+  clearControlInvalid,
+  ensureErrorText,
+  removeErrorText,
+  setControlInvalid,
+  setValidateStatus
+} from '../utils/validate-status.js';
 
 export function initMcq({
   activity,
@@ -375,6 +382,7 @@ export function initMcq({
     
     const errorIcon = document.createElement('div');
     errorIcon.className = 'mcq-question-error-icon';
+    errorIcon.setAttribute('aria-hidden', 'true');
     errorIcon.innerHTML = `
       <svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
         <rect x="5" y="2" width="2" height="5" rx="1" fill="white"/>
@@ -391,6 +399,26 @@ export function initMcq({
     }
   }
   
+  function questionInputs(questionEl) {
+    return questionEl.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+  }
+
+  function markQuestionIncorrect(questionEl, incorrect) {
+    const errorId = `mcq-error-${questionEl.getAttribute('data-question-id')}`;
+    const inputs = questionInputs(questionEl);
+    if (incorrect) {
+      questionEl.classList.add('mcq-question-incorrect');
+      addErrorIcon(questionEl);
+      ensureErrorText(questionEl, errorId);
+      inputs.forEach((input) => setControlInvalid(input, errorId));
+    } else {
+      questionEl.classList.remove('mcq-question-incorrect');
+      removeErrorIcon(questionEl);
+      removeErrorText(errorId);
+      inputs.forEach(clearControlInvalid);
+    }
+  }
+
   function clearValidation() {
     if (!isValidating) return;
     
@@ -398,15 +426,14 @@ export function initMcq({
     // Remove validation classes from all questions
     mcq.questions.forEach(q => {
       const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
-      if (questionEl) {
-        questionEl.classList.remove('mcq-question-incorrect');
-        removeErrorIcon(questionEl);
-      }
+      if (questionEl) markQuestionIncorrect(questionEl, false);
     });
+    setValidateStatus(false);
   }
   
   function validateAnswers() {
     isValidating = true;
+    let hasIncorrect = false;
     
     // Check each question and mark incorrect ones
     mcq.questions.forEach(q => {
@@ -427,16 +454,10 @@ export function initMcq({
       }
       
       const questionEl = elQuestions.querySelector(`[data-question-id="${q.id}"]`);
-      if (questionEl) {
-        if (!isCorrect) {
-          questionEl.classList.add('mcq-question-incorrect');
-          addErrorIcon(questionEl);
-        } else {
-          questionEl.classList.remove('mcq-question-incorrect');
-          removeErrorIcon(questionEl);
-        }
-      }
+      if (questionEl) markQuestionIncorrect(questionEl, !isCorrect);
+      if (!isCorrect) hasIncorrect = true;
     });
+    setValidateStatus(hasIncorrect);
   }
   
   function updateResultsAndPost() {

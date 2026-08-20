@@ -1,5 +1,10 @@
 import { renderMath } from '../utils/katex-render.js';
 import toolbar from '../components/toolbar.js';
+import {
+  INCORRECT_ANSWER_TEXT,
+  setControlInvalid,
+  setValidateStatus
+} from '../utils/validate-status.js';
 
 /**
  * Categorization Sorting activity.
@@ -48,6 +53,7 @@ export function initSort({
         <span class="categorization-instructions-icon" aria-hidden="true">${instructionIconSvg()}</span>
         <p class="categorization-instructions-text body-xxsmall">Click or drag the items onto the cards above</p>
       </div>
+      <p id="sort-validate-error" class="activity-error-text body-small" hidden></p>
       <div class="categorization-tray" id="categorization-tray" role="list" aria-label="Items to sort"></div>
     </div>
   `;
@@ -97,7 +103,7 @@ export function initSort({
     chip.className = `categorization-chip body-large${placed ? ' placed' : ''}${misplaced ? ' incorrect' : ''}`;
     chip.dataset.itemIndex = String(itemIndex);
     chip.setAttribute('draggable', 'true');
-    if (misplaced) chip.setAttribute('aria-invalid', 'true');
+    if (misplaced) setControlInvalid(chip, 'sort-validate-error');
     chip.innerHTML = `${placed ? '' : dragHandleSvg()}<span class="categorization-chip-label">${chipInnerHtml(item)}</span>${misplaced ? incorrectIconSvg() : ''}`;
     chip.setAttribute(
       'aria-label',
@@ -279,10 +285,27 @@ export function initSort({
     if (next) next.focus();
   }
 
+  function anyMisplaced() {
+    return items.some((item, idx) => {
+      return Boolean(placement[idx]) && placement[idx] !== (item.correct || '');
+    });
+  }
+
+  function syncValidateError() {
+    const err = elContainer.querySelector('#sort-validate-error');
+    const show = validating && anyMisplaced();
+    if (err) {
+      err.hidden = !show;
+      err.textContent = show ? INCORRECT_ANSWER_TEXT : '';
+    }
+    setValidateStatus(show);
+  }
+
   function render() {
     const target = captureFocus();
     renderCategories();
     renderTray();
+    syncValidateError();
     restoreFocus(target);
   }
 
