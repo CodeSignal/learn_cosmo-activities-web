@@ -256,7 +256,7 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | DS bump D2 | #29 | after D2 | | Blocked |
 | DS bump D1 | #30 | after D1 | | Blocked |
 | A2 | #31 | 2 | #40 | Closed (PR #40) |
-| A10 | #32 | 2 | | Open |
+| A10 | #32 | 2 | #41 | Closed (PR #41) |
 | A7 | #33 | 3 | | Open |
 | A8 | #34 | 3 | | Open |
 
@@ -273,4 +273,4 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 ## Next step
 
-P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). A3 is on `main` (PR #37). A9 is on `main` (PR #38). A11 is on `main` (PR #39). A2 is on `main` (PR #40). Wave 2 continues with A10 (`fix/a11y-validate-status`, #32).
+P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). A3 is on `main` (PR #37). A9 is on `main` (PR #38). A11 is on `main` (PR #39). A2 is on `main` (PR #40). A10 is on `main` (PR #41). Wave 3 starts with A7 (`fix/a11y-choice-contrast`, #33), then A8 (#34).
