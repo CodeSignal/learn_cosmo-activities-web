@@ -258,7 +258,7 @@
 }
 
 .categorization-instructions-text {
-  color: var(--Colors-Text-Body-Light);
+  color: var(--Colors-Text-Body-Default);
   text-align: center;
   margin: 0;
 }
