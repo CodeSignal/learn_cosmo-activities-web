@@ -241,3 +241,42 @@ test('A7: dark choice default and hover contrast are at least 4.5:1', () => {
     assertChoiceContrast(file, hex, aliases, 'hover', aliases.hover);
   }
 });
+
+test('A8: Sort instructions meet 4.5:1 in light and keep the click-or-drag copy', () => {
+  const sortJs = read('public/modules/sort.js');
+  assert.match(
+    sortJs,
+    /Click or drag the items onto the cards above/,
+    'instruction copy stays put (P8 / A14 is out of this plan)'
+  );
+
+  const sortCss = read('public/modules/sort.css');
+  const colorM = sortCss.match(
+    /\.categorization-instructions-text\s*\{[^}]*color:\s*var\((--Colors-Text-Body-[A-Za-z]+)\)/
+  );
+  assert.ok(colorM, 'instructions text sets a Body color token');
+  assert.notEqual(
+    colorM[1],
+    '--Colors-Text-Body-Lighter',
+    'body-xxsmall must not use Body-Lighter'
+  );
+
+  const colorsCss = read('public/design-system/colors/colors.css');
+  const light = colorsCss.slice(0, colorsCss.indexOf('@media (prefers-color-scheme: dark)'));
+  const resolve = (prop) => {
+    const m = light.match(new RegExp(`${prop}:\\s*var\\((--Colors-Base-[A-Za-z0-9-]+)\\)`));
+    assert.ok(m, `light ${prop} aliases a base token`);
+    return m[1];
+  };
+  const hex = baseColorHex();
+  const fgToken = resolve(colorM[1]);
+  const bgToken = resolve('--Colors-Backgrounds-Main-Default');
+  const fg = hex[fgToken];
+  const bg = hex[bgToken];
+  assert.ok(fg && bg, `unresolved ${fgToken} or ${bgToken}`);
+  const ratio = contrastRatio(hexToRgb(fg), hexToRgb(bg));
+  assert.ok(
+    ratio + 0.01 >= 4.5,
+    `instructions ${colorM[1]} (${fg}) on Main-Default (${bg}) is ${ratio.toFixed(2)}:1, need 4.5:1`
+  );
+});
