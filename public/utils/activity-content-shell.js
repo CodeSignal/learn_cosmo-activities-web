@@ -121,6 +121,7 @@ export function mountActivityContentShell({ container, content }) {
   leftPanel.className = 'activity-content-pane';
   const iframe = document.createElement('iframe');
   iframe.className = 'activity-content-iframe';
+  iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
   iframe.setAttribute('frameborder', '1');
   const sideUrl = hasUrl ? String(content.url || '') : '';
   iframe.title = sideUrl === '/sim' || sideUrl.startsWith('/sim/') ? 'Simulation' : 'Reference';
