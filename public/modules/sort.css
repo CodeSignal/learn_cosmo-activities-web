@@ -88,8 +88,8 @@
   width: 100%;
   margin: 0;
   box-sizing: border-box;
-  font: inherit;
-  font-family: inherit;
+  /* Leave font to .heading-small. font: inherit here wins the cascade and
+     falls back to Times because body has no font-family. */
   cursor: pointer;
 }
 
