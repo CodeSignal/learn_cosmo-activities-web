@@ -280,3 +280,17 @@ test('A8: Sort instructions meet 4.5:1 in light and keep the click-or-drag copy'
     `instructions ${colorM[1]} (${fg}) on Main-Default (${bg}) is ${ratio.toFixed(2)}:1, need 4.5:1`
   );
 });
+
+test('D2: split divider is named and uses a 24px pointer target', () => {
+  const js = read('public/design-system/components/split-panel/split-panel.js');
+  assert.match(js, /['"]Resize reference panel['"]/);
+  assert.match(js, /setAttribute\('aria-label'/);
+
+  const css = read('public/design-system/components/split-panel/split-panel.css');
+  const container = css.match(/\.split-panel-container\s*\{[^}]+\}/);
+  assert.ok(container, 'container rule exists');
+  assert.doesNotMatch(container[0], /min-width:\s*24px/);
+  assert.doesNotMatch(container[0], /min-height:\s*24px/);
+  assert.match(css, /padding:\s*0 10px/);
+  assert.match(css, /\.split-panel-divider\s*\{[\s\S]*?min-height:\s*24px/);
+});
