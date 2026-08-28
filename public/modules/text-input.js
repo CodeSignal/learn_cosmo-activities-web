@@ -584,6 +584,7 @@ export function initTextInput({
         nextButton.disabled = !hasAnswer;
       });
       
+      nextButtonContainer.appendChild(nextButton);
       inputContainer.appendChild(nextButtonContainer);
     }
     questionEl.appendChild(inputContainer);
