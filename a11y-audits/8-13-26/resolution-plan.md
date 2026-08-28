@@ -251,10 +251,10 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | A3 | #26 | 1 | #37 | Closed (PR #37) |
 | A9 | #27 | 1 | #38 | Closed (PR #38) |
 | A11 | #28 | 1 | #39 | Closed (PR #39) |
-| D2 | [DS #28](https://github.com/CodeSignal/learn_bespoke-design-system/issues/28) | 1 ∥ | | Open |
+| D2 | [DS #28](https://github.com/CodeSignal/learn_bespoke-design-system/issues/28) | 1 ∥ | #46 | Closed (PR #46) |
 | D1 | [DS #29](https://github.com/CodeSignal/learn_bespoke-design-system/issues/29) | 1 ∥ / 3 | | Open |
-| DS bump D2 | #29 | after D2 | | Open |
-| DS bump D1 | #30 | after D1 | | Blocked |
+| DS bump D2 | #29 | after D2 | #46 | Closed (PR #46) |
+| DS bump D1 | #30 | after D1 | | Open |
 | A2 | #31 | 2 | #40 | Closed (PR #40) |
 | A10 | #32 | 2 | #41 | Closed (PR #41) |
 | A7 | #33 | 3 | #42 | Closed (PR #42) |
@@ -273,4 +273,4 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 ## Next step
 
-P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). A3 is on `main` (PR #37). A9 is on `main` (PR #38). A11 is on `main` (PR #39). A2 is on `main` (PR #40). A10 is on `main` (PR #41). A7 is on `main` (PR #42). A8 is on `main` (PR #44). D2 is merged in the design system (DS PR #30); consume it via #29. D1 remains [DS #29](https://github.com/CodeSignal/learn_bespoke-design-system/issues/29), then bump #30.
+P1–P7 confirmed as the recommended defaults. Wave 0 is on `main` (PR #20). A1 is on `main` (PR #35). Sort bundle is on `main` (PR #36). A3 is on `main` (PR #37). A9 is on `main` (PR #38). A11 is on `main` (PR #39). A2 is on `main` (PR #40). A10 is on `main` (PR #41). A7 is on `main` (PR #42). A8 is on `main` (PR #44). D2 is on `main` (PR #46). D1 is merged in the design system (DS PR #31); consume it via #30.
