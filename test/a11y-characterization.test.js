@@ -308,6 +308,37 @@ test('A16: scroll indicator is hidden from AT', () => {
   assert.doesNotMatch(init, /scroll for more/i);
 });
 
+test('A18: MCQ fieldset is named from existing question UI; options use the visible label', () => {
+  const src = read('public/modules/mcq.js');
+  assert.match(src, /questionLegendEl\.id = `q\$\{question\.id\}-legend`/);
+  assert.match(src, /questionTextEl\.id = `q\$\{question\.id\}-text`/);
+  assert.match(src, /fieldsetNameIds\.push\(questionLegendEl\.id\)/);
+  assert.match(src, /fieldsetNameIds\.push\(questionTextEl\.id\)/);
+  assert.match(
+    src,
+    /setAttribute\(\s*'aria-labelledby',\s*fieldsetNameIds\.join\(' '\)\)/
+  );
+  assert.doesNotMatch(src, /aria-label['"],\s*`Option /);
+
+  const labelAttaches = src.match(/textWrapper\.appendChild\(optionLabel\)/g);
+  assert.equal(
+    labelAttaches && labelAttaches.length,
+    2,
+    'checkbox and radio branches must both attach optionLabel (letter) next to optionText'
+  );
+  assert.match(src, /optionLabel\.textContent = displayLabel \+ '\.'/);
+
+  const css = read('public/modules/mcq.css');
+  const labelRule = css.match(/\.mcq-option-label\s*\{[^}]+\}/);
+  assert.ok(labelRule, '.mcq-option-label rule exists');
+  assert.doesNotMatch(
+    labelRule[0],
+    /display\s*:\s*none/,
+    'display:none would drop the option letter from the wrapping label AccName'
+  );
+  assert.match(labelRule[0], /clip:\s*rect/);
+});
+
 test('D2: split divider is named and uses a 24px pointer target', () => {
   const js = read('public/design-system/components/split-panel/split-panel.js');
   assert.match(js, /['"]Resize reference panel['"]/);

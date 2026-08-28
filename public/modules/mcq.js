@@ -113,17 +113,20 @@ export function initMcq({
     questionEl.setAttribute('data-question-index', qIdx.toString());
     
     // Question legend — custom __Question Name__ or "Question N" when multiple questions
+    let questionLegendEl = null;
     if (hasMultipleQuestions) {
-      const legend = document.createElement('div');
-      legend.className = 'mcq-legend heading-xsmall';
+      questionLegendEl = document.createElement('div');
+      questionLegendEl.className = 'mcq-legend heading-xsmall';
+      questionLegendEl.id = `q${question.id}-legend`;
       const customName = question.name && String(question.name).trim();
-      legend.textContent = customName || `Question ${qIdx + 1}`;
-      questionEl.appendChild(legend);
+      questionLegendEl.textContent = customName || `Question ${qIdx + 1}`;
+      questionEl.appendChild(questionLegendEl);
     }
     
     // Question text (support markdown HTML if available, fallback to plain text for backward compatibility)
     const questionTextEl = document.createElement('div');
     questionTextEl.className = 'mcq-question-text body-large markdown-content';
+    questionTextEl.id = `q${question.id}-text`;
     if (question.textHtml) {
       questionTextEl.innerHTML = question.textHtml;
       // Render LaTeX math expressions
@@ -136,6 +139,10 @@ export function initMcq({
     // Options container
     const optionsEl = document.createElement('fieldset');
     optionsEl.className = 'mcq-options';
+    const fieldsetNameIds = [];
+    if (questionLegendEl) fieldsetNameIds.push(questionLegendEl.id);
+    fieldsetNameIds.push(questionTextEl.id);
+    optionsEl.setAttribute('aria-labelledby', fieldsetNameIds.join(' '));
     
     // Create options
     question.options.forEach((option, optIdx) => {
@@ -151,7 +158,6 @@ export function initMcq({
       input.name = `question-${question.id}`;
       input.value = displayLabel;
       input.id = `q${question.id}-opt${optIdx}`;
-      input.setAttribute('aria-label', `Option ${displayLabel}: ${option.text}`);
       
       const optionText = document.createElement('div');
       optionText.className = 'mcq-option-text body-large markdown-content';
@@ -186,6 +192,7 @@ export function initMcq({
         // Text wrapper
         const textWrapper = document.createElement('div');
         textWrapper.className = 'mcq-option-content';
+        textWrapper.appendChild(optionLabel);
         textWrapper.appendChild(optionText);
         
         optionCard.appendChild(checkboxBox);
@@ -203,6 +210,7 @@ export function initMcq({
         // Text wrapper
         const textWrapper = document.createElement('div');
         textWrapper.className = 'mcq-option-content';
+        textWrapper.appendChild(optionLabel);
         textWrapper.appendChild(optionText);
         
         optionCard.appendChild(radioCircle);

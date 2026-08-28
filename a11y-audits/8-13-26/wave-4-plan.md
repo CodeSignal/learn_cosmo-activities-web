@@ -4,7 +4,7 @@
 **Program:** [program-plan.md](./program-plan.md)  
 **Critical / serious:** [resolution-plan.md](./resolution-plan.md) (A1–A11, D1–D2 on `main`)  
 **Standard:** WCAG 2.2 AA  
-**Status:** Product calls P8–P15 confirmed. Issues filed. A17 on `main` (PR #60). D3 bump on `main` (PR #61). Executing Wave 4a A16.
+**Status:** Product calls P8–P15 confirmed. Issues filed. A16 on `main` (PR #62). Executing Wave 4a A18.
 
 In scope: **A12–A20, D3**, and leftover axe **A21**.  
 Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-Practice choice tokens. Question editor stays out (internal-only).
@@ -28,6 +28,7 @@ Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-P
 | D2 | DS #30 → app #46 | Divider **name** + ≥24×24 hit target. Line color left for D3. |
 | D1 | DS #31 → app #48 | Inactive cards: chrome fade (inset stroke), not `opacity`, not `aria-hidden`, not `scale()` |
 | A17 | #60 | Drop Matrix `role="grid"` |
+| A16 | #62 | Scroll indicator `aria-hidden` |
 | D3 | DS #33 → app #61 | Divider line token (Neutral-800), ≥3:1 vs panes |
 
 Unrelated merges on the same timeline: clipboard in iframes (#43), Sort heading font (#45). Not audit IDs.
@@ -253,7 +254,7 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | A13 | #50 | 4a | | Open |
 | A14 | #51 | 4b | | Open |
 | A15 | #52 | 4a | | Open |
-| A16 | #53 | 4a | | Open |
+| A16 | #53 | 4a | #62 | Closed (PR #62) |
 | A17 | #54 | 4a | #60 | Closed (PR #60) |
 | A18 | #55 | 4a | | Open |
 | A19 | #56 | 4b | | Open |
@@ -277,4 +278,4 @@ Critical/serious rows stay in [resolution-plan.md](./resolution-plan.md). The do
 
 ## Next step
 
-D3 / bump D3 are on `main` (PR #61). Next after A16: Wave 4a A18 (`fix/a11y-mcq-fieldset`, #55). Do not put #61 on the A16 row.
+A16 is on `main` (PR #62). Next after A18: Wave 4a A15 (`fix/a11y-text-input-next`, #52). Do not put #62 on the A18 row.
