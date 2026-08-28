@@ -192,6 +192,7 @@ export function initMcq({
         // Text wrapper
         const textWrapper = document.createElement('div');
         textWrapper.className = 'mcq-option-content';
+        textWrapper.appendChild(optionLabel);
         textWrapper.appendChild(optionText);
         
         optionCard.appendChild(checkboxBox);
@@ -209,6 +210,7 @@ export function initMcq({
         // Text wrapper
         const textWrapper = document.createElement('div');
         textWrapper.className = 'mcq-option-content';
+        textWrapper.appendChild(optionLabel);
         textWrapper.appendChild(optionText);
         
         optionCard.appendChild(radioCircle);
