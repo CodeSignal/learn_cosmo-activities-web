@@ -281,6 +281,19 @@ test('A8: Sort instructions meet 4.5:1 in light and keep the click-or-drag copy'
   );
 });
 
+test('D1: inactive cards keep full-contrast text', () => {
+  const css = read('public/design-system/components/horizontal-cards/horizontal-cards.css');
+  const inactive = css.match(
+    /\.horizontal-cards-card:not\(\.horizontal-cards-card-active\)\s*\{[^}]+\}/
+  );
+  assert.ok(inactive, 'inactive card rule exists');
+  assert.doesNotMatch(inactive[0], /opacity\s*:/);
+  assert.match(inactive[0], /box-shadow:\s*inset/);
+
+  const js = read('public/design-system/components/horizontal-cards/horizontal-cards.js');
+  assert.doesNotMatch(js, /aria-hidden/);
+});
+
 test('D2: split divider is named and uses a 24px pointer target', () => {
   const js = read('public/design-system/components/split-panel/split-panel.js');
   assert.match(js, /['"]Resize reference panel['"]/);
