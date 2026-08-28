@@ -4,7 +4,7 @@
 **Program:** [program-plan.md](./program-plan.md)  
 **Critical / serious:** [resolution-plan.md](./resolution-plan.md) (A1–A11, D1–D2 on `main`)  
 **Standard:** WCAG 2.2 AA  
-**Status:** Product calls P8–P15 confirmed. Issues filed. Executing Wave 4a (A17) and DS D3.
+**Status:** Product calls P8–P15 confirmed. Issues filed. A17 on `main` (PR #60). DS D3 merged ([DS #33](https://github.com/CodeSignal/learn_bespoke-design-system/pull/33)); consumer bump next.
 
 In scope: **A12–A20, D3**, and leftover axe **A21**.  
 Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-Practice choice tokens. Question editor stays out (internal-only).
@@ -27,6 +27,7 @@ Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-P
 | A8 | #44 | Sort **instructions** contrast (copy unchanged) |
 | D2 | DS #30 → app #46 | Divider **name** + ≥24×24 hit target. Line color left for D3. |
 | D1 | DS #31 → app #48 | Inactive cards: chrome fade (inset stroke), not `opacity`, not `aria-hidden`, not `scale()` |
+| A17 | #60 | Drop Matrix `role="grid"` |
 
 Unrelated merges on the same timeline: clipboard in iframes (#43), Sort heading font (#45). Not audit IDs.
 
@@ -252,7 +253,7 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | A14 | #51 | 4b | | Open |
 | A15 | #52 | 4a | | Open |
 | A16 | #53 | 4a | | Open |
-| A17 | #54 | 4a | | Open |
+| A17 | #54 | 4a | #60 | Closed (PR #60) |
 | A18 | #55 | 4a | | Open |
 | A19 | #56 | 4b | | Open |
 | A20 | #57 | 4a | | Open |
@@ -275,4 +276,4 @@ Critical/serious rows stay in [resolution-plan.md](./resolution-plan.md). The do
 
 ## Next step
 
-Executing Wave 4a starting at A17 (`fix/a11y-matrix-grid`, #54) and DS D3 (`fix/a11y-split-divider-color`, [DS #32](https://github.com/CodeSignal/learn_bespoke-design-system/issues/32)). One issue, one PR. After each consumer merge: `git checkout main && git pull`, then record the previous finding Closed in the next docs commit.
+A17 is on `main` (PR #60). Next: consumer bump D3 (`chore/ds-bump-a11y-d3`, #59), then Wave 4a A16 (`fix/a11y-scroll-indicator`, #53). Do not put #60 on the D3 or bump D3 rows.
