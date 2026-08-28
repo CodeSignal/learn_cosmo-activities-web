@@ -313,3 +313,15 @@ test('D2: split divider is named and uses a 24px pointer target', () => {
   assert.match(css, /padding:\s*0 10px/);
   assert.match(css, /\.split-panel-divider\s*\{[\s\S]*?min-height:\s*24px/);
 });
+
+test('D3: split divider line uses Neutral-800, not a hardcoded hex', () => {
+  const css = read('public/design-system/components/split-panel/split-panel.css');
+  assert.doesNotMatch(css, /#2b3b52/i);
+  assert.match(
+    css,
+    /--Colors-Split-Panel-Divider-Line:\s*var\(--Colors-Base-Neutral-800\)/
+  );
+  const after = css.match(/\.split-panel-divider::after\s*\{[^}]+\}/);
+  assert.ok(after, 'horizontal ::after rule exists');
+  assert.match(after[0], /background:\s*var\(--Colors-Split-Panel-Divider-Line\)/);
+});
