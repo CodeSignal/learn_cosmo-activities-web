@@ -308,6 +308,13 @@ test('A16: scroll indicator is hidden from AT', () => {
   assert.doesNotMatch(init, /scroll for more/i);
 });
 
+test('A18: MCQ fieldset is named from existing question UI; options use the visible label', () => {
+  const src = read('public/modules/mcq.js');
+  assert.match(src, /createElement\('fieldset'\)/);
+  assert.match(src, /setAttribute\(\s*'aria-labelledby'/);
+  assert.doesNotMatch(src, /aria-label['"],\s*`Option /);
+});
+
 test('D2: split divider is named and uses a 24px pointer target', () => {
   const js = read('public/design-system/components/split-panel/split-panel.js');
   assert.match(js, /['"]Resize reference panel['"]/);
