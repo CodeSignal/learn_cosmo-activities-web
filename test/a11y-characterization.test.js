@@ -300,6 +300,14 @@ test('A17: Matrix table is a native table, not role=grid', () => {
   assert.doesNotMatch(src, /role="grid"/);
 });
 
+test('A16: scroll indicator is hidden from AT', () => {
+  const src = read('public/app.js');
+  const init = sliceFn(src, 'initScrollIndicator');
+  assert.match(init, /className\s*=\s*'scroll-indicator'/);
+  assert.match(init, /setAttribute\(\s*'aria-hidden',\s*'true'\s*\)/);
+  assert.doesNotMatch(init, /scroll for more/i);
+});
+
 test('D2: split divider is named and uses a 24px pointer target', () => {
   const js = read('public/design-system/components/split-panel/split-panel.js');
   assert.match(js, /['"]Resize reference panel['"]/);
