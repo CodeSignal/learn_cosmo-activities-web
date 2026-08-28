@@ -294,6 +294,12 @@ test('D1: inactive cards keep full-contrast text', () => {
   assert.doesNotMatch(js, /aria-hidden/);
 });
 
+test('A17: Matrix table is a native table, not role=grid', () => {
+  const src = read('public/modules/matrix.js');
+  assert.match(src, /<table class="matrix-table" id="matrix-table" aria-label="Matrix question">/);
+  assert.doesNotMatch(src, /role="grid"/);
+});
+
 test('D2: split divider is named and uses a 24px pointer target', () => {
   const js = read('public/design-system/components/split-panel/split-panel.js');
   assert.match(js, /['"]Resize reference panel['"]/);

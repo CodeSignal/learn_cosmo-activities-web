@@ -55,7 +55,7 @@ export function initMatrix({
       <div class="matrix-question body-large" id="matrix-question"></div>
       <div class="box card non-interactive matrix-table-outer">
         <div class="matrix-table-scroll">
-          <table class="matrix-table" id="matrix-table" role="grid" aria-label="Matrix question">
+          <table class="matrix-table" id="matrix-table" aria-label="Matrix question">
             <thead id="matrix-thead"></thead>
             <tbody id="matrix-tbody"></tbody>
           </table>
