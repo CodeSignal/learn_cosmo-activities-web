@@ -4,7 +4,7 @@ How we will run the ChatCPT (`learn_cosmo-chat`) process on this repo, adapted f
 
 **Standard:** WCAG 2.2 Level AA
 
-**Status:** Phase 2 complete — see `resolution-plan.md`. No issues filed. No product patches. Waiting on product calls + “go” to execute.
+**Status:** Phase 4 executing — see `wave-4-plan.md`. Critical/serious are on `main`.
 
 **Gates (same as ChatCPT):**
 
