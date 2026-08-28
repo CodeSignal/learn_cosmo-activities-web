@@ -4,7 +4,7 @@
 **Program:** [program-plan.md](./program-plan.md)  
 **Critical / serious:** [resolution-plan.md](./resolution-plan.md) (A1–A11, D1–D2 on `main`)  
 **Standard:** WCAG 2.2 AA  
-**Status:** Product calls P8–P15 confirmed. Issues filed. A17 on `main` (PR #60). DS D3 merged ([DS #33](https://github.com/CodeSignal/learn_bespoke-design-system/pull/33)); consumer bump next.
+**Status:** Product calls P8–P15 confirmed. Issues filed. A17 on `main` (PR #60). D3 bump on `main` (PR #61). Executing Wave 4a A16.
 
 In scope: **A12–A20, D3**, and leftover axe **A21**.  
 Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-Practice choice tokens. Question editor stays out (internal-only).
@@ -28,6 +28,7 @@ Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-P
 | D2 | DS #30 → app #46 | Divider **name** + ≥24×24 hit target. Line color left for D3. |
 | D1 | DS #31 → app #48 | Inactive cards: chrome fade (inset stroke), not `opacity`, not `aria-hidden`, not `scale()` |
 | A17 | #60 | Drop Matrix `role="grid"` |
+| D3 | DS #33 → app #61 | Divider line token (Neutral-800), ≥3:1 vs panes |
 
 Unrelated merges on the same timeline: clipboard in iframes (#43), Sort heading font (#45). Not audit IDs.
 
@@ -258,8 +259,8 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | A19 | #56 | 4b | | Open |
 | A20 | #57 | 4a | | Open |
 | A21 | #58 | 4b | | Open |
-| D3 | [DS #32](https://github.com/CodeSignal/learn_bespoke-design-system/issues/32) | 4 ∥ | | Open |
-| DS bump D3 | #59 | after D3 | | Open |
+| D3 | [DS #32](https://github.com/CodeSignal/learn_bespoke-design-system/issues/32) | 4 ∥ | #61 | Closed (PR #61) |
+| DS bump D3 | #59 | after D3 | #61 | Closed (PR #61) |
 
 Critical/serious rows stay in [resolution-plan.md](./resolution-plan.md). The docs commit that lands this file also sets D1 / bump D1 to Closed (PR #48) there.
 
@@ -276,4 +277,4 @@ Critical/serious rows stay in [resolution-plan.md](./resolution-plan.md). The do
 
 ## Next step
 
-A17 is on `main` (PR #60). Next: consumer bump D3 (`chore/ds-bump-a11y-d3`, #59), then Wave 4a A16 (`fix/a11y-scroll-indicator`, #53). Do not put #60 on the D3 or bump D3 rows.
+D3 / bump D3 are on `main` (PR #61). Next after A16: Wave 4a A18 (`fix/a11y-mcq-fieldset`, #55). Do not put #61 on the A16 row.

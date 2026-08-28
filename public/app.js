@@ -419,6 +419,7 @@ import { setValidateStatus } from './utils/validate-status.js';
     // Create scroll indicator element
     const scrollIndicator = document.createElement('div');
     scrollIndicator.className = 'scroll-indicator';
+    scrollIndicator.setAttribute('aria-hidden', 'true');
     scrollIndicator.innerHTML = `
       <div class="scroll-indicator-gradient"></div>
       <div class="scroll-indicator-icon">
