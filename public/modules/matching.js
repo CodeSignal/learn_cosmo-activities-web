@@ -1,5 +1,5 @@
 import HorizontalCards from '../design-system/components/horizontal-cards/horizontal-cards.js';
-import { renderMath } from '../utils/katex-render.js';
+import { ACTIVITY_TYPE_NAME, mountActivityHeading } from '../utils/activity-heading.js';
 import toolbar from '../components/toolbar.js';
 
 export function initMatching({
@@ -30,19 +30,12 @@ export function initMatching({
   const elMatchingCardsContainer = document.getElementById('matching-cards-container');
   const elMatchingChoices = document.getElementById('matching-choices');
 
-  const matchInstr = matching.heading;
-  if (matchInstr && (matchInstr.html || matchInstr.markdown)) {
-    const instrEl = document.createElement('div');
-    instrEl.className =
-      'text-input-heading box non-interactive input-group text-input-question-text body-large';
-    if (matchInstr.html) {
-      instrEl.innerHTML = matchInstr.html;
-    } else {
-      instrEl.textContent = matchInstr.markdown;
-    }
-    renderMath(instrEl);
-    elMatching.insertBefore(instrEl, elMatching.firstChild);
-  }
+  mountActivityHeading({
+    parent: elMatching,
+    heading: matching.heading,
+    fallback: ACTIVITY_TYPE_NAME.matching,
+    before: elMatching.firstChild
+  });
 
   // Selection state - initialize with persisted answers if available
   const selectedByItemIdx = matching.items.map((_, idx) => {

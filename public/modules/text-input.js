@@ -1,5 +1,6 @@
 import toolbar from '../components/toolbar.js';
 import { renderMath } from '../utils/katex-render.js';
+import { ACTIVITY_TYPE_NAME, mountActivityHeading } from '../utils/activity-heading.js';
 import {
   clearControlInvalid,
   ensureErrorText,
@@ -297,19 +298,13 @@ export function initTextInput({
     });
   }
   
-  // Optional heading section (instructions for the questions)
   const hasHeading = textInput.heading && (textInput.heading.html || textInput.heading.markdown);
-  if (hasHeading) {
-    const headingEl = document.createElement('div');
-    headingEl.className = 'text-input-heading box non-interactive input-group text-input-question-text body-large markdown-content';
-    if (textInput.heading.html) {
-      headingEl.innerHTML = textInput.heading.html;
-    } else {
-      headingEl.textContent = textInput.heading.markdown;
-    }
-    renderMath(headingEl);
-    elQuestions.appendChild(headingEl);
-  }
+  mountActivityHeading({
+    parent: hasHeading ? elQuestions : elQuestions.parentNode,
+    heading: textInput.heading,
+    fallback: ACTIVITY_TYPE_NAME.textInput,
+    before: hasHeading ? null : elQuestions
+  });
 
   // Render all questions
   const hasMultipleQuestions = textInput.questions.length > 1;

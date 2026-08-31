@@ -100,6 +100,52 @@ test('A13: toolbar is appended inside main; no skip link or new toolbar name', (
   assert.doesNotMatch(html, /skip[- ]link/i);
 });
 
+test('A12: every in-scope activity exposes an h2; authored heading wins', () => {
+  const helper = read('public/utils/activity-heading.js');
+  assert.match(helper, /createElement\('h2'\)/);
+  assert.match(helper, /Fill in the blanks/);
+  assert.match(helper, /Matching/);
+  assert.match(helper, /Matrix/);
+  assert.match(helper, /Multiple Choice/);
+  assert.match(helper, /Text Input/);
+  assert.match(helper, /Sort into Boxes/);
+  assert.doesNotMatch(helper, /skip[- ]link/i);
+
+  const modules = [
+    ['mcq.js', /ACTIVITY_TYPE_NAME\.mcq/],
+    ['matrix.js', /ACTIVITY_TYPE_NAME\.matrix/],
+    ['text-input.js', /ACTIVITY_TYPE_NAME\.textInput/],
+    ['matching.js', /ACTIVITY_TYPE_NAME\.matching/],
+    ['sort.js', /ACTIVITY_TYPE_NAME\.sort/]
+  ];
+  for (const [file, fallback] of modules) {
+    const src = read(`public/modules/${file}`);
+    assert.match(src, /mountActivityHeading/, `${file} mounts an activity heading`);
+    assert.match(src, fallback, `${file} uses the P10 type-name fallback`);
+    assert.doesNotMatch(src, /skip[- ]link/i);
+  }
+
+  const sort = read('public/modules/sort.js');
+  assert.match(
+    sort,
+    /Click or drag the items onto the cards above/,
+    'A12 does not change the A14 instruction sentence'
+  );
+
+  const fib = read('public/modules/fib.js');
+  assert.match(fib, /<h2 class="fib-heading heading-xsmall">/);
+  assert.match(fib, /elFibHeading\.textContent = 'Fill in the blanks'/);
+  assert.match(
+    fib,
+    /createElement\('div'\)/,
+    'FIB authored heading stays a div; the type-name h2 is the rotor entry'
+  );
+  assert.doesNotMatch(fib, /mountActivityHeading/);
+
+  const html = read('public/index.html');
+  assert.doesNotMatch(html, /skip[- ]link/i);
+});
+
 test('A20: FIB blanks and toolbar tools use the two-tone focus-visible ring', () => {
   function focusVisibleRule(css, selector) {
     const re = new RegExp(

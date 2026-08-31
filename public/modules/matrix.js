@@ -1,6 +1,7 @@
 import toolbar from '../components/toolbar.js';
 import { detectQuoteBlockquotes } from '../design-system/typography/typography.js';
 import { renderMath } from '../utils/katex-render.js';
+import { ACTIVITY_TYPE_NAME, mountActivityHeading } from '../utils/activity-heading.js';
 import {
   clearControlInvalid,
   ensureErrorText,
@@ -70,19 +71,12 @@ export function initMatrix({
   const elTbody = elContainer.querySelector('#matrix-tbody');
   const elExplainHost = elContainer.querySelector('#matrix-explain-host');
 
-  const matrixHeading = matrix.heading;
-  if (matrixHeading && (matrixHeading.html || matrixHeading.markdown)) {
-    const headingEl = document.createElement('div');
-    headingEl.className =
-      'text-input-heading box non-interactive input-group text-input-question-text body-large markdown-content';
-    if (matrixHeading.html) {
-      headingEl.innerHTML = matrixHeading.html;
-    } else {
-      headingEl.textContent = matrixHeading.markdown;
-    }
-    renderMath(headingEl);
-    elQuestion.insertAdjacentElement('beforebegin', headingEl);
-  }
+  mountActivityHeading({
+    parent: elQuestion.parentNode,
+    heading: matrix.heading,
+    fallback: ACTIVITY_TYPE_NAME.matrix,
+    before: elQuestion
+  });
 
   if (activity.questionHtml) {
     elQuestion.classList.add('markdown-content');
