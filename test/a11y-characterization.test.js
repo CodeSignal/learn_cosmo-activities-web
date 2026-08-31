@@ -300,6 +300,15 @@ test('A17: Matrix table is a native table, not role=grid', () => {
   assert.doesNotMatch(src, /role="grid"/);
 });
 
+test('A15: Text Input Next button is mounted for non-last questions', () => {
+  const src = read('public/modules/text-input.js');
+  assert.match(src, /qIdx < textInput\.questions\.length - 1/);
+  assert.match(src, /className = 'button button-primary text-input-next-button'/);
+  assert.match(src, /nextButtonContainer\.appendChild\(nextButton\)/);
+  assert.match(src, /textContent = 'Next'/);
+  assert.match(src, /setAttribute\(\s*'aria-label',\s*`Go to next question`\)/);
+});
+
 test('A16: scroll indicator is hidden from AT', () => {
   const src = read('public/app.js');
   const init = sliceFn(src, 'initScrollIndicator');
