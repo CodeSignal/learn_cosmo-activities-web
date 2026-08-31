@@ -85,6 +85,21 @@ test('A1: #activity-container is not a live region', () => {
   );
 });
 
+test('A13: toolbar is appended inside main; no skip link or new toolbar name', () => {
+  const src = read('public/components/toolbar.js');
+  const init = src.slice(src.indexOf('init()'), src.indexOf('registerTool'));
+  assert.match(init, /document\.querySelector\('main'\)/);
+  assert.match(init, /appendChild\(toolbar\)/);
+  assert.doesNotMatch(init, /document\.body\.appendChild\(toolbar\)/);
+  assert.doesNotMatch(init, /aria-label/);
+  assert.doesNotMatch(init, /role=/);
+  assert.doesNotMatch(src, /createElement\('nav'\)/);
+  assert.doesNotMatch(src, /skip[- ]link/i);
+
+  const html = read('public/index.html');
+  assert.doesNotMatch(html, /skip[- ]link/i);
+});
+
 test('A1 characterization: learner document has lang and a main landmark', () => {
   const html = read('public/index.html');
   assert.match(html, /<html lang="en">/);

@@ -17,7 +17,8 @@ class Toolbar {
       toolbar = document.createElement('div');
       toolbar.id = 'global-toolbar';
       toolbar.className = 'global-toolbar';
-      document.body.appendChild(toolbar);
+      const main = document.querySelector('main');
+      (main || document.body).appendChild(toolbar);
     }
     this.container = toolbar;
   }
