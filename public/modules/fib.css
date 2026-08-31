@@ -170,6 +170,15 @@
   width: 96px;
 }
 
+/* Same two-tone keyboard ring as .matching-selection-area / .mcq-option. */
+.blank:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px var(--Colors-Base-Neutral-1450),
+    0 0 0 4px var(--Colors-Base-Neutral-00);
+}
+
 .blank:hover,
 .blank.dropdown-open {
   border-radius: var(--UI-Radius-radius-s);

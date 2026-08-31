@@ -27,6 +27,15 @@
   transition: all 0.2s ease;
 }
 
+/* Same two-tone keyboard ring as .matching-selection-area / .mcq-option. */
+.global-toolbar-tool:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px var(--Colors-Base-Neutral-1450),
+    0 0 0 4px var(--Colors-Base-Neutral-00);
+}
+
 .global-toolbar-tool:hover:not(:disabled) {
   background: transparent;
   opacity: 0.7;

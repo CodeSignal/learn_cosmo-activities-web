@@ -100,6 +100,27 @@ test('A13: toolbar is appended inside main; no skip link or new toolbar name', (
   assert.doesNotMatch(html, /skip[- ]link/i);
 });
 
+test('A20: FIB blanks and toolbar tools use the two-tone focus-visible ring', () => {
+  function focusVisibleRule(css, selector) {
+    const re = new RegExp(
+      selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':focus-visible\\s*\\{[^}]+\\}'
+    );
+    const m = css.match(re);
+    assert.ok(m, `${selector}:focus-visible rule exists`);
+    assert.match(m[0], /outline:\s*2px solid transparent/);
+    assert.match(m[0], /--Colors-Base-Neutral-1450/);
+    assert.match(m[0], /--Colors-Base-Neutral-00/);
+    return m[0];
+  }
+
+  focusVisibleRule(read('public/modules/fib.css'), '.blank');
+  focusVisibleRule(read('public/components/toolbar.css'), '.global-toolbar-tool');
+
+  const matching = read('public/modules/matching.css');
+  assert.match(matching, /\.matching-selection-area:focus\s*\{/);
+  assert.doesNotMatch(matching, /\.matching-selection-area:focus-visible/);
+});
+
 test('A1 characterization: learner document has lang and a main landmark', () => {
   const html = read('public/index.html');
   assert.match(html, /<html lang="en">/);
