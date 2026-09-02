@@ -1,4 +1,5 @@
 import { renderMath } from '../utils/katex-render.js';
+import { ACTIVITY_TYPE_NAME, mountActivityHeading } from '../utils/activity-heading.js';
 import toolbar from '../components/toolbar.js';
 import {
   INCORRECT_ANSWER_TEXT,
@@ -58,9 +59,16 @@ export function initSort({
     </div>
   `;
 
+  const elRoot = elContainer.querySelector('#categorization');
   const elCategories = elContainer.querySelector('#categorization-categories');
   const elTray = elContainer.querySelector('#categorization-tray');
   const elQuestion = elContainer.querySelector('.categorization-question');
+
+  mountActivityHeading({
+    parent: elRoot,
+    fallback: ACTIVITY_TYPE_NAME.sort,
+    before: elRoot.firstChild
+  });
 
   // Optional practice question / prompt.
   if (activity.questionHtml || activity.question) {

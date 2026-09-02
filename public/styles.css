@@ -122,6 +122,11 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--Colors-Text-Body-Strong);
 }
 
+.activity-type-heading {
+  color: var(--Colors-Text-Body-Strong);
+  line-height: 1.35;
+}
+
 h4 {
   font-size: 1.1em;
   line-height: 1.35;

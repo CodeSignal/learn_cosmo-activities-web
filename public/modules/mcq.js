@@ -1,6 +1,7 @@
 import toolbar from '../components/toolbar.js';
 import { detectQuoteBlockquotes } from '../design-system/typography/typography.js';
 import { renderMath } from '../utils/katex-render.js';
+import { ACTIVITY_TYPE_NAME, mountActivityHeading } from '../utils/activity-heading.js';
 import {
   clearControlInvalid,
   ensureErrorText,
@@ -60,20 +61,13 @@ export function initMcq({
     });
   }
 
-  // Optional heading (shared pattern with Text Input)
   const hasHeading = mcq.heading && (mcq.heading.html || mcq.heading.markdown);
-  if (hasHeading) {
-    const headingEl = document.createElement('div');
-    headingEl.className =
-      'text-input-heading box non-interactive input-group text-input-question-text body-large markdown-content';
-    if (mcq.heading.html) {
-      headingEl.innerHTML = mcq.heading.html;
-    } else {
-      headingEl.textContent = mcq.heading.markdown;
-    }
-    renderMath(headingEl);
-    elQuestions.appendChild(headingEl);
-  }
+  mountActivityHeading({
+    parent: hasHeading ? elQuestions : elMcq,
+    heading: mcq.heading,
+    fallback: ACTIVITY_TYPE_NAME.mcq,
+    before: hasHeading ? null : elQuestions
+  });
 
   // Track selected answers per question
   const selectedAnswers = {};
