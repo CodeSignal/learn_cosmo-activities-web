@@ -323,6 +323,18 @@ test('A7: dark choice default and hover contrast are at least 4.5:1', () => {
   }
 });
 
+test('A19: KaTeX exposes MathML beside an aria-hidden visual layer', () => {
+  const src = read('public/utils/katex-render.js');
+  assert.match(src, /output:\s*['"]htmlAndMathml['"]/);
+  assert.match(src, /renderMathInElement\(element,/);
+  assert.match(src, /querySelectorAll\(\s*['"]\.katex['"]\)/);
+  assert.match(src, /katex-html/);
+  assert.match(src, /katex-mathml/);
+  assert.match(src, /setAttribute\(\s*['"]aria-hidden['"],\s*['"]true['"]\)/);
+  assert.match(src, /removeAttribute\(\s*['"]aria-hidden['"]\)/);
+  assert.doesNotMatch(src, /aria-label/, 'P12 exposes MathML; do not invent a spoken label');
+});
+
 test('A14: Sort instructions include the keyboard path', () => {
   const sortJs = read('public/modules/sort.js');
   assert.match(
