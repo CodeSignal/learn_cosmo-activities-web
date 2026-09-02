@@ -335,6 +335,48 @@ test('A19: KaTeX exposes MathML beside an aria-hidden visual layer', () => {
   assert.doesNotMatch(src, /aria-label/, 'P12 exposes MathML; do not invent a spoken label');
 });
 
+test('A21: Sort empty dropzone placeholder meets 4.5:1 in light and keeps Drop items here', () => {
+  const sortCss = read('public/modules/sort.css');
+  const before = sortCss.match(/\.categorization-dropzone\.empty::before\s*\{[^}]+\}/);
+  assert.ok(before, 'empty dropzone ::before rule exists');
+  assert.match(before[0], /content:\s*"Drop items here"/);
+  const colorM = before[0].match(/color:\s*var\((--Colors-Text-Body-[A-Za-z]+)\)/);
+  assert.ok(colorM, 'placeholder sets a Body color token');
+  assert.notEqual(
+    colorM[1],
+    '--Colors-Text-Body-Lighter',
+    '13px placeholder must not use Body-Lighter'
+  );
+
+  const colorsCss = read('public/design-system/colors/colors.css');
+  const light = colorsCss.slice(0, colorsCss.indexOf('@media (prefers-color-scheme: dark)'));
+  const resolve = (prop) => {
+    const m = light.match(new RegExp(`${prop}:\\s*var\\((--Colors-Base-[A-Za-z0-9-]+)\\)`));
+    assert.ok(m, `light ${prop} aliases a base token`);
+    return m[1];
+  };
+  const hex = baseColorHex();
+  const fgToken = resolve(colorM[1]);
+  const bgToken = resolve('--Colors-Backgrounds-Main-Top');
+  const fg = hex[fgToken];
+  const bg = hex[bgToken];
+  assert.ok(fg && bg, `unresolved ${fgToken} or ${bgToken}`);
+  const ratio = contrastRatio(hexToRgb(fg), hexToRgb(bg));
+  assert.ok(
+    ratio + 0.01 >= 4.5,
+    `placeholder ${colorM[1]} (${fg}) on Main-Top (${bg}) is ${ratio.toFixed(2)}:1, need 4.5:1`
+  );
+
+  const instructions = sortCss.match(
+    /\.categorization-instructions-text\s*\{[^}]*color:\s*var\((--Colors-Text-Body-[A-Za-z]+)\)/
+  );
+  assert.equal(
+    instructions && instructions[1],
+    '--Colors-Text-Body-Default',
+    'A8 instruction token stays Body-Default'
+  );
+});
+
 test('A14: Sort instructions include the keyboard path', () => {
   const sortJs = read('public/modules/sort.js');
   assert.match(
