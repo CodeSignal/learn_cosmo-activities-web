@@ -4,7 +4,7 @@
 **Program:** [program-plan.md](./program-plan.md)  
 **Critical / serious:** [resolution-plan.md](./resolution-plan.md) (A1–A11, D1–D2 on `main`)  
 **Standard:** WCAG 2.2 AA  
-**Status:** Product calls P8–P15 confirmed. Issues filed. A20 on `main` (PR #66). Executing Wave 4b A12.
+**Status:** Product calls P8–P15 confirmed. Issues filed. A12 on `main` (PR #67). Executing Wave 4b A14.
 
 In scope: **A12–A20, D3**, and leftover axe **A21**.  
 Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-Practice choice tokens. Question editor stays out (internal-only).
@@ -33,6 +33,7 @@ Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-P
 | A15 | #64 | Text Input Next button mounted |
 | A13 | #65 | Toolbar inside `<main>` |
 | A20 | #66 | Designed focus ring on FIB blanks and toolbar tools |
+| A12 | #67 | Activity `h2`; authored heading or P10 type name |
 | D3 | DS #33 → app #61 | Divider line token (Neutral-800), ≥3:1 vs panes |
 
 Unrelated merges on the same timeline: clipboard in iframes (#43), Sort heading font (#45). Not audit IDs.
@@ -254,7 +255,7 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | --- | --- | --- | --- | --- |
 | D1 | [DS #29](https://github.com/CodeSignal/learn_bespoke-design-system/issues/29) | 1 ∥ / 3 | #48 | Closed (PR #48) |
 | DS bump D1 | #30 | after D1 | #48 | Closed (PR #48) |
-| A12 | #49 | 4b | | Open |
+| A12 | #49 | 4b | #67 | Closed (PR #67) |
 | A13 | #50 | 4a | #65 | Closed (PR #65) |
 | A14 | #51 | 4b | | Open |
 | A15 | #52 | 4a | #64 | Closed (PR #64) |
@@ -282,4 +283,4 @@ Critical/serious rows stay in [resolution-plan.md](./resolution-plan.md). The do
 
 ## Next step
 
-A20 is on `main` (PR #66). Next: Wave 4b A12 (`fix/a11y-headings`, #49). Do not put #66 on the A12 row.
+A12 is on `main` (PR #67). Next: Wave 4b A14 (`fix/a11y-sort-keyboard-copy`, #51). Do not put #67 on the A14 row.
