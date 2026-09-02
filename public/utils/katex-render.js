@@ -20,13 +20,16 @@ export function renderMath(element, options = {}) {
     ignoredClasses: ['no-math'],
     throwOnError: false,
     errorColor: '#cc0000',
-    ...options
+    ...options,
+    // MathML for AT; visual HTML stays aria-hidden.
+    output: 'htmlAndMathml'
   };
 
   // Function to actually render math
   const doRender = () => {
     if (window.renderMathInElement && element) {
       window.renderMathInElement(element, defaultOptions);
+      exposeMathML(element);
     }
   };
 
@@ -57,4 +60,19 @@ export function renderMath(element, options = {}) {
       }, { once: true });
     }
   }
+}
+
+/** Visual KaTeX stays aria-hidden; the MathML sibling stays in the tree. */
+function exposeMathML(root) {
+  root.querySelectorAll('.katex').forEach((el) => {
+    const visual = el.querySelector(':scope > .katex-html');
+    const mathml = el.querySelector(':scope > .katex-mathml');
+    if (visual) {
+      visual.setAttribute('aria-hidden', 'true');
+    }
+    if (mathml) {
+      mathml.removeAttribute('aria-hidden');
+      el.removeAttribute('aria-hidden');
+    }
+  });
 }
