@@ -128,8 +128,7 @@ test('A12: every in-scope activity exposes an h2; authored heading wins', () => 
   const sort = read('public/modules/sort.js');
   assert.match(
     sort,
-    /Click or drag the items onto the cards above/,
-    'A12 does not change the A14 instruction sentence'
+    /Click or drag the items onto the cards above, or select an item and press Enter on a card\./
   );
 
   const fib = read('public/modules/fib.js');
@@ -324,12 +323,20 @@ test('A7: dark choice default and hover contrast are at least 4.5:1', () => {
   }
 });
 
+test('A14: Sort instructions include the keyboard path', () => {
+  const sortJs = read('public/modules/sort.js');
+  assert.match(
+    sortJs,
+    /Click or drag the items onto the cards above, or select an item and press Enter on a card\./
+  );
+});
+
 test('A8: Sort instructions meet 4.5:1 in light and keep the click-or-drag copy', () => {
   const sortJs = read('public/modules/sort.js');
   assert.match(
     sortJs,
-    /Click or drag the items onto the cards above/,
-    'instruction copy stays put (P8 / A14 is out of this plan)'
+    /Click or drag the items onto the cards above, or select an item and press Enter on a card\./,
+    'instruction copy includes the keyboard path (P11)'
   );
 
   const sortCss = read('public/modules/sort.css');

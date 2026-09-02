@@ -52,7 +52,7 @@ export function initSort({
       <div class="categorization-categories" id="categorization-categories"></div>
       <div class="categorization-instructions">
         <span class="categorization-instructions-icon" aria-hidden="true">${instructionIconSvg()}</span>
-        <p class="categorization-instructions-text body-xxsmall">Click or drag the items onto the cards above</p>
+        <p class="categorization-instructions-text body-xxsmall">Click or drag the items onto the cards above, or select an item and press Enter on a card.</p>
       </div>
       <p id="sort-validate-error" class="activity-error-text body-small" hidden></p>
       <div class="categorization-tray" id="categorization-tray" role="list" aria-label="Items to sort"></div>
