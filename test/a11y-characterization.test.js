@@ -342,9 +342,9 @@ test('A21: Sort empty dropzone placeholder meets 4.5:1 in light and keeps Drop i
   assert.match(before[0], /content:\s*"Drop items here"/);
   const colorM = before[0].match(/color:\s*var\((--Colors-Text-Body-[A-Za-z]+)\)/);
   assert.ok(colorM, 'placeholder sets a Body color token');
-  assert.notEqual(
+  assert.equal(
     colorM[1],
-    '--Colors-Text-Body-Lighter',
+    '--Colors-Text-Body-Default',
     '13px placeholder must not use Body-Lighter'
   );
 
@@ -363,7 +363,7 @@ test('A21: Sort empty dropzone placeholder meets 4.5:1 in light and keeps Drop i
   assert.ok(fg && bg, `unresolved ${fgToken} or ${bgToken}`);
   const ratio = contrastRatio(hexToRgb(fg), hexToRgb(bg));
   assert.ok(
-    ratio + 0.01 >= 4.5,
+    ratio >= 4.5,
     `placeholder ${colorM[1]} (${fg}) on Main-Top (${bg}) is ${ratio.toFixed(2)}:1, need 4.5:1`
   );
 
