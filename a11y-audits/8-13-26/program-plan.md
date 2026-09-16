@@ -4,7 +4,7 @@ How we will run the ChatCPT (`learn_cosmo-chat`) process on this repo, adapted f
 
 **Standard:** WCAG 2.2 Level AA
 
-**Status:** Phase 4 executing — see `wave-4-plan.md`. Critical/serious are on `main`.
+**Status:** Phase 4 complete. See `wave-4-plan.md`. A1–A21 and D1–D3 are on `main`. Residual: A22 (light choice hover contrast) and the audit AT retest.
 
 **Gates (same as ChatCPT):**
 
@@ -254,4 +254,4 @@ These will show up in the audit or the resolution plan. Do not invent answers du
 
 ## Next step
 
-Approve (or amend) **scope** and the **scan matrix**. Then Phase 1: stand up `a11y-audits/tools/`, walk the states, write `audit.md`, and stop.
+Phase 4 code is on `main`. Next: VoiceOver plus NVDA or JAWS against the audit retest checklist. A22 (`#71`) is the leftover axe `color-contrast` 1 (light choice hover). Do not reopen A7 or A21.
