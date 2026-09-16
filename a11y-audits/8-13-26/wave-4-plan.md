@@ -4,7 +4,7 @@
 **Program:** [program-plan.md](./program-plan.md)  
 **Critical / serious:** [resolution-plan.md](./resolution-plan.md) (A1–A11, D1–D2 on `main`)  
 **Standard:** WCAG 2.2 AA  
-**Status:** Product calls P8–P15 confirmed. Issues filed. A14 on `main` (PR #68). Executing Wave 4b A19.
+**Status:** Product calls P8–P15 confirmed. Issues filed. A19 on `main` (PR #69). Executing Wave 4b A21.
 
 In scope: **A12–A20, D3**, and leftover axe **A21**.  
 Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-Practice choice tokens. Question editor stays out (internal-only).
@@ -35,6 +35,7 @@ Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-P
 | A20 | #66 | Designed focus ring on FIB blanks and toolbar tools |
 | A12 | #67 | Activity `h2`; authored heading or P10 type name |
 | A14 | #68 | Sort instructions include the keyboard path |
+| A19 | #69 | KaTeX exposes MathML; visual layer aria-hidden |
 | D3 | DS #33 → app #61 | Divider line token (Neutral-800), ≥3:1 vs panes |
 
 Unrelated merges on the same timeline: clipboard in iframes (#43), Sort heading font (#45). Not audit IDs.
@@ -263,7 +264,7 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | A16 | #53 | 4a | #62 | Closed (PR #62) |
 | A17 | #54 | 4a | #60 | Closed (PR #60) |
 | A18 | #55 | 4a | #63 | Closed (PR #63) |
-| A19 | #56 | 4b | | Open |
+| A19 | #56 | 4b | #69 | Closed (PR #69) |
 | A20 | #57 | 4a | #66 | Closed (PR #66) |
 | A21 | #58 | 4b | | Open |
 | D3 | [DS #32](https://github.com/CodeSignal/learn_bespoke-design-system/issues/32) | 4 ∥ | #61 | Closed (PR #61) |
@@ -284,4 +285,4 @@ Critical/serious rows stay in [resolution-plan.md](./resolution-plan.md). The do
 
 ## Next step
 
-A14 is on `main` (PR #68). Next: Wave 4b A19 (`fix/a11y-katex-mathml`, #56). Do not put #68 on the A19 row.
+A19 is on `main` (PR #69). Next: Wave 4b A21 (`fix/a11y-sort-dropzone-contrast`, #58). Do not put #69 on the A21 row.

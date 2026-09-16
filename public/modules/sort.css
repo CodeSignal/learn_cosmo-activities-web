@@ -118,7 +118,7 @@
 
 .categorization-dropzone.empty::before {
   content: "Drop items here";
-  color: var(--Colors-Text-Body-Lighter);
+  color: var(--Colors-Text-Body-Default);
   font-size: var(--Fonts-Body-Default-xxs, 13px);
   align-self: center;
   margin: auto;
