@@ -122,6 +122,23 @@
   position: relative;
 }
 
+/* Design-system radios/checkboxes hide the native input at 0×0, which Chromium
+   then skips in sequential focus navigation. Stretch it over the option so the
+   card is the keyboard and pointer target; the visual mark stays in the card. */
+.mcq-option.input-checkbox input[type="checkbox"],
+.mcq-option.input-radio input[type="radio"] {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.mcq-option input:focus,
+.mcq-option input:focus-visible {
+  outline: none;
+}
+
 .mcq-option-card {
   display: flex;
   gap: var(--UI-Spacing-spacing-ml);
@@ -166,26 +183,28 @@
   border-color: var(--Colors-Primary-Default);
 }
 
-/* Visible keyboard focus indicator (WCAG 2.4.7 / 2.4.11).
-   The native <input> is visually hidden, and the old indicator only tinted the
-   small circle's border — which the checked state repaints to Primary, so a
-   focused *checked* radio showed no change at all. Since a radio group tabs to
-   the checked option after a selection, focus became invisible "apart from the
-   first time". We instead ring the whole option card so the indicator can't be
-   overridden by checked/hover state, and reuse the two-tone ring from
-   matching.css: no single color clears 3:1 against both the light card fill and
-   the dark page surface, so we stack an inner dark ring (≥3:1 vs the light card)
-   and an outer light ring (≥3:1 vs the dark surface). The transparent outline is
-   the forced-colors / Windows High Contrast fallback, where box-shadow is
-   dropped but the outline is promoted to a system color. :focus-visible keeps the
-   ring for keyboard users while suppressing it on mouse clicks (native radios
-   navigate via the browser, so the heuristic is reliable here). */
+/* WCAG 2.2 AA (1.4.11) focus indicator: a solid 2px outline held 2px off the
+   option card so it contrasts against the page rather than the card's own fill.
+   Offsetting it is what lets a single color (--Colors-Input-Focus-Visible)
+   serve every variant (unchecked, checked, hover).
+
+   The native <input> is visually hidden, and the radio/checkbox mark sits on
+   the card — too small for a 2px offset to clear the card fill, which would
+   otherwise become the contrast partner in place of the page. So we mark the
+   whole option whenever focus lands inside it.
+
+   Because the outline paints outside the control, a directly adjacent sibling's
+   background covers the edge between them. .mcq-option is already `position:
+   relative`, which is enough: a positioned element paints after in-flow
+   siblings' backgrounds even at z-index: auto, so no z-index is set.
+
+   :focus-visible keeps the ring for keyboard users while suppressing it on
+   mouse clicks (native radios navigate via the browser, so the heuristic is
+   reliable here). Forced-colors promotes the outline to a system color. */
 .mcq-option:has(input:focus-visible) {
-  outline: 2px solid transparent;
+  position: relative;
+  outline: 2px solid var(--Colors-Input-Focus-Visible);
   outline-offset: 2px;
-  box-shadow:
-    0 0 0 2px var(--Colors-Base-Neutral-1450),
-    0 0 0 4px var(--Colors-Base-Neutral-00);
 }
 
 /* Ensure checkbox/radio elements are properly sized and positioned */
