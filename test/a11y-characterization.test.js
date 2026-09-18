@@ -166,6 +166,22 @@ test('A20: FIB blanks and toolbar tools use the two-tone focus-visible ring', ()
   assert.doesNotMatch(matching, /\.matching-selection-area:focus-visible/);
 });
 
+test('MCQ options use a 2px offset focus-visible outline against the page', () => {
+  const css = read('public/modules/mcq.css');
+  const m = css.match(/\.mcq-option:has\(input:focus-visible\)\s*\{[^}]+\}/);
+  assert.ok(m, '.mcq-option:has(input:focus-visible) rule exists');
+  assert.match(m[0], /position:\s*relative/);
+  assert.match(m[0], /outline:\s*2px solid var\(--Colors-Input-Focus-Visible\)/);
+  assert.match(m[0], /outline-offset:\s*2px/);
+  assert.doesNotMatch(m[0], /box-shadow/);
+
+  assert.match(
+    css,
+    /\.mcq-option\.input-radio input\[type="radio"\][\s\S]*?width:\s*100%/
+  );
+  assert.match(css, /\.mcq-option input:focus-visible\s*\{[^}]*outline:\s*none/);
+});
+
 test('A1 characterization: learner document has lang and a main landmark', () => {
   const html = read('public/index.html');
   assert.match(html, /<html lang="en">/);
