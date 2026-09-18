@@ -4,50 +4,32 @@ Multiple Choice
 
 __Summary__
 
-0/2 correct
+0/1 correct
 
 __Responses__
 
 1. **Question 1**
-   - Selected Answer: D
+   - Selected Answer: A
    - Correct Answer: B
-   - Result: ✗ Incorrect
-
-2. **Question 2**
-   - Selected Answer: A, B
-   - Correct Answer: A, C
-   - Multi Mode: all
    - Result: ✗ Incorrect
 
 __Practice Question__
 
-Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
+Let's test your understanding! Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-B. Her actual brand doesn't match her identity
 A. Her brand identity is wrong
+B. Her actual brand doesn't match her identity
 C. Her brand image is too positive
 D. She needs a better logo
 
 __Suggested Answers__
 
-- B - Correct
 - A
+- B - Correct
 - C
 - D
 
-__Practice Question__
+__Explain Your Answer__
 
-Which of the following issues might be true for Alex, a freelance developer who wants to be known for producing "efficient, bug-free code delivered on time"? He is well-liked by clients for his speedy turnarounds, but his code is often buggy and hard for teammates to maintain. According to the brand triangle, what are his main problems?
-
-D. He needs a new logo
-A. His actual brand doesn't match his intended identity
-B. He needs to improve his communication skills
-C. His brand image is inconsistent with his identity
-
-__Suggested Answers__
-
-- D
-- A - Correct
-- B
-- C - Correct
+true
 

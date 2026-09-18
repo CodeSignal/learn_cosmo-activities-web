@@ -1,58 +1,29 @@
 # Activity report
 
-**Activity type:** Fill In The Blanks
-**Generated:** 2026-05-20T19:44:22.354Z
+**Activity type:** Multiple Choice
+**Generated:** 2026-09-18T20:07:35.281Z
 
 ## Summary
 
-**Score:** 0 / 5 correct
+**Score:** 0 / 1 correct
 
 ---
 
 ## Candidate Response
 
-### Passage
+### Question 1
 
-Match the bosses with their style
+Let&#39;s test your understanding! Maria is a freelance designer who wants to be known for &quot;high-quality, timely work.&quot; She delivers beautiful designs but always misses deadlines. According to the brand triangle, what&#39;s her main problem?
 
-### Question
+**Options**
 
-**Boss 1**: You start your presentation with a bold vision and a simple chart showing the potential for rapid market growth. You avoid lengthy details and focus on the big win, using compelling visuals to capture attention. [Blank 1]
+- **A.** Her brand identity is wrong
+- **B.** Her actual brand doesn&#39;t match her identity
+- **C.** Her brand image is too positive
+- **D.** She needs a better logo
 
-**Boss 2**: You provide a detailed spreadsheet with raw data and multiple scenarios, allowing your boss to analyze the numbers independently. You avoid drawing conclusions for them and instead give them all the information they need to verify on their own. [Blank 2]
+**Response**
 
-**Boss 3**: You open your pitch by referencing endorsements from respected colleagues and industry experts. You anticipate tough questions and are prepared to defend every data point, knowing your boss will challenge your credibility and sources. [Blank 3]
-
-**Boss 4**: You organize your proposal with comprehensive research, case studies, and a clear explanation of your methodology. You give your boss time to process the information and invite them to discuss the logic behind your recommendations. [Blank 4]
-
-**Boss 5**: You highlight how similar companies have successfully implemented your idea, providing testimonials and references. You focus on proven results and established brands to reassure your boss that your proposal is a safe choice. [Blank 5]
-
-### Blank 1
-
-- **Candidate's Answer:** Skeptic
-- **Expected Answer:** Charismatic
-- **Result:** Incorrect
-
-### Blank 2
-
-- **Candidate's Answer:** Follower
-- **Expected Answer:** Controller
-- **Result:** Incorrect
-
-### Blank 3
-
-- **Candidate's Answer:** Charismatic
-- **Expected Answer:** Skeptic
-- **Result:** Incorrect
-
-### Blank 4
-
-- **Candidate's Answer:** Controller
-- **Expected Answer:** Thinker
-- **Result:** Incorrect
-
-### Blank 5
-
-- **Candidate's Answer:** Thinker
-- **Expected Answer:** Follower
+- **Candidate's Answer:** A
+- **Correct answer(s):** B
 - **Result:** Incorrect
