@@ -1,3 +1,7 @@
+# Attach a deployable tarball to a GitHub release.
+# `npm run pack` builds a single-file server bundle (no node_modules) into
+# dist.tar.gz. Unpack, add/replace data/question.md, then `node server.js`.
+
 name: Build and Release
 
 on:
@@ -27,14 +31,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Archive build output
-        run: tar -czf dist.tar.gz *
+      - name: Run tests
+        run: npm test
+
+      - name: Pack release
+        run: npm run pack
 
       - name: Upload build artifact (for workflow logs)
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist
+          path: dist.tar.gz
 
       - name: Upload asset to existing release
         uses: ncipollo/release-action@v1

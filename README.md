@@ -163,6 +163,10 @@ When **`SIM_ORIGIN`** is set (split-screen mode):
 
 The application uses vanilla JavaScript with ES6 modules. The server automatically serves files from the `public` directory and provides API endpoints for activity management.
 
+### Release package
+
+`npm run pack` builds a runnable tree into `dist/` and archives it as `dist.tar.gz`: a single-file server bundle (`marked` + `ws` inlined — no `node_modules`) plus the static files the server serves. The release workflow runs the same command and attaches `dist.tar.gz` to the GitHub release. Extract, set `data/question.md`, and run `node server.js`.
+
 ### Key Components
 
 - **app.js**: Main application orchestrator
