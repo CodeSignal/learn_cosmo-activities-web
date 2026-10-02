@@ -1,2 +1,4 @@
 node_modules
 data/answer.md
+dist/
+dist.tar.gz
