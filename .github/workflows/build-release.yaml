@@ -52,3 +52,6 @@ jobs:
           allowUpdates: true
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true
+          # Without this, the update path defaults prerelease=false and clears
+          # the flag you set in the GitHub UI, which then makes the release Latest.
+          omitPrereleaseDuringUpdate: true
