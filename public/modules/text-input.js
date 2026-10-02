@@ -366,8 +366,10 @@ export function initTextInput({
       question.validation.kind === 'numeric-with-currency'
     );
     
-    // Check if this is a multi-line input
-    const isMultiLine = question.validation && question.validation.kind === 'string' && 
+    // Check if this is a multi-line input (string or validate-later)
+    const kind = question.validation?.kind;
+    const isMultiLine = question.validation &&
+                        (kind === 'string' || kind === 'validate-later') &&
                         question.validation.options?.multiLine === true;
     
     // Create input wrapper for currency/units overlay (only for single-line inputs)
