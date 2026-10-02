@@ -529,7 +529,35 @@ function renderValidationOptions(container, question, index) {
   const validationDiv = document.createElement('div');
   validationDiv.className = 'validation-options';
 
-  // "validate-later" type doesn't need validation options
+  // Multi-line is available for string and validate-later
+  if (kind === 'string' || kind === 'validate-later') {
+    const multiLineDiv = document.createElement('div');
+    multiLineDiv.className = 'validation-option';
+    const multiLineLabel = document.createElement('label');
+    multiLineLabel.className = 'input-checkbox';
+    const multiLineInput = document.createElement('input');
+    multiLineInput.type = 'checkbox';
+    multiLineInput.checked = options.multiLine === true;
+    multiLineInput.onchange = () => {
+      options.multiLine = multiLineInput.checked;
+      updateStructure();
+    };
+    const multiLineBox = document.createElement('span');
+    multiLineBox.className = 'input-checkbox-box';
+    const multiLineCheckmark = document.createElement('span');
+    multiLineCheckmark.className = 'input-checkbox-checkmark';
+    multiLineBox.appendChild(multiLineCheckmark);
+    const multiLineText = document.createElement('span');
+    multiLineText.className = 'input-checkbox-label';
+    multiLineText.textContent = 'Multi-line';
+    multiLineLabel.appendChild(multiLineInput);
+    multiLineLabel.appendChild(multiLineBox);
+    multiLineLabel.appendChild(multiLineText);
+    multiLineDiv.appendChild(multiLineLabel);
+    validationDiv.appendChild(multiLineDiv);
+  }
+
+  // "validate-later" type only supports multi-line among validation options
   if (kind === 'validate-later') {
     container.appendChild(validationDiv);
     return;
@@ -561,32 +589,6 @@ function renderValidationOptions(container, question, index) {
     caseLabel.appendChild(caseText);
     caseSensitiveDiv.appendChild(caseLabel);
     validationDiv.appendChild(caseSensitiveDiv);
-
-    // Multi-line option
-    const multiLineDiv = document.createElement('div');
-    multiLineDiv.className = 'validation-option';
-    const multiLineLabel = document.createElement('label');
-    multiLineLabel.className = 'input-checkbox';
-    const multiLineInput = document.createElement('input');
-    multiLineInput.type = 'checkbox';
-    multiLineInput.checked = options.multiLine === true;
-    multiLineInput.onchange = () => {
-      options.multiLine = multiLineInput.checked;
-      updateStructure();
-    };
-    const multiLineBox = document.createElement('span');
-    multiLineBox.className = 'input-checkbox-box';
-    const multiLineCheckmark = document.createElement('span');
-    multiLineCheckmark.className = 'input-checkbox-checkmark';
-    multiLineBox.appendChild(multiLineCheckmark);
-    const multiLineText = document.createElement('span');
-    multiLineText.className = 'input-checkbox-label';
-    multiLineText.textContent = 'Multi-line';
-    multiLineLabel.appendChild(multiLineInput);
-    multiLineLabel.appendChild(multiLineBox);
-    multiLineLabel.appendChild(multiLineText);
-    multiLineDiv.appendChild(multiLineLabel);
-    validationDiv.appendChild(multiLineDiv);
 
     // Fuzzy option
     const fuzzyDiv = document.createElement('div');

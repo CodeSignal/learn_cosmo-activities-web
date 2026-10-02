@@ -26,6 +26,13 @@ test('parseValidationOptions supports validate-later without answer text', () =>
   assert.deepEqual(parsed.validation.options, {});
 });
 
+test('parseValidationOptions supports multiLine on validate-later', () => {
+  const parsed = parseValidationOptions('[kind: validate-later] [options: multiLine=true]');
+  assert.equal(parsed.correctAnswer, '');
+  assert.equal(parsed.validation.kind, 'validate-later');
+  assert.deepEqual(parsed.validation.options, { multiLine: true });
+});
+
 test('parseTextInputAnswerItems keeps all accepted answers', () => {
   const parsed = parseTextInputAnswerItems([
     'USA [kind: string] [options: caseSensitive=false]',
