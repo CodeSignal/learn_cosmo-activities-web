@@ -16,6 +16,14 @@ on:
 permissions:
   contents: write
 
+# Serialize release runs so floating-alias tag/notes/asset updates cannot
+# interleave. Queue pending runs instead of canceling them; a stale check
+# below still skips alias writes if queue order diverges from release order.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+  queue: max
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
@@ -74,6 +82,19 @@ jobs:
           SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
+
+          # Releases API is newest-created first. Ignore the floating alias
+          # itself and drafts so we only compare versioned releases.
+          newest="$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
+            --jq '[.[] | select(.draft == false and .tag_name != "prerelease")][0].tag_name // empty')"
+          if [[ -z "${newest}" ]]; then
+            echo "No versioned releases found; skipping floating alias update."
+            exit 0
+          fi
+          if [[ "${newest}" != "${SOURCE_TAG}" ]]; then
+            echo "Skipping floating alias update: ${SOURCE_TAG} is stale (newest is ${newest})."
+            exit 0
+          fi
 
           git tag -f prerelease "${SOURCE_SHA}"
           git push origin refs/tags/prerelease --force
