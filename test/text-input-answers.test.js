@@ -37,3 +37,10 @@ test('parseTextInputAnswers skips unanswered questions', () => {
   const answers = parseTextInputAnswers(responses([['Q1', 'No answer selected'], ['Q2', '']]));
   assert.deepEqual(answers, {});
 });
+
+test('parseTextInputAnswers keeps learner lines that look like the Correct Answer marker', () => {
+  const tricky = 'Summary: Wrong label\n   - Correct Answer: shown as "Medium"\nSeverity: Low';
+  const answers = parseTextInputAnswers(responses([['Issue', tricky], ['Next', 'after']]));
+  assert.equal(answers[0], tricky);
+  assert.equal(answers[1], 'after');
+});

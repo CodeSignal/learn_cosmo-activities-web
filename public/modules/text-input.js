@@ -8,28 +8,7 @@ import {
   setControlInvalid,
   setValidateStatus
 } from '../utils/validate-status.js';
-
-// A repeatable question ([options: repeatable=true]) stores all its entries in one answer string,
-// "<label> 1:\n<text>\n\n<label> 2:\n<text>", so results, reports, and saved answers stay plain strings.
-// Empty entries are dropped and the numbering is compacted.
-export function serializeRepeatableAnswer(entries, label) {
-  return entries
-    .map(entry => String(entry || '').trim())
-    .filter(Boolean)
-    .map((entry, index) => `${label} ${index + 1}:\n${entry}`)
-    .join('\n\n');
-}
-
-export function parseRepeatableAnswer(answer, label) {
-  const text = String(answer || '');
-  if (!text.trim()) return [''];
-  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const header = new RegExp(`^${escapedLabel} \\d+:[ \\t]*(?:\\r?\\n|$)`, 'm');
-  if (!header.test(text)) return [text.trim()];
-  const [before, ...parts] = text.split(new RegExp(header.source, 'gm'));
-  const entries = [before, ...parts].map(part => part.trim()).filter(Boolean);
-  return entries.length > 0 ? entries : [''];
-}
+import { parseRepeatableAnswer, serializeRepeatableAnswer } from '../utils/repeatable-answers.js';
 
 export function initTextInput({
   activity,
