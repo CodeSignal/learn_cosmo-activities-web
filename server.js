@@ -7,6 +7,7 @@ const WebSocket = require('ws');
 const {
   parseTextInputAnswerItems
 } = require('./lib/text-input-validation');
+const { parseTextInputAnswers } = require('./lib/text-input-answers');
 const {
   questionIndexFromOrderedResult,
   evaluateActivityResultCorrect,
@@ -377,16 +378,8 @@ function parseAnswersFromMarkdown(markdownText) {
       }
     }
   } else if (/^text input$/i.test(type)) {
-    // Parse Text Input responses: "Selected Answer: [value]"
-    const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
-    let match;
-    while ((match = responseRegex.exec(responsesText)) !== null) {
-      const questionIndex = parseInt(match[1], 10) - 1; // Convert to 0-indexed
-      const selectedAnswer = match[2].trim();
-      if (selectedAnswer && selectedAnswer !== 'No answer selected') {
-        answers[questionIndex] = selectedAnswer;
-      }
-    }
+    // Parse Text Input responses: "Selected Answer: [value]" (values may span several lines)
+    Object.assign(answers, parseTextInputAnswers(responsesText));
   } else if (/^matrix$/i.test(type)) {
     const explanations = {};
     const questionBlocks = responsesText.split(/(?=\d+\.\s*\*\*[^*]+\*\*)/);
