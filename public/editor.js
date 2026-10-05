@@ -557,8 +557,66 @@ function renderValidationOptions(container, question, index) {
     validationDiv.appendChild(multiLineDiv);
   }
 
-  // "validate-later" type only supports multi-line among validation options
+  // "validate-later" type supports multi-line plus repeatable entries
   if (kind === 'validate-later') {
+    const repeatableDiv = document.createElement('div');
+    repeatableDiv.className = 'validation-option';
+    const repeatableLabel = document.createElement('label');
+    repeatableLabel.className = 'input-checkbox';
+    const repeatableInput = document.createElement('input');
+    repeatableInput.type = 'checkbox';
+    repeatableInput.checked = options.repeatable === true;
+    repeatableInput.onchange = () => {
+      if (repeatableInput.checked) {
+        options.repeatable = true;
+      } else {
+        delete options.repeatable;
+        delete options.itemLabel;
+      }
+      question.validation.options = options;
+      renderValidationOptions(container, question, index);
+      updateStructure();
+    };
+    const repeatableBox = document.createElement('span');
+    repeatableBox.className = 'input-checkbox-box';
+    const repeatableCheckmark = document.createElement('span');
+    repeatableCheckmark.className = 'input-checkbox-checkmark';
+    repeatableBox.appendChild(repeatableCheckmark);
+    const repeatableText = document.createElement('span');
+    repeatableText.className = 'input-checkbox-label';
+    repeatableText.textContent = 'Repeatable (learner can add entries)';
+    repeatableLabel.appendChild(repeatableInput);
+    repeatableLabel.appendChild(repeatableBox);
+    repeatableLabel.appendChild(repeatableText);
+    repeatableDiv.appendChild(repeatableLabel);
+    validationDiv.appendChild(repeatableDiv);
+
+    if (options.repeatable === true) {
+      const itemLabelDiv = document.createElement('div');
+      itemLabelDiv.className = 'validation-option';
+      const itemLabelLabel = document.createElement('label');
+      itemLabelLabel.className = 'form-label';
+      itemLabelLabel.textContent = 'Entry Label';
+      const itemLabelInput = document.createElement('input');
+      itemLabelInput.type = 'text';
+      itemLabelInput.className = 'input';
+      itemLabelInput.placeholder = 'Entry';
+      itemLabelInput.value = options.itemLabel || '';
+      itemLabelInput.oninput = debounce(() => {
+        // Option values cannot contain the option syntax characters
+        const value = itemLabelInput.value.replace(/[,=[\]]/g, '').trim();
+        if (value) {
+          options.itemLabel = value;
+        } else {
+          delete options.itemLabel;
+        }
+        updateStructure();
+      }, 300);
+      itemLabelDiv.appendChild(itemLabelLabel);
+      itemLabelDiv.appendChild(itemLabelInput);
+      validationDiv.appendChild(itemLabelDiv);
+    }
+
     container.appendChild(validationDiv);
     return;
   }

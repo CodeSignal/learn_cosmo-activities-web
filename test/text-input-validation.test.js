@@ -33,6 +33,13 @@ test('parseValidationOptions supports multiLine on validate-later', () => {
   assert.deepEqual(parsed.validation.options, { multiLine: true });
 });
 
+test('parseValidationOptions keeps repeatable and itemLabel on validate-later', () => {
+  const parsed = parseValidationOptions('[kind: validate-later] [options: multiLine=true,repeatable=true,itemLabel=Defect]');
+  assert.equal(parsed.correctAnswer, '');
+  assert.equal(parsed.validation.kind, 'validate-later');
+  assert.deepEqual(parsed.validation.options, { multiLine: true, repeatable: true, itemLabel: 'Defect' });
+});
+
 test('parseTextInputAnswerItems keeps all accepted answers', () => {
   const parsed = parseTextInputAnswerItems([
     'USA [kind: string] [options: caseSensitive=false]',

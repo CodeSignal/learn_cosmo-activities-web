@@ -49,6 +49,22 @@ Then open **http://localhost:3000/**. You get a split layout: a searchable list 
 
 This mode is intended for local development and QA only. The same static assets and activity APIs apply as in normal mode; only the root route and the extra example APIs are added (see **API Endpoints** below).
 
+### Text Input: repeatable entries
+
+A `validate-later` Text Input question can let the learner add as many entries as they need (for example, one defect report per entry):
+
+```markdown
+__Correct Answers__
+
+- [kind: validate-later] [options: multiLine=true,repeatable=true,itemLabel=Defect]
+```
+
+- `repeatable=true` shows an **Add** button and a **Remove** button per entry.
+- `itemLabel` names the entries ("Defect 1", "Defect 2", ...). It defaults to `Entry` and cannot contain `,` `=` `[` or `]`.
+- All entries are saved as one answer, `Defect 1:\n<text>\n\nDefect 2:\n<text>`, so reports and graders see every entry under the question's **Candidate's Answer**. Empty entries are dropped.
+
+See `data/examples/text-input-repeatable.md`.
+
 ### Side content & split-screen layout
 
 Any activity can render **side content** in a split layout by adding a `__Content__` section. The activity UI appears on the right and the side content on the left, with a draggable divider between them. `__Content__` accepts three forms:

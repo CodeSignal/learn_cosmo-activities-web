@@ -9,6 +9,28 @@ import {
   setValidateStatus
 } from '../utils/validate-status.js';
 
+// A repeatable question ([options: repeatable=true]) stores all its entries in one answer string,
+// "<label> 1:\n<text>\n\n<label> 2:\n<text>", so results, reports, and saved answers stay plain strings.
+// Empty entries are dropped and the numbering is compacted.
+export function serializeRepeatableAnswer(entries, label) {
+  return entries
+    .map(entry => String(entry || '').trim())
+    .filter(Boolean)
+    .map((entry, index) => `${label} ${index + 1}:\n${entry}`)
+    .join('\n\n');
+}
+
+export function parseRepeatableAnswer(answer, label) {
+  const text = String(answer || '');
+  if (!text.trim()) return [''];
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const header = new RegExp(`^${escapedLabel} \\d+:[ \\t]*(?:\\r?\\n|$)`, 'm');
+  if (!header.test(text)) return [text.trim()];
+  const [before, ...parts] = text.split(new RegExp(header.source, 'gm'));
+  const entries = [before, ...parts].map(part => part.trim()).filter(Boolean);
+  return entries.length > 0 ? entries : [''];
+}
+
 export function initTextInput({
   activity,
   state,
@@ -38,6 +60,9 @@ export function initTextInput({
 
   // Track user answers per question
   const userAnswers = {};
+
+  // Entry lists for repeatable questions, keyed by question id
+  const repeatableEntries = {};
   
   // Track validation state
   let isValidating = false;
@@ -371,7 +396,12 @@ export function initTextInput({
     const isMultiLine = question.validation &&
                         (kind === 'string' || kind === 'validate-later') &&
                         question.validation.options?.multiLine === true;
-    
+
+    // Repeatable validate-later questions let the learner add and remove entries
+    const isRepeatable = kind === 'validate-later' && question.validation.options?.repeatable === true;
+    const itemLabel = String(question.validation?.options?.itemLabel || '').trim() || 'Entry';
+    const initialEntries = isRepeatable ? parseRepeatableAnswer(userAnswers[question.id], itemLabel) : null;
+
     // Create input wrapper for currency/units overlay (only for single-line inputs)
     const inputWrapper = document.createElement('div');
     inputWrapper.className = 'text-input-field-wrapper';
@@ -397,7 +427,7 @@ export function initTextInput({
     }
     input.className = 'input text-input-field';
     input.id = `q${question.id}-input`;
-    input.value = userAnswers[question.id] || '';
+    input.value = isRepeatable ? initialEntries[0] : (userAnswers[question.id] || '');
     input.setAttribute('aria-label', `Answer for question ${qIdx + 1}`);
     input.placeholder = 'Enter your answer...';
     
@@ -537,16 +567,35 @@ export function initTextInput({
       }, { passive: true });
     }
     
-    // Add input event listener
-    input.addEventListener('input', () => {
-      // Clear validation when user changes any value
-      clearValidation();
-      userAnswers[question.id] = input.value;
-      updateResultsAndPost();
-    });
-    
-    inputWrapper.appendChild(input);
-    inputContainer.appendChild(inputWrapper);
+    let repeatable = null;
+    if (isRepeatable) {
+      repeatable = createRepeatableEntries({
+        question,
+        qIdx,
+        firstField: input,
+        entries: initialEntries,
+        label: itemLabel,
+        isMultiLine,
+        onChange: (values) => {
+          clearValidation();
+          userAnswers[question.id] = serializeRepeatableAnswer(values, itemLabel);
+          updateResultsAndPost();
+        }
+      });
+      repeatableEntries[question.id] = repeatable;
+      inputContainer.appendChild(repeatable.element);
+    } else {
+      // Add input event listener
+      input.addEventListener('input', () => {
+        // Clear validation when user changes any value
+        clearValidation();
+        userAnswers[question.id] = input.value;
+        updateResultsAndPost();
+      });
+
+      inputWrapper.appendChild(input);
+      inputContainer.appendChild(inputWrapper);
+    }
     
     // Add "Next" button for non-last questions
     if (qIdx < textInput.questions.length - 1) {
@@ -575,11 +624,16 @@ export function initTextInput({
         }
       });
       
-      // Update button state when input changes
-      input.addEventListener('input', () => {
-        const hasAnswer = input.value.trim().length > 0;
+      // Update button state when the answer changes
+      const updateNextButton = () => {
+        const hasAnswer = (userAnswers[question.id] || '').trim().length > 0;
         nextButton.disabled = !hasAnswer;
-      });
+      };
+      if (repeatable) {
+        repeatable.onAnswerChange(updateNextButton);
+      } else {
+        input.addEventListener('input', updateNextButton);
+      }
       
       nextButtonContainer.appendChild(nextButton);
       inputContainer.appendChild(nextButtonContainer);
@@ -590,6 +644,111 @@ export function initTextInput({
   });
   
   
+  // Builds the entry list for a repeatable question. The first entry reuses `firstField`, which
+  // keeps the q<id>-input id so focus (Next button) and validation styling work as for any input.
+  function createRepeatableEntries({ question, qIdx, firstField, entries, label, isMultiLine, onChange }) {
+    const element = document.createElement('div');
+    element.className = 'text-input-entries';
+    const list = document.createElement('div');
+    list.className = 'text-input-entry-list';
+    element.appendChild(list);
+
+    const rows = [];
+    const answerListeners = [];
+
+    const createField = () => {
+      const field = document.createElement(isMultiLine ? 'textarea' : 'input');
+      if (isMultiLine) {
+        field.rows = 4;
+        field.style.resize = 'vertical';
+        field.style.minHeight = 'var(--UI-Input-md)';
+        field.style.height = 'auto';
+      } else {
+        field.type = 'text';
+      }
+      field.className = 'input text-input-field';
+      field.placeholder = 'Enter your answer...';
+      return field;
+    };
+
+    const emitChange = () => {
+      onChange(rows.map(row => row.field.value));
+      answerListeners.forEach(listener => listener());
+    };
+
+    const relabel = () => {
+      rows.forEach((row, index) => {
+        const name = `${label} ${index + 1}`;
+        if (index > 0) row.field.id = `q${question.id}-input-${index + 1}`;
+        row.label.textContent = name;
+        row.label.htmlFor = row.field.id;
+        row.field.setAttribute('aria-label', `${name} for question ${qIdx + 1}`);
+        row.remove.setAttribute('aria-label', `Remove ${name}`);
+        row.remove.hidden = rows.length === 1;
+      });
+    };
+
+    // Removing shifts the later values up and drops the last row, so the first field is never detached.
+    const removeAt = (index) => {
+      for (let i = index; i < rows.length - 1; i++) {
+        rows[i].field.value = rows[i + 1].field.value;
+      }
+      rows.pop().wrapper.remove();
+      relabel();
+      emitChange();
+      rows[Math.min(index, rows.length - 1)].field.focus();
+    };
+
+    const addRow = (value, field = null) => {
+      const row = {
+        wrapper: document.createElement('div'),
+        label: document.createElement('label'),
+        field: field || createField(),
+        remove: document.createElement('button')
+      };
+      row.wrapper.className = 'text-input-entry';
+      const header = document.createElement('div');
+      header.className = 'text-input-entry-header';
+      row.label.className = 'text-input-entry-label body-small';
+      row.remove.type = 'button';
+      row.remove.className = 'button button-text button-small text-input-entry-remove';
+      row.remove.textContent = 'Remove';
+      row.remove.addEventListener('click', () => removeAt(rows.indexOf(row)));
+      row.field.value = value;
+      row.field.addEventListener('input', emitChange);
+      header.appendChild(row.label);
+      header.appendChild(row.remove);
+      row.wrapper.appendChild(header);
+      row.wrapper.appendChild(row.field);
+      list.appendChild(row.wrapper);
+      rows.push(row);
+      relabel();
+      return row;
+    };
+
+    entries.forEach((value, index) => addRow(value, index === 0 ? firstField : null));
+
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.className = 'button button-secondary button-small text-input-entry-add';
+    addButton.textContent = `Add ${label.toLowerCase()}`;
+    addButton.addEventListener('click', () => {
+      addRow('').field.focus();
+    });
+    element.appendChild(addButton);
+
+    return {
+      element,
+      onAnswerChange: (listener) => answerListeners.push(listener),
+      reset: () => {
+        while (rows.length > 1) rows.pop().wrapper.remove();
+        rows[0].field.value = '';
+        relabel();
+        answerListeners.forEach(listener => listener());
+      }
+    };
+  }
+
   function addErrorIcon(questionEl) {
     // Check if icon already exists
     if (questionEl.querySelector('.text-input-question-error-icon')) {
@@ -706,6 +865,9 @@ export function initTextInput({
     elQuestions.querySelectorAll('.text-input-field').forEach(input => {
       input.value = '';
     });
+
+    // Collapse repeatable questions back to a single empty entry
+    Object.values(repeatableEntries).forEach(entryList => entryList.reset());
     
     // Clear validation state
     clearValidation();

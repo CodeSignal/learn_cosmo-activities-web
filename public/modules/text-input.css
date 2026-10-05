@@ -230,3 +230,40 @@
   display: none;
 }
 
+
+/* Repeatable entries ([options: repeatable=true]) */
+.text-input-entries {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--UI-Spacing-spacing-ms, 16px);
+}
+
+.text-input-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--UI-Spacing-spacing-ms, 16px);
+}
+
+.text-input-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--UI-Spacing-spacing-xs, 8px);
+}
+
+.text-input-entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--UI-Spacing-spacing-xs, 8px);
+  min-height: 32px;
+}
+
+.text-input-entry-add {
+  align-self: flex-start;
+}
+
+/* .button sets display, so [hidden] needs an explicit rule */
+.text-input-entry-remove[hidden] {
+  display: none;
+}
