@@ -101,6 +101,7 @@ copy(path.join(ROOT, 'data'), path.join(DIST, 'data'), (src) => {
 });
 
 copy(path.join(ROOT, 'LICENSE'), path.join(DIST, 'LICENSE'));
+copy(path.join(ROOT, 'content-url.js'), path.join(DIST, 'content-url.js'));
 
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 fs.writeFileSync(
@@ -120,7 +121,13 @@ fs.writeFileSync(
   )}\n`,
 );
 
-for (const rel of ['server.js', 'public/index.html', 'public/app.js', 'data/question.md']) {
+for (const rel of [
+  'server.js',
+  'content-url.js',
+  'public/index.html',
+  'public/app.js',
+  'data/question.md',
+]) {
   if (!fs.existsSync(path.join(DIST, rel))) throw new Error(`missing ${rel} in dist/`);
 }
 
@@ -169,7 +176,7 @@ try {
 if (fs.existsSync(TAR)) fs.unlinkSync(TAR);
 execFileSync('tar', ['-czf', TAR, '-C', DIST, '.'], { cwd: ROOT });
 
-const entries = ['server.js', 'public', 'data'];
+const entries = ['server.js', 'content-url.js', 'public', 'data'];
 console.log('Packed dist/ (no node_modules):');
 for (const rel of entries) {
   console.log(`  ${rel.padEnd(24)} ${formatSize(distSize(rel))}`);
