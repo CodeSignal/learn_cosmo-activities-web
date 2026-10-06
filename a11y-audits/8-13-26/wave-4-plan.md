@@ -4,10 +4,10 @@
 **Program:** [program-plan.md](./program-plan.md)  
 **Critical / serious:** [resolution-plan.md](./resolution-plan.md) (A1–A11, D1–D2 on `main`)  
 **Standard:** WCAG 2.2 AA  
-**Status:** Product calls P8–P15 confirmed. Issues filed. A19 on `main` (PR #69). Executing Wave 4b A21.
+**Status:** Phase 4 complete. A21 on `main` (PR #70). Residual axe `color-contrast` 1 is light choice hover (**A22**, #71). AT retest leftover.
 
-In scope: **A12–A20, D3**, and leftover axe **A21**.  
-Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-Practice choice tokens. Question editor stays out (internal-only).
+In scope: **A12–A21, D3** (all shipped). Residual **A22** is a new leftover, not a reopen of A7 or A21.  
+Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 dark Learn-Practice choice tokens. Question editor stays out (internal-only).
 
 ---
 
@@ -36,6 +36,7 @@ Out of this plan: A1–A11, D1, D2. Do not reopen them. Do not retune A7 Learn-P
 | A12 | #67 | Activity `h2`; authored heading or P10 type name |
 | A14 | #68 | Sort instructions include the keyboard path |
 | A19 | #69 | KaTeX exposes MathML; visual layer aria-hidden |
+| A21 | #70 | Empty dropzone placeholder uses Body-Default |
 | D3 | DS #33 → app #61 | Divider line token (Neutral-800), ≥3:1 vs panes |
 
 Unrelated merges on the same timeline: clipboard in iframes (#43), Sort heading font (#45). Not audit IDs.
@@ -61,21 +62,22 @@ Walked current `main` (`public/design-system` @ `da75b17`). None of these were f
 
 ---
 
-## Leftover axe floor (proposed A21)
+## Leftover axe floor (A21 shipped; residual A22)
 
 `a11y-audits/tools/axe-baseline.json`: **`color-contrast` 1**, only on `sort-chip-selected/light`.
 
-**Diagnosis (code + prior CI, not a new full audit run):**
+**A21 (shipped, PR #70):** empty dropzone `::before` now uses `--Colors-Text-Body-Default`. Copy stays “Drop items here”. Painted placeholder vs `Main-Top` is 11.61:1 light / 7.64:1 dark. That was not the remaining axe node. Do not reopen A21.
 
-- Node: empty category placeholder `.categorization-dropzone.empty::before` (`content: "Drop items here"`).
-- Token: `--Colors-Text-Body-Lighter` at 13px (`Fonts-Body-Default-xxs`). Same token A8 moved off the instructions line. This sibling was left.
-- `sort-tray/light` paints the same `::before` and currently counts **0**. Axe is incomplete or compositing differs once a chip is `.active`. Do not treat “tray is clean” as proof the placeholder passes.
-- This is visible instructional text, not a disabled control. 1.4.3 applies if painted contrast is under 4.5:1.
-- Card fill is `--Colors-Learn-Practice-Card` → `Main-Top` (white in light). Body-Lighter on white is likely **above** 4.5:1; A8 failed at **4.46:1** on `Main-Default`. Measure **painted** `::before` vs the actual dropzone/card background before calling it a must-fix. Do not “fix” it inside A14 or any other Sort PR.
+**A22 (open, #71), re-measured after A21:**
 
-**ID:** **A21** (moderate, 1.4.3, light). Do not reopen A8.
+- Node: `.active > .categorization-chip-label > p` on `sort-chip-selected/light`.
+- Cause: light **hover** fill. Click leaves the pointer on the chip, so `:hover` (`Sky-Blue-200`, `#A2E5FF`) and `.active` are both on.
+- Axe: 4.22:1, `#006D9E` on `#A8E7FF`.
+- Hex / painted hover: Sky-Blue-900 on Sky-Blue-200 is **4.13:1**. Light default (900 on 100 `#C1EDFF`) is **4.57:1** and passes.
+- Matching uses the same hover alias. CI does not hover Matching, so the floor set only reports Sort.
+- This is 1.4.3 on visible choice text, not a disabled control, not the A21 placeholder, not A7 dark tokens.
 
-P13 confirmed: **fix**. Measure painted contrast, then retune off `Body-Lighter` (same move as A8: `Body-Default` or `Light`). Placeholder copy “Drop items here” stays.
+**ID:** **A22** (moderate, 1.4.3, light). Do not reopen A7 or A21. Same app CSS pair as A7, light hover only.
 
 ---
 
@@ -85,6 +87,7 @@ P13 confirmed: **fix**. Measure painted contrast, then retune off `Body-Lighter`
 | --- | --- | --- |
 | A12, A13, A15, A16, A17, A18, A20 | **learn_cosmo-activities-web** | Shell / MCQ / Matrix / Text Input / FIB / toolbar |
 | A14, A21 | **learn_cosmo-activities-web** | Sort copy vs Sort placeholder contrast. Different causes. |
+| A22 | **learn_cosmo-activities-web** | Light hover of the A7 choice pair in `matching.css` / `sort.css`. Dark A7 tokens stay. |
 | A19 | **learn_cosmo-activities-web** | KaTeX wrapper. Expose MathML; keep `aria-hidden` on the visual layer. |
 | D3 | **learn_bespoke-design-system** | Split Panel `::after` color |
 | After D3 merge | **learn_cosmo-activities-web** | Submodule bump (`chore(ds): bump design-system for a11y D3`) |
@@ -99,13 +102,15 @@ Default: **one GitHub issue per finding, one PR per issue**.
 | --- | --- | --- | --- |
 | **A20** | A20 only | `fix/a11y-focus-visible` | Already one finding: FIB blanks **and** toolbar tools. Reuse the Matching / DS ring tokens on both. |
 | **A21** | A21 only | `fix/a11y-sort-dropzone-contrast` | Same token family as A8, **different node**. A8 is closed. |
+| **A22** | A22 only | `fix/a11y-choice-hover-contrast` | Same pair as A7, **light hover only**. A7 dark tokens stay. |
 
 Do **not** bundle:
 
 - A12 + A13 (shared skip-vs-landmarks *call*, two root causes: empty heading rotor vs toolbar outside landmarks).
 - A14 + A21 (copy vs contrast).
+- A21 + A22 (placeholder vs hover fill).
 - D3 + D2 (D2 already shipped name + 24px).
-- A7 tokens into A21 or D3.
+- A7 tokens into A21 or A22.
 
 A15 is mount-or-delete, not a bundle with MCQ.
 
@@ -184,12 +189,12 @@ Copy and policy are confirmed. Still sequence after 4a so the shell is landmark-
 | Label | Use |
 | --- | --- |
 | `a11y` | All of these issues |
-| `sev:moderate` | A12–A19, D3, A21 |
+| `sev:moderate` | A12–A19, D3, A21, A22 |
 | `sev:minor` | A20 |
-| `wcag:perceivable` | A12, A16, A19, D3, A21 |
+| `wcag:perceivable` | A12, A16, A19, D3, A21, A22 |
 | `wcag:operable` | A13, A14, A15, A20 |
 | `wcag:robust` | A17, A18 |
-| `theme:light-only` | A21 (if confirmed light-only) |
+| `theme:light-only` | A21, A22 |
 | `needs-manual-verify` | A12, A13, A14, A19, A20 (AT / host iframe) |
 | `repo:design-system` | D3, DS bump D3 |
 
@@ -207,6 +212,7 @@ Copy and policy are confirmed. Still sequence after 4a so the shell is landmark-
 | A19 | `[a11y][A19] KaTeX math has no accessible alternative` |
 | A20 | `[a11y][A20] FIB blanks and toolbar tools have UA-only focus` |
 | A21 | `[a11y][A21] Sort empty dropzone placeholder fails contrast` |
+| A22 | `[a11y][A22] Light choice hover fails 4.5:1` |
 | D3 | `[a11y][D3] Split divider line is hardcoded #2b3b52` (DS repo) |
 | DS bump D3 | `[a11y] Bump design-system after D3 (Split divider color)` |
 
@@ -245,6 +251,7 @@ Same as [resolution-plan.md](./resolution-plan.md). Paste Where / Current / Expe
 | A19 | Visual KaTeX stays `aria-hidden`. Equivalent MathML is exposed to AT. |
 | A20 | `.blank` and `.global-toolbar-tool` show a designed focus indicator (not UA-only). Matching ring unchanged. Host-iframe retest noted. |
 | A21 | Empty-dropzone placeholder ≥4.5:1 in light. Axe `color-contrast` shrinks if the node clears. |
+| A22 | Light hover choice text ≥4.5:1 in Sort and Matching. Light default still ≥4.5:1. Dark A7 tokens unchanged. |
 | D3 | Divider line uses a semantic token; ≥3:1 vs both pane surfaces in both themes. D2 name and 24px hit target unchanged. |
 
 ---
@@ -266,7 +273,8 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 | A18 | #55 | 4a | #63 | Closed (PR #63) |
 | A19 | #56 | 4b | #69 | Closed (PR #69) |
 | A20 | #57 | 4a | #66 | Closed (PR #66) |
-| A21 | #58 | 4b | | Open |
+| A21 | #58 | 4b | #70 | Closed (PR #70) |
+| A22 | #71 | leftover | | Open |
 | D3 | [DS #32](https://github.com/CodeSignal/learn_bespoke-design-system/issues/32) | 4 ∥ | #61 | Closed (PR #61) |
 | DS bump D3 | #59 | after D3 | #61 | Closed (PR #61) |
 
@@ -276,13 +284,18 @@ Critical/serious rows stay in [resolution-plan.md](./resolution-plan.md). The do
 
 ## Definition of done (this plan)
 
-- Every ID above is Fixed, Mitigated (recorded product decision), or Won’t fix (recorded).
-- Shrink-only axe baseline matches the post-fix floor (`color-contrast` 0 after A21).
+- A12–A21 and D3 are Fixed. A22 is the leftover axe floor (recorded, not yet Fixed).
+- Shrink-only axe baseline stays `color-contrast` 1 until A22 (or a recorded won’t-fix).
 - Issue map points at real PR numbers.
-- A1–A11 / D1 / D2 were not reopened. A7 choice tokens were not retuned.
+- A1–A11 / D1 / D2 were not reopened. A7 dark choice tokens were not retuned.
 
 ---
 
 ## Next step
 
-A19 is on `main` (PR #69). Next: Wave 4b A21 (`fix/a11y-sort-dropzone-contrast`, #58). Do not put #69 on the A21 row.
+A21 is on `main` (PR #70). Phase 4 findings are shipped.
+
+Remaining:
+
+1. **AT retest** from [audit.md](./audit.md): VoiceOver (Safari) plus NVDA or JAWS. Keyboard path for FIB (#15) is already on `main` (A2, PR #40).
+2. **A22** (`#71`): light choice hover 4.13:1. Same files as A7, hover alias only. Do not put #70 on the A22 row.

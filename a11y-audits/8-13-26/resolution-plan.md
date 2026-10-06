@@ -273,4 +273,4 @@ Fill issue/PR numbers when filing. Never write “this PR”.
 
 ## Next step
 
-Critical and serious are on `main`. Phase 4 is [wave-4-plan.md](./wave-4-plan.md). D1 / bump D1 Closed (PR #48).
+Critical and serious are on `main`. Phase 4 (A12–A21, D3) is on `main`; see [wave-4-plan.md](./wave-4-plan.md). Residual A22 and AT retest are recorded there.
