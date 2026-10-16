@@ -23,6 +23,12 @@ test('renderMarkdown HTML-escapes math so < and & stay text', () => {
   assert.equal(renderMarkdown('$$a<b \\& c$$').trim(), '<p>$$a&lt;b \\&amp; c$$</p>');
 });
 
+test('renderMarkdown escapes quotes in math so image alts stay intact', () => {
+  const html = renderMarkdown('![$$a "b"$$](x.png)');
+  assert.match(html, /alt="\$\$a &quot;b&quot;\$\$"/);
+  assert.doesNotMatch(html, /alt="\$\$a "/);
+});
+
 test('renderMarkdown wraps \\$ outside math so KaTeX skips it', () => {
   assert.equal(
     renderMarkdown('Costs \\$5 and \\$10').trim(),

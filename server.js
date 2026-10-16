@@ -1127,7 +1127,10 @@ function buildActivityFromMarkdown(markdownText) {
         .map(parseSortItemEntry)
         .filter(it => it.text);
       for (const it of items) {
-        if (it.correct && !categories.includes(it.correct)) {
+        if (!it.correct) {
+          throw new Error(`Sort Into Boxes __Items__ is missing a category: ${it.text}`);
+        }
+        if (!categories.includes(it.correct)) {
           throw new Error(`Sort Into Boxes __Items__ category not found in __Categories__: ${it.text}: ${it.correct}`);
         }
       }
