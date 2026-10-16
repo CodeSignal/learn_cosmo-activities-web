@@ -160,6 +160,18 @@ learn_cosmo-activities-web/
 
 Activities are defined using Markdown files with a specific format. Place your activity definition in `data/question.md`.
 
+### Math (LaTeX)
+
+Write math as `$$...$$`. It renders inline with the surrounding text, using [KaTeX](https://katex.org/). To show a literal dollar sign, write `\$`, both inside and outside math:
+
+```markdown
+The price is \$12, so the total is $$\$12 \times 0.75$$.
+```
+
+Math renders in question text, MCQ options, Fill in the Blanks prompts and content, Matching card text, Sort Into Boxes questions, items, and categories, `__Heading__`, and markdown `__Content__`. Answer choices (Fill in the Blanks, Matching), Matrix row and column labels, and question names are plain text.
+
+Older content may use `$...$` or `\(...\)` for inline math, or `\[...\]` for display math. These still render, but new content should use `$$...$$`. See the `*-latex.md` files in `data/examples/`; the `*--legacy.md` files use the older delimiters.
+
 ## API Endpoints
 
 - `GET /api/activity` - Retrieves the current activity from `data/question.md`

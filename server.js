@@ -2,7 +2,7 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const { Lexer, marked } = require('marked');
+const { Lexer } = require('marked');
 const WebSocket = require('ws');
 const {
   parseTextInputAnswerItems
@@ -16,6 +16,8 @@ const {
 } = require('./lib/activity-results-validation');
 const { buildActivityReportMarkdown } = require('./lib/build-activity-report');
 const { buildScoreJson } = require('./lib/build-score-json');
+const { renderMarkdown } = require('./lib/render-markdown');
+const { parseSortItemEntry } = require('./lib/sort-item-entry');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -73,11 +75,6 @@ const MIME_TYPES = {
   '.gif': 'image/gif',
   '.ico': 'image/x-icon',
   '.txt': 'text/plain; charset=utf-8'
-};
-
-const MARKDOWN_RENDERER = new marked.Renderer();
-MARKDOWN_RENDERER.table = function renderMarkdownTable(header, body) {
-  return `<div class="table-scroll"><table class="table">\n<thead>${header}</thead>\n<tbody>${body}</tbody>\n</table></div>`;
 };
 
 function isPathInside(child, parent) {
@@ -159,56 +156,6 @@ function extractQuestionTypeFromMarkdown(markdownText) {
   } catch (e) {
     return null;
   }
-}
-
-/**
- * Preprocess markdown to escape \$ as literal dollar signs (not LaTeX).
- * Replaces \$ with <span class="no-math">$</span> so KaTeX skips them.
- */
-function escapeMathDollars(markdown) {
-  if (!markdown || typeof markdown !== 'string') return markdown;
-  return markdown.replace(/\\\$/g, '<span class="no-math">$</span>');
-}
-
-/**
- * Stash math regions ($$...$$, \[...\], \(...\), $...$) behind placeholders so
- * markdown parsing can't mangle their delimiters (marked treats `\(` and `\)`
- * as escaped punctuation and drops the backslash). The original math is
- * restored verbatim after parsing, leaving the delimiters intact for KaTeX.
- */
-function protectMathRegions(markdown) {
-  const store = [];
-  const patterns = [
-    /\$\$[\s\S]+?\$\$/g,
-    /\\\[[\s\S]+?\\\]/g,
-    /\\\([\s\S]+?\\\)/g,
-    /\$[^\n$]+?\$/g
-  ];
-  let text = markdown;
-  for (const re of patterns) {
-    text = text.replace(re, (match) => {
-      const token = `MATHPROTECT${store.length}ENDMATHPROTECT`;
-      store.push(match);
-      return token;
-    });
-  }
-  return { text, store };
-}
-
-function renderMarkdown(markdown, options = {}) {
-  if (!markdown || typeof markdown !== 'string') return '';
-  let text = escapeMathDollars(markdown);
-  let store = [];
-  if (options.preserveMathDelimiters) {
-    ({ text, store } = protectMathRegions(text));
-  }
-  let html = marked.parse(text, { renderer: MARKDOWN_RENDERER });
-  if (store.length) {
-    store.forEach((math, i) => {
-      html = html.replace(`MATHPROTECT${i}ENDMATHPROTECT`, () => math);
-    });
-  }
-  return html;
 }
 
 /**
@@ -1177,37 +1124,16 @@ function buildActivityFromMarkdown(markdownText) {
     if (categoriesRaw.length > 0 || itemEntries.length > 0) {
       categories = categoriesRaw.map(c => c.trim()).filter(Boolean);
       items = itemEntries
-        .map(entry => {
-          // Walk the text portion, unescaping "\\" and "\:", and stop at the
-          // first *unescaped* colon — that's the "text: category" separator.
-          // Everything after it is the category label, which may itself
-          // contain raw colons.
-          const s = String(entry);
-          let text = '';
-          let i = 0;
-          let sepFound = false;
-          for (; i < s.length; i++) {
-            const ch = s[i];
-            if (ch === '\\' && i + 1 < s.length) {
-              text += s[i + 1];
-              i++;
-              continue;
-            }
-            if (ch === ':') {
-              sepFound = true;
-              i++;
-              break;
-            }
-            text += ch;
-          }
-          const correct = sepFound ? s.slice(i) : '';
-          return { text: text.trim(), correct: correct.trim() };
-        })
+        .map(parseSortItemEntry)
         .filter(it => it.text);
-      // Make sure every category referenced by an item exists (preserve declared order first).
-      items.forEach(it => {
-        if (it.correct && !categories.includes(it.correct)) categories.push(it.correct);
-      });
+      for (const it of items) {
+        if (!it.correct) {
+          throw new Error(`Sort Into Boxes __Items__ is missing a category: ${it.text}`);
+        }
+        if (!categories.includes(it.correct)) {
+          throw new Error(`Sort Into Boxes __Items__ category not found in __Categories__: ${it.text}: ${it.correct}`);
+        }
+      }
     } else {
       // Legacy two-box schema.
       let first = '', second = '';
@@ -1228,15 +1154,15 @@ function buildActivityFromMarkdown(markdownText) {
     }
 
     // Render markdown/LaTeX for each chip's display text.
-    items = items.map(it => ({ ...it, textHtml: renderMarkdown(it.text, { preserveMathDelimiters: true }) }));
+    items = items.map(it => ({ ...it, textHtml: renderMarkdown(it.text) }));
 
     let s = (markdownText.length || 1337) % 2147483647 || 1337;
     function rand() { s = (s * 48271) % 2147483647; return s / 2147483647; }
     for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [items[i], items[j]] = [items[j], items[i]]; }
 
-    const categoriesHtml = categories.map(c => renderMarkdown(c, { preserveMathDelimiters: true }));
+    const categoriesHtml = categories.map(c => renderMarkdown(c));
 
-    const questionHtml = question ? renderMarkdown(question, { preserveMathDelimiters: true }) : '';
+    const questionHtml = question ? renderMarkdown(question) : '';
     return attachSideContent(
       {
         type,
@@ -1673,11 +1599,12 @@ const server = http.createServer((req, res) => {
       if (window.renderMathInElement) {
         renderMathInElement(document.body, {
           delimiters: [
-            {left: '$$', right: '$$', display: true},
+            {left: '$$', right: '$$', display: false},
             {left: '\\\\[', right: '\\\\]', display: true},
             {left: '$', right: '$', display: false},
             {left: '\\\\(', right: '\\\\)', display: false}
           ],
+          ignoredClasses: ['no-math'],
           throwOnError: false
         });
       }

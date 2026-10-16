@@ -1,6 +1,7 @@
 /**
  * Utility function to render LaTeX math expressions in HTML content using KaTeX
- * Supports both inline math ($...$ or \(...\)) and display math ($$...$$ or \[...\])
+ * $$...$$ is the canonical inline form; $...$ and \(...\) are legacy inline forms.
+ * \[...\] is display math.
  * 
  * @param {HTMLElement} element - HTML element to process
  * @param {Object} options - KaTeX rendering options
@@ -12,7 +13,7 @@ export function renderMath(element, options = {}) {
   // Default options for KaTeX
   const defaultOptions = {
     delimiters: [
-      { left: '$$', right: '$$', display: true },
+      { left: '$$', right: '$$', display: false },
       { left: '\\[', right: '\\]', display: true },
       { left: '$', right: '$', display: false },
       { left: '\\(', right: '\\)', display: false }

@@ -13,9 +13,9 @@ __Categories__
 
 __Items__
 
-- The area of a circle is \( A = \pi r^{2} \): Contains a **LaTeX** formula
+- The area of a circle is $$A = \pi r^{2}$$: Contains a **LaTeX** formula
 - *Remember to water the magic beans*: Is **plain Markdown** text
-- Pythagoras says \( a^{2} + b^{2} = c^{2} \): Contains a **LaTeX** formula
+- Pythagoras says $$a^{2} + b^{2} = c^{2}$$: Contains a **LaTeX** formula
 - **Never trust a talking frog**: Is **plain Markdown** text
-- The quadratic root is \( x = \frac{-b \pm \sqrt{b^{2} - 4ac}}{2a} \): Contains a **LaTeX** formula
+- The quadratic root is $$x = \frac{-b \pm \sqrt{b^{2} - 4ac}}{2a}$$: Contains a **LaTeX** formula
 - > A wise owl once hooted twice: Is **plain Markdown** text
