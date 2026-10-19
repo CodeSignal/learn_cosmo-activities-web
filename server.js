@@ -852,6 +852,10 @@ function buildActivityFromMarkdown(markdownText) {
       [choices[i], choices[j]] = [choices[j], choices[i]];
     }
 
+    // Render markdown/LaTeX for each choice chip. Identity stays the raw
+    // string in `choices` so scoring still matches [[blank:...]] answers.
+    const choicesHtml = choices.map(c => renderMarkdown(c));
+
     // Render markdown to HTML for prompt
     const promptHtml = prompt ? renderMarkdown(prompt) : '';
 
@@ -871,6 +875,7 @@ function buildActivityFromMarkdown(markdownText) {
         promptHtml,
         items,
         choices,
+        choicesHtml,
         ...(matchingHeading ? { heading: matchingHeading } : {})
       }
     }, sections);

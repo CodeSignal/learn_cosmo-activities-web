@@ -1,6 +1,15 @@
 import HorizontalCards from '../design-system/components/horizontal-cards/horizontal-cards.js';
+import { renderMath } from '../utils/katex-render.js';
 import { ACTIVITY_TYPE_NAME, mountActivityHeading } from '../utils/activity-heading.js';
 import toolbar from '../components/toolbar.js';
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
 export function initMatching({
   activity,
@@ -51,6 +60,30 @@ export function initMatching({
   // Track usage counts for answer choices
   const totalCounts = new Map();
   matching.choices.forEach(c => totalCounts.set(c, (totalCounts.get(c) || 0) + 1));
+
+  // Display HTML for each choice (markdown/LaTeX). Identity stays the raw string.
+  const choiceHtmlByText = new Map();
+  matching.choices.forEach((choice, idx) => {
+    const html = (matching.choicesHtml && matching.choicesHtml[idx]) || escapeHtml(choice);
+    if (!choiceHtmlByText.has(choice)) choiceHtmlByText.set(choice, html);
+  });
+
+  function htmlForChoice(choice) {
+    return choiceHtmlByText.get(choice) || escapeHtml(choice);
+  }
+
+  // One block wrapper so text + KaTeX are not adjacent flex items on the
+  // .button / .matching-selection-area (Chrome otherwise wraps them into
+  // two columns, splitting y=x^2 beside the sentence).
+  function unwrapSingleParagraph(html) {
+    const trimmed = String(html || '').trim();
+    const match = trimmed.match(/^<p>([\s\S]*)<\/p>$/i);
+    return match ? match[1] : trimmed;
+  }
+
+  function choiceLabelHtml(choice) {
+    return `<span class="matching-choice-label">${unwrapSingleParagraph(htmlForChoice(choice))}</span>`;
+  }
   
   // Get used counts (excluding a specific item index)
   function getUsedCounts(exceptIdx) {
@@ -78,8 +111,8 @@ export function initMatching({
   function createActionHtml(itemIndex) {
     const selected = selectedByItemIdx[itemIndex];
     if (selected) {
-      // Matched: the visible choice text is the accessible name (no aria-label override).
-      return `<div class="matching-selection-area matched button button-primary body-large" data-item-index="${itemIndex}" role="button" tabindex="-1">${selected}</div>`;
+      // Matched: the visible choice (including KaTeX MathML) is the accessible name.
+      return `<div class="matching-selection-area matched button button-primary body-large" data-item-index="${itemIndex}" role="button" tabindex="-1">${choiceLabelHtml(selected)}</div>`;
     } else {
       return `<div class="matching-selection-area empty body-xxsmall" data-item-index="${itemIndex}" role="button" tabindex="-1" aria-label="Choose the best response for item ${itemIndex + 1}">Best response</div>`;
     }
@@ -201,11 +234,12 @@ export function initMatching({
   // Render answer choices at bottom
   function renderChoices() {
     elMatchingChoices.innerHTML = '';
-    matching.choices.forEach((choice, idx) => {
+    matching.choices.forEach((choice) => {
       const choiceButton = document.createElement('button');
       choiceButton.className = 'matching-choice-button button button-primary body-large';
-      choiceButton.textContent = choice;
-      choiceButton.setAttribute('aria-label', `Select ${choice}`);
+      choiceButton.innerHTML = choiceLabelHtml(choice);
+      // Visible choice text (and KaTeX MathML) is the accessible name.
+      renderMath(choiceButton);
       
       // Check if this choice is available
       const available = isChoiceAvailable(choice, activeCardIndex);
@@ -269,12 +303,13 @@ export function initMatching({
     const selectionArea = elMatchingCardsContainer.querySelector(`.matching-selection-area[data-item-index="${idx}"]`);
     if (selectionArea) {
       if (choice) {
-        selectionArea.textContent = choice;
+        selectionArea.innerHTML = choiceLabelHtml(choice);
+        renderMath(selectionArea);
         // Remove empty state classes
         selectionArea.classList.remove('empty', 'body-xxsmall');
         // Add matched state classes (button styling)
         selectionArea.classList.add('matched', 'button', 'button-primary', 'body-large');
-        // Visible choice text is now the accessible name; drop the placeholder label.
+        // Visible choice text (and KaTeX MathML) is the accessible name.
         selectionArea.removeAttribute('aria-label');
       } else {
         selectionArea.textContent = 'Best response';

@@ -250,8 +250,35 @@
 .matching-choice-button {
   background: var(--Colors-Learn-Practice-Interactive-Choice-Main-Background);
   color: var(--Colors-Learn-Practice-Interactive-Choice-Main-Label);
-
   position: relative;
+  /* .button uses nowrap + fixed height — allow long / LaTeX answers to wrap */
+  height: auto;
+  min-height: var(--Button-Height-Default);
+  white-space: normal;
+  max-width: 100%;
+  text-align: center;
+}
+
+.matching-choice-label {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  text-align: center;
+}
+
+.matching-choice-label :is(p) {
+  margin: 0;
+  display: inline;
+}
+
+/* Keep a formula on one line so it cannot sit in a second column. */
+.matching-choice-label .katex,
+.matching-choice-label .katex-html,
+.matching-choice-label .katex .base {
+  display: inline-block;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .matching-choice-button:hover {
