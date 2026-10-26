@@ -358,7 +358,24 @@ const server = http.createServer((req, res) => {
             respondJson(res, 500, { error: 'Failed to write question.md' });
             return;
           }
-          respondJson(res, 200, { success: true, filename });
+          const staleFiles = [
+            path.join(DATA_DIR, 'answer.md'),
+            path.join(DATA_DIR, 'report.md'),
+            path.join(DATA_DIR, 'score.json'),
+          ];
+          Promise.all(staleFiles.map((filePath) => new Promise((resolve, reject) => {
+            fs.unlink(filePath, (err) => {
+              if (err && err.code !== 'ENOENT') {
+                reject(err);
+                return;
+              }
+              resolve();
+            });
+          }))).then(() => {
+            respondJson(res, 200, { success: true, filename });
+          }).catch(() => {
+            respondJson(res, 500, { error: 'Failed to clear previous example results' });
+          });
         });
       });
     });
@@ -642,7 +659,8 @@ const server = http.createServer((req, res) => {
               markdown += `${index + 1}. **${result.text}**\n`;
               markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
               if (result.explanation) {
-                markdown += `   - Explanation: ${result.explanation}\n`;
+                const explanationText = String(result.explanation).replace(/\n/g, '\n     ');
+                markdown += `   - Explanation: ${explanationText}\n`;
               }
               markdown += '\n';
             });
@@ -710,7 +728,8 @@ const server = http.createServer((req, res) => {
 
             // Add explanation if present (for MCQ questions with explainAnswer enabled)
             if (result.explanation) {
-              markdown += `   - Explanation: ${result.explanation}\n`;
+              const explanationText = String(result.explanation).replace(/\n/g, '\n     ');
+              markdown += `   - Explanation: ${explanationText}\n`;
             }
             markdown += '\n';
           });

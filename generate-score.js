@@ -2777,6 +2777,10 @@ var require_parse_question = __commonJS({
       }
       return items;
     }
+    var EXPLANATION_PATTERN = /Explanation:\s*([^\n]*(?:\n {5}[^\n]*)*)/;
+    function unindentExplanation(text) {
+      return String(text || "").split("\n").map((line, i) => i === 0 ? line : line.replace(/^ {5}/, "")).join("\n").trim();
+    }
     function parseAnswersFromMarkdown2(markdownText) {
       const tokens = Lexer2.lex(markdownText);
       const sections = parseSectionsFromTokens2(tokens);
@@ -2791,10 +2795,10 @@ var require_parse_question = __commonJS({
           const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
           if (questionMatch) {
             const questionNumber = parseInt(questionMatch[1], 10);
-            const explanationMatch = block.match(/Explanation:\s*([^\n]+)/);
+            const explanationMatch = block.match(EXPLANATION_PATTERN);
             if (explanationMatch) {
               const questionIndex = questionNumber - 1;
-              const explanationStr = explanationMatch[1].trim();
+              const explanationStr = unindentExplanation(explanationMatch[1]);
               if (explanationStr) {
                 explanations[questionIndex] = explanationStr;
               }
@@ -2851,10 +2855,10 @@ var require_parse_question = __commonJS({
           const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
           if (questionMatch) {
             const questionNumber = parseInt(questionMatch[1], 10);
-            const explanationMatch = block.match(/Explanation:\s*([^\n]+)/);
+            const explanationMatch = block.match(EXPLANATION_PATTERN);
             if (explanationMatch) {
               const questionIndex = questionNumber - 1;
-              const explanationStr = explanationMatch[1].trim();
+              const explanationStr = unindentExplanation(explanationMatch[1]);
               if (explanationStr) {
                 explanations[questionIndex] = explanationStr;
               }
