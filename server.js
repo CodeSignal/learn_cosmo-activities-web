@@ -432,10 +432,15 @@ const server = http.createServer((req, res) => {
           respondJson(res, 500, { error: 'Grading failed: ' + (stderr || err.message) });
           return;
         }
-        // Read back the generated report and score
-        const report = fs.existsSync(reportPath) ? fs.readFileSync(reportPath, 'utf8') : '';
-        const score = fs.existsSync(scorePath) ? JSON.parse(fs.readFileSync(scorePath, 'utf8')) : null;
-        respondJson(res, 200, { report, score, stdout: stdout.trim() });
+        try {
+          const report = fs.readFileSync(reportPath, 'utf8');
+          const score = JSON.parse(fs.readFileSync(scorePath, 'utf8'));
+          respondJson(res, 200, { report, score, stdout: stdout.trim() });
+        } catch (readErr) {
+          respondJson(res, 500, {
+            error: 'Grading failed: report or score output is missing or invalid'
+          });
+        }
       });
     });
     return;
