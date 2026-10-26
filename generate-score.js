@@ -2437,13 +2437,23 @@ var require_text_input_validation = __commonJS({
       };
     }
     function parseTextInputAnswerItems(answerItems) {
-      const parsedAnswers = (answerItems || []).map((item) => parseValidationOptions(item)).filter((entry) => {
+      const allParsed = (answerItems || []).map((item) => parseValidationOptions(item));
+      const parsedAnswers = allParsed.filter((entry) => {
         const hasAnswerText = String(entry.correctAnswer || "").trim().length > 0;
         const isValidateLater = entry.validation && entry.validation.kind === "validate-later";
         return hasAnswerText || isValidateLater;
       });
       if (parsedAnswers.length === 0) {
-        return { correctAnswers: [], correctAnswer: "", validation: {} };
+        const optionsOnly = allParsed.find((entry) => {
+          const kind = entry.validation && entry.validation.kind;
+          const options = entry.validation && entry.validation.options || {};
+          return Boolean(kind) || Object.keys(options).length > 0;
+        });
+        return {
+          correctAnswers: [],
+          correctAnswer: "",
+          validation: optionsOnly ? optionsOnly.validation : {}
+        };
       }
       return {
         correctAnswers: parsedAnswers.map((entry) => ({
