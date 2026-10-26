@@ -376,8 +376,10 @@ export function initTextInput({
                         (kind === 'string' || kind === 'validate-later') &&
                         question.validation.options?.multiLine === true;
 
-    // Repeatable validate-later questions let the learner add and remove entries
-    const isRepeatable = kind === 'validate-later' && question.validation.options?.repeatable === true;
+    // Repeatable questions let the learner add and remove entries. Assessment
+    // mode keeps repeatable=true on a stripped [kind: string] line so the UI
+    // still renders Add/Remove without treating the question as scored.
+    const isRepeatable = question.validation?.options?.repeatable === true;
     const itemLabel = String(question.validation?.options?.itemLabel || '').trim() || 'Entry';
     const initialEntries = isRepeatable ? parseRepeatableAnswer(userAnswers[question.id], itemLabel) : null;
 
