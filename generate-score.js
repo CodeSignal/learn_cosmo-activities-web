@@ -2403,6 +2403,7 @@ var require_text_input_validation = __commonJS({
     function parseValidationOptions(answerText) {
       const trimmedAnswer = String(answerText || "").trim();
       const startsWithKind = trimmedAnswer.startsWith("[kind:");
+      const startsWithOptions = trimmedAnswer.startsWith("[options:");
       let validationMatch;
       if (startsWithKind) {
         validationMatch = trimmedAnswer.match(/^\[kind:\s*([^\]]+)\](?:\s+\[options:\s*([^\]]+)\])?$/);
@@ -2416,6 +2417,17 @@ var require_text_input_validation = __commonJS({
           return {
             correctAnswer: "",
             validation: { kind: kind2, options: options2 }
+          };
+        }
+      } else if (startsWithOptions) {
+        validationMatch = trimmedAnswer.match(/^\[options:\s*([^\]]*)\]$/);
+        if (validationMatch) {
+          return {
+            correctAnswer: "",
+            validation: {
+              kind: "string",
+              options: parseOptionsText(validationMatch[1].trim())
+            }
           };
         }
       } else {

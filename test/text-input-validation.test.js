@@ -40,6 +40,17 @@ test('parseValidationOptions keeps repeatable and itemLabel on validate-later', 
   assert.deepEqual(parsed.validation.options, { multiLine: true, repeatable: true, itemLabel: 'Defect' });
 });
 
+test('parseTextInputAnswerItems treats standalone options as metadata', () => {
+  const parsed = parseTextInputAnswerItems([
+    '[options: multiLine=true]'
+  ]);
+
+  assert.equal(parsed.correctAnswer, '');
+  assert.equal(parsed.correctAnswers.length, 0);
+  assert.equal(parsed.validation.kind, 'string');
+  assert.deepEqual(parsed.validation.options, { multiLine: true });
+});
+
 test('parseTextInputAnswerItems keeps kind/options when answer text is stripped', () => {
   const parsed = parseTextInputAnswerItems([
     '[kind: string] [options: multiLine=true]'
