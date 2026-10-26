@@ -276,9 +276,9 @@ test('A10: validate errors are named, invalid, and announced', () => {
 });
 
 test('A3: filled blank accessible name is the chosen value', () => {
-  const server = read('server.js');
+  const parseQuestion = read('lib/parse-question.js');
   assert.match(
-    server,
+    parseQuestion,
     /aria-label="blank \$\{currentIndex \+ 1\}"/,
     'server stamps aria-label="blank N" on each empty blank span'
   );

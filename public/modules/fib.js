@@ -319,7 +319,9 @@ export function initFib({
     state.results = [];
     blanks.forEach((_, i) => {
       const idx = i;
-      const correctAnswer = fib.blanks.find(x => x.index === idx)?.answer || '';
+      const correctAnswer = activity.assessmentMode
+        ? ''
+        : (fib.blanks.find(x => x.index === idx)?.answer || '');
       const chosen = selectedByBlankIdx[i] || '';
       state.results.push({
         text: `Blank ${i+1}`,

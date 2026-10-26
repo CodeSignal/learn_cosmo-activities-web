@@ -225,6 +225,7 @@ export function initMatrix({
   }
 
   function validateAnswers() {
+    if (activity.assessmentMode) return;
     isValidating = true;
     let hasIncorrect = false;
     elTbody.querySelectorAll('tr').forEach((tr, idx) => {
@@ -241,14 +242,19 @@ export function initMatrix({
     state.results = rows.map((rowLabel, rowIdx) => {
       const selIdx = selectedColIndexByRow[rowIdx];
       const selectedLabel = selIdx !== null && selIdx !== undefined ? columns[selIdx] : '';
-      const correctIdx = correctColumnIndexByRow[rowIdx];
-      const correctLabel = columns[correctIdx] ?? '';
+      let correctLabel = '';
+      let isCorrect = false;
+      if (!activity.assessmentMode && correctColumnIndexByRow) {
+        const correctIdx = correctColumnIndexByRow[rowIdx];
+        correctLabel = columns[correctIdx] ?? '';
+        isCorrect = Boolean(selectedLabel) && selectedLabel === correctLabel;
+      }
 
       const result = {
         text: `Row ${rowIdx + 1}`,
         selected: selectedLabel,
         correct: correctLabel,
-        isCorrect: Boolean(selectedLabel) && selectedLabel === correctLabel
+        isCorrect: isCorrect
       };
 
       if (explainAnswer && rowIdx === 0 && explanationText && explanationText.trim()) {
