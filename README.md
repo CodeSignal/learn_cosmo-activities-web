@@ -193,7 +193,7 @@ The application uses vanilla JavaScript with ES6 modules. The server automatical
 
 ### Release package
 
-`npm run pack` builds a runnable tree into `dist/` and archives it as `dist.tar.gz`: a single-file server bundle (`marked` + `ws` inlined — no `node_modules`) plus the static files the server serves. The release workflow runs the same command and attaches `dist.tar.gz` to the GitHub release. Extract, set `data/question.md`, and run `node server.js`.
+`npm run pack` builds a runnable tree into `dist/` and archives it as `dist.tar.gz`: a single-file server bundle (`marked` + `ws` inlined — no `node_modules`), the standalone `generate-score.js` scorer, and the static files the server serves. The release workflow runs the same command and attaches `dist.tar.gz` to the GitHub release. Extract, set `data/question.md`, and run `node server.js`. For assessment scoring, run `node generate-score.js` with the question, answer, and answer-key paths.
 
 ### Key Components
 

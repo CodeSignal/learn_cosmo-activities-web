@@ -3,7 +3,8 @@
  * Builds a runnable release tree into dist/ and archives it as dist.tar.gz.
  *
  * The tarball is a single-file server bundle (marked + ws inlined) plus the
- * static files the server serves. No node_modules. Extract and `node server.js`.
+ * static files the server serves and the standalone generate-score.js scorer.
+ * No node_modules. Extract and `node server.js`.
  *
  * Usage:
  *   node scripts/pack-dist.mjs
@@ -103,6 +104,21 @@ copy(path.join(ROOT, 'data'), path.join(DIST, 'data'), (src) => {
 copy(path.join(ROOT, 'LICENSE'), path.join(DIST, 'LICENSE'));
 copy(path.join(ROOT, 'content-url.js'), path.join(DIST, 'content-url.js'));
 
+await esbuild.build({
+  absWorkingDir: ROOT,
+  entryPoints: ['lib/generate-score.js'],
+  bundle: true,
+  outfile: 'dist/generate-score.js',
+  format: 'cjs',
+  platform: 'node',
+  target: 'node20',
+  minify: true,
+  banner: {
+    js: '#!/usr/bin/env node\n',
+  },
+  logLevel: 'warning',
+});
+
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 fs.writeFileSync(
   path.join(DIST, 'package.json'),
@@ -124,6 +140,7 @@ fs.writeFileSync(
 for (const rel of [
   'server.js',
   'content-url.js',
+  'generate-score.js',
   'public/index.html',
   'public/app.js',
   'data/question.md',
@@ -162,6 +179,18 @@ try {
     await new Promise((r) => setTimeout(r, 100));
   }
   if (!healthy) throw new Error(`smoke check failed: ${stderr || 'server did not become ready'}`);
+
+  try {
+    execFileSync(process.execPath, [path.join(DIST, 'generate-score.js')], {
+      cwd: DIST,
+      stdio: ['ignore', 'ignore', 'pipe'],
+    });
+    throw new Error('generate-score.js exited 0 without required arguments');
+  } catch (scorerErr) {
+    if (scorerErr.status !== 1) {
+      throw new Error(`generate-score.js smoke failed: ${scorerErr.stderr || scorerErr.message}`);
+    }
+  }
 } finally {
   child.kill('SIGTERM');
   await new Promise((resolve) => {
@@ -176,7 +205,7 @@ try {
 if (fs.existsSync(TAR)) fs.unlinkSync(TAR);
 execFileSync('tar', ['-czf', TAR, '-C', DIST, '.'], { cwd: ROOT });
 
-const entries = ['server.js', 'content-url.js', 'public', 'data'];
+const entries = ['server.js', 'content-url.js', 'generate-score.js', 'public', 'data'];
 console.log('Packed dist/ (no node_modules):');
 for (const rel of entries) {
   console.log(`  ${rel.padEnd(24)} ${formatSize(distSize(rel))}`);

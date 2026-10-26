@@ -1,6 +1,7 @@
 # Attach a deployable tarball to a GitHub release.
-# `npm run pack` builds a single-file server bundle (no node_modules) into
-# dist.tar.gz. Unpack, add/replace data/question.md, then `node server.js`.
+# `npm run pack` builds a single-file server bundle (no node_modules) plus
+# generate-score.js into dist.tar.gz. Unpack, add/replace data/question.md,
+# then `node server.js`. Assessment scoring: `node generate-score.js`.
 #
 # Download URLs:
 #   Stable: .../releases/latest/download/dist.tar.gz
