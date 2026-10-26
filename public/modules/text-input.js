@@ -782,6 +782,7 @@ export function initTextInput({
   }
   
   function validateAnswers() {
+    if (activity.assessmentMode) return;
     isValidating = true;
     let hasIncorrect = false;
     
@@ -802,20 +803,23 @@ export function initTextInput({
     state.results = textInput.questions.map((q, idx) => {
       const userAnswer = userAnswers[q.id] || '';
       const isValidateLater = q.validation && q.validation.kind === 'validate-later';
-      const isCorrect = isValidateLater ? null : validateAnswer(q);
-      const answerCandidates = Array.isArray(q.correctAnswers) && q.correctAnswers.length > 0
-        ? q.correctAnswers
-        : [{ correctAnswer: q.correctAnswer }];
-      const correctAnswersText = answerCandidates
-        .map(entry => (typeof entry === 'string' ? entry : entry.correctAnswer))
-        .filter(Boolean)
-        .join(' | ');
+      let correctAnswersText = '';
+      if (!activity.assessmentMode) {
+        const isCorrect = isValidateLater ? null : validateAnswer(q);
+        const answerCandidates = Array.isArray(q.correctAnswers) && q.correctAnswers.length > 0
+          ? q.correctAnswers
+          : [{ correctAnswer: q.correctAnswer }];
+        correctAnswersText = answerCandidates
+          .map(entry => (typeof entry === 'string' ? entry : entry.correctAnswer))
+          .filter(Boolean)
+          .join(' | ');
+      }
       
       const customName = q.name && String(q.name).trim();
       return {
         text: customName || `Question ${idx + 1}`,
         selected: userAnswer,
-        correct: correctAnswersText || q.correctAnswer,
+        correct: activity.assessmentMode ? '' : (correctAnswersText || q.correctAnswer),
         validateLater: isValidateLater
       };
     });

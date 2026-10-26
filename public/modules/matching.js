@@ -358,7 +358,7 @@ export function initMatching({
     state.results = [];
     matching.items.forEach((item, idx) => {
       const selected = selectedByItemIdx[idx] || '';
-      const correct = item.answer || '';
+      const correct = activity.assessmentMode ? '' : (item.answer || '');
       state.results.push({
         text: `Item ${idx + 1}`,
         selected: selected,

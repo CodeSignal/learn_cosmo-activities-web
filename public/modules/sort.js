@@ -328,6 +328,7 @@ export function initSort({
   // POST to /validate (delivered via the WebSocket "validate" message).
   // Unplaced items are intentionally left untouched.
   function validateAnswers() {
+    if (activity.assessmentMode) return;
     validating = true;
     render();
   }
@@ -336,7 +337,7 @@ export function initSort({
     state.results = items.map((item, idx) => ({
       text: item.text,
       selected: placement[idx] || '',
-      correct: item.correct || ''
+      correct: activity.assessmentMode ? '' : (item.correct || '')
     }));
     state.index = placement.reduce((acc, v) => acc + (v ? 1 : 0), 0);
     postResults();
