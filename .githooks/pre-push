@@ -4,7 +4,7 @@ set -euo pipefail
 echo "pre-push: rebuilding generate-score.js …"
 npm run build:scorer --silent
 
-if ! git diff --quiet -- generate-score.js; then
+if ! git diff --quiet HEAD -- generate-score.js; then
   echo ""
   echo "ERROR: generate-score.js is out of date."
   echo "The bundle was just rebuilt and differs from what you are pushing."

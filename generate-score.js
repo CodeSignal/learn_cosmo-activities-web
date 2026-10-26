@@ -4036,13 +4036,10 @@ function parseAnswerKey(markdown) {
   const sections = parseSectionsFromTokens(tokens);
   const type = ((sections.get("Type") || []).map((t) => t.raw || t.text).join("\n") || "").trim();
   const keyItems = readListItems(sections.get("Answer Key"));
+  const { parseSortItemEntry } = require_sort_item_entry();
   const answers = keyItems.map((item) => {
-    const colonIdx = item.indexOf(":");
-    if (colonIdx === -1) return { key: item.trim(), value: "" };
-    return {
-      key: item.slice(0, colonIdx).trim(),
-      value: item.slice(colonIdx + 1).trim()
-    };
+    const { text, correct } = parseSortItemEntry(item);
+    return { key: text, value: correct };
   });
   return { type, answers };
 }
@@ -4116,13 +4113,18 @@ function mergeAnswerKeyIntoActivity(activity, answerKey) {
     const questions = activity.textInput && activity.textInput.questions;
     if (!questions) return;
     const { parseTextInputAnswerItems } = require_text_input_validation();
+    const valuesByQuestion = /* @__PURE__ */ new Map();
     answerKey.answers.forEach(({ key, value }) => {
       const m = key.match(/^Question\s+(\d+)$/i);
       if (!m) return;
       const qIdx = parseInt(m[1], 10) - 1;
+      if (!questions[qIdx]) return;
+      if (!valuesByQuestion.has(qIdx)) valuesByQuestion.set(qIdx, []);
+      valuesByQuestion.get(qIdx).push(value);
+    });
+    valuesByQuestion.forEach((values, qIdx) => {
       const q = questions[qIdx];
-      if (!q) return;
-      const parsed = parseTextInputAnswerItems([value]);
+      const parsed = parseTextInputAnswerItems(values);
       q.correctAnswers = parsed.correctAnswers;
       q.correctAnswer = parsed.correctAnswer;
       q.validation = parsed.validation;
