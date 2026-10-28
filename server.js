@@ -138,8 +138,13 @@ function respondJson(res, status, payload) {
 
 function writeUtf8File(filePath, contents, cb) {
   const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  } catch (err) {
+    cb(err);
+    return;
   }
   fs.writeFile(filePath, contents, 'utf8', cb);
 }
@@ -276,6 +281,10 @@ const server = http.createServer((req, res) => {
     fs.readFile(EDIT_FILE_PATH, 'utf8', (err, data) => {
       if (err) {
         if (err.code === 'ENOENT') {
+          if (ANSWER_KEY_FILE_PATH && fs.existsSync(ANSWER_KEY_FILE_PATH)) {
+            respondJson(res, 409, { error: 'Question file is missing while answer key exists' });
+            return;
+          }
           // File doesn't exist; client prompts for question type
           respondJson(res, 200, {
             markdown: '',
