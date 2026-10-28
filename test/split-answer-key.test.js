@@ -306,6 +306,7 @@ __Answer Key__
 `;
   const merged = mergeQuestionAndAnswerKey(question, key);
   assert.match(merged, /Capital of France\?/);
+  assert.match(merged, /\[kind: string\]/);
 });
 
 test('merge rejects non-empty answer-key content with no parseable entries', () => {
