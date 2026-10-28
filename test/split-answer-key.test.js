@@ -231,6 +231,42 @@ test('Swipe: split converts left/right items into a flat list', () => {
   assert.equal(detectAnswersPresent(activity), false);
 });
 
+test('merge keeps an empty answer-key scaffold from a question with no answers', () => {
+  const question = `__Type__
+
+Text Input
+
+__Practice Question__
+
+Capital of France?
+
+`;
+  const { answerKeyMarkdown } = splitCombinedMarkdown(question);
+  assert.match(answerKeyMarkdown, /__Type__/);
+  assert.match(answerKeyMarkdown, /__Answer Key__/);
+  assert.equal(parseAnswerKey(answerKeyMarkdown).answers.length, 0);
+  const merged = mergeQuestionAndAnswerKey(question, answerKeyMarkdown);
+  assert.match(merged, /Capital of France\?/);
+  assert.doesNotMatch(merged, /__Answer Key__/);
+});
+
+test('merge rejects an answer key whose type differs from the question', () => {
+  const question = readExample('assessment-text-input.md');
+  const key = readExample('assessment-mcq-answer-key.md');
+  assert.throws(
+    () => mergeQuestionAndAnswerKey(question, key),
+    /type does not match/
+  );
+});
+
+test('merge rejects non-empty answer-key content with no parseable entries', () => {
+  const question = readExample('assessment-text-input.md');
+  assert.throws(
+    () => mergeQuestionAndAnswerKey(question, 'this is not an answer key'),
+    /no parseable entries/
+  );
+});
+
 test('assessment examples merge then split back to the same key entries', () => {
   const pairs = [
     ['assessment-text-input.md', 'assessment-text-input-answer-key.md'],
