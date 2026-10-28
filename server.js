@@ -330,7 +330,7 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         const data = JSON.parse(body);
-        if (data.markdown != null && typeof data.markdown !== 'string') {
+        if (typeof data.markdown !== 'string') {
           respondJson(res, 400, { error: 'markdown must be a string' });
           return;
         }

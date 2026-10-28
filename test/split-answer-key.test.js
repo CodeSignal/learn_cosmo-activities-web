@@ -259,6 +259,55 @@ test('merge rejects an answer key whose type differs from the question', () => {
   );
 });
 
+test('merge rejects a question with no type when an answer key is present', () => {
+  const key = readExample('assessment-text-input-answer-key.md');
+  assert.throws(
+    () => mergeQuestionAndAnswerKey('Capital of France?', key),
+    /missing a type/
+  );
+});
+
+test('merge rejects answer-key entries that lack a separator', () => {
+  const question = readExample('assessment-text-input.md');
+  const key = `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1
+`;
+  assert.throws(
+    () => mergeQuestionAndAnswerKey(question, key),
+    /missing a separator/
+  );
+});
+
+test('merge keeps answer-key entries with a separator and an empty value', () => {
+  const question = `__Type__
+
+Text Input
+
+__Practice Question__
+
+Capital of France?
+
+__Correct Answers__
+
+- [kind: string]
+`;
+  const key = `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1:
+`;
+  const merged = mergeQuestionAndAnswerKey(question, key);
+  assert.match(merged, /Capital of France\?/);
+});
+
 test('merge rejects non-empty answer-key content with no parseable entries', () => {
   const question = readExample('assessment-text-input.md');
   assert.throws(

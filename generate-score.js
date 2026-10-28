@@ -2655,7 +2655,7 @@ var require_sort_item_entry = __commonJS({
         i++;
       }
       const correct = sepFound ? s.slice(i) : "";
-      return { text: text.trim(), correct: correct.trim() };
+      return { text: text.trim(), correct: correct.trim(), sepFound };
     }
     function escapeSortItemText(text) {
       const source = String(text == null ? "" : text);
