@@ -18,6 +18,7 @@ const {
   parseAnswersFromMarkdown,
   detectAnswersPresent,
 } = require('./lib/parse-question');
+const { splitCombinedMarkdown, mergeQuestionAndAnswerKey } = require('./lib/split-answer-key');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -34,10 +35,26 @@ const SIM_ROOT_PROXY_PATHS = (process.env.SIM_ROOT_PROXY_PATHS || '/assets/,/con
   .map((entry) => entry.trim())
   .filter(Boolean);
 
-// Parse command line arguments for --edit, --copy-markdown, and --examples
+function resolveCliPath(arg) {
+  return path.isAbsolute(arg) ? arg : path.resolve(process.cwd(), arg);
+}
+
+const CLI_FLAGS = ['--edit', '--copy-markdown', '--examples', '--answer-key'];
+
+function takePathOperand(flag, args, i) {
+  const operand = args[i + 1];
+  if (operand === undefined || CLI_FLAGS.includes(operand)) {
+    console.error(`${flag} requires a file path`);
+    process.exit(1);
+  }
+  return resolveCliPath(operand);
+}
+
+// Parse command line arguments for --edit, --answer-key, --copy-markdown, and --examples
 let EDIT_MODE = false;
 let EXAMPLES_MODE = false;
 let EDIT_FILE_PATH = null;
+let ANSWER_KEY_FILE_PATH = null;
 let COPY_MARKDOWN_ENABLED = false;
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
@@ -49,17 +66,25 @@ for (let i = 0; i < args.length; i++) {
     EXAMPLES_MODE = true;
     continue;
   }
-  if (args[i] === '--edit' && i + 1 < args.length) {
+  if (args[i] === '--edit') {
     EDIT_MODE = true;
-    let editPathArg = args[i + 1];
-    // Resolve path relative to current working directory if path is relative, otherwise use as-is
-    if (path.isAbsolute(editPathArg)) {
-      EDIT_FILE_PATH = editPathArg;
-    } else {
-      // Resolve relative paths from current working directory
-      EDIT_FILE_PATH = path.resolve(process.cwd(), editPathArg);
-    }
+    EDIT_FILE_PATH = takePathOperand('--edit', args, i);
+    i++;
+    continue;
   }
+  if (args[i] === '--answer-key') {
+    ANSWER_KEY_FILE_PATH = takePathOperand('--answer-key', args, i);
+    i++;
+    continue;
+  }
+}
+if (ANSWER_KEY_FILE_PATH && !EDIT_MODE) {
+  console.warn('--answer-key is ignored unless --edit is also set');
+  ANSWER_KEY_FILE_PATH = null;
+}
+if (EDIT_MODE && ANSWER_KEY_FILE_PATH && EDIT_FILE_PATH === ANSWER_KEY_FILE_PATH) {
+  console.error('--edit and --answer-key must resolve to different files');
+  process.exit(1);
 }
 
 const MIME_TYPES = {
@@ -109,6 +134,19 @@ function sendFile(res, filePath, status = 200) {
 function respondJson(res, status, payload) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(JSON.stringify(payload));
+}
+
+function writeUtf8File(filePath, contents, cb) {
+  const dir = path.dirname(filePath);
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  } catch (err) {
+    cb(err);
+    return;
+  }
+  fs.writeFile(filePath, contents, 'utf8', cb);
 }
 
 function simUpstreamPath(pathname) {
@@ -243,6 +281,10 @@ const server = http.createServer((req, res) => {
     fs.readFile(EDIT_FILE_PATH, 'utf8', (err, data) => {
       if (err) {
         if (err.code === 'ENOENT') {
+          if (ANSWER_KEY_FILE_PATH && fs.existsSync(ANSWER_KEY_FILE_PATH)) {
+            respondJson(res, 409, { error: 'Question file is missing while answer key exists' });
+            return;
+          }
           // File doesn't exist; client prompts for question type
           respondJson(res, 200, {
             markdown: '',
@@ -255,10 +297,20 @@ const server = http.createServer((req, res) => {
         }
         return;
       }
+      let markdown = data;
+      if (ANSWER_KEY_FILE_PATH && fs.existsSync(ANSWER_KEY_FILE_PATH)) {
+        try {
+          const answerKeyMd = fs.readFileSync(ANSWER_KEY_FILE_PATH, 'utf8');
+          markdown = mergeQuestionAndAnswerKey(data, answerKeyMd);
+        } catch (e) {
+          respondJson(res, 500, { error: 'Failed to load answer key' });
+          return;
+        }
+      }
       respondJson(res, 200, {
-        markdown: data,
+        markdown,
         filePath: EDIT_FILE_PATH,
-        questionType: extractQuestionTypeFromMarkdown(data),
+        questionType: extractQuestionTypeFromMarkdown(markdown),
         copyMarkdownEnabled: COPY_MARKDOWN_ENABLED
       });
     });
@@ -278,20 +330,45 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       try {
         const data = JSON.parse(body);
+        if (typeof data.markdown !== 'string') {
+          respondJson(res, 400, { error: 'markdown must be a string' });
+          return;
+        }
         const markdown = data.markdown || '';
-
-        // Ensure directory exists
-        const dir = path.dirname(EDIT_FILE_PATH);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
+        let questionMarkdown = markdown;
+        let answerKeyMarkdown = null;
+        if (ANSWER_KEY_FILE_PATH) {
+          const split = splitCombinedMarkdown(markdown);
+          questionMarkdown = split.questionMarkdown;
+          answerKeyMarkdown = split.answerKeyMarkdown;
         }
 
-        fs.writeFile(EDIT_FILE_PATH, markdown, 'utf8', (err) => {
-          if (err) {
-            respondJson(res, 500, { error: 'Failed to save file' });
+        if (!ANSWER_KEY_FILE_PATH) {
+          writeUtf8File(EDIT_FILE_PATH, questionMarkdown, (err) => {
+            if (err) {
+              respondJson(res, 500, { error: 'Failed to save file' });
+              return;
+            }
+            respondJson(res, 200, { success: true, filePath: EDIT_FILE_PATH });
+          });
+          return;
+        }
+        writeUtf8File(ANSWER_KEY_FILE_PATH, answerKeyMarkdown || '', (keyErr) => {
+          if (keyErr) {
+            respondJson(res, 500, { error: 'Failed to save answer key' });
             return;
           }
-          respondJson(res, 200, { success: true, filePath: EDIT_FILE_PATH });
+          writeUtf8File(EDIT_FILE_PATH, questionMarkdown, (err) => {
+            if (err) {
+              respondJson(res, 500, { error: 'Failed to save file' });
+              return;
+            }
+            respondJson(res, 200, {
+              success: true,
+              filePath: EDIT_FILE_PATH,
+              answerKeyPath: ANSWER_KEY_FILE_PATH
+            });
+          });
         });
       } catch (e) {
         respondJson(res, 400, { error: 'Invalid JSON' });

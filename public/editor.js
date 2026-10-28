@@ -301,8 +301,11 @@ function debounce(func, wait) {
   };
 }
 
+let loadFailed = false;
+
 // Save markdown to server
 async function saveMarkdown(markdown) {
+  if (loadFailed) return;
   const saveStatus = document.getElementById('save-status');
 
   try {
@@ -345,6 +348,7 @@ async function loadMarkdown() {
     };
   } catch (error) {
     console.error('Error loading markdown:', error);
+    loadFailed = true;
     return { markdown: '', questionType: null, copyMarkdownEnabled: false };
   }
 }
@@ -2600,6 +2604,15 @@ function initQuestionTypeDropdown() {
 // Initialize editor
 async function initEditor() {
   let { markdown, questionType, copyMarkdownEnabled } = await loadMarkdown();
+  if (loadFailed) {
+    const saveStatus = document.getElementById('save-status');
+    if (saveStatus) {
+      saveStatus.textContent = 'Error loading';
+      saveStatus.className = 'save-status error';
+      saveStatus.classList.remove('hidden');
+    }
+    return;
+  }
   setCopyMarkdownButtonVisible(copyMarkdownEnabled);
 
   const editorRoot = document.getElementById('editor-root');

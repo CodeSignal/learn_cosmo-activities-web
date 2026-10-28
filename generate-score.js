@@ -2655,9 +2655,27 @@ var require_sort_item_entry = __commonJS({
         i++;
       }
       const correct = sepFound ? s.slice(i) : "";
-      return { text: text.trim(), correct: correct.trim() };
+      return { text: text.trim(), correct: correct.trim(), sepFound };
     }
-    module2.exports = { parseSortItemEntry };
+    function escapeSortItemText(text) {
+      const source = String(text == null ? "" : text);
+      let result = "";
+      let i = 0;
+      while (i < source.length) {
+        const mathLen = mathRegionLengthAt(source, i);
+        if (mathLen) {
+          result += source.slice(i, i + mathLen);
+          i += mathLen;
+          continue;
+        }
+        const ch = source[i];
+        if (ch === "\\" || ch === ":") result += "\\";
+        result += ch;
+        i++;
+      }
+      return result;
+    }
+    module2.exports = { parseSortItemEntry, escapeSortItemText };
   }
 });
 

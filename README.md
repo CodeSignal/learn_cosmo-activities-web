@@ -49,6 +49,36 @@ Then open **http://localhost:3000/**. You get a split layout: a searchable list 
 
 This mode is intended for local development and QA only. The same static assets and activity APIs apply as in normal mode; only the root route and the extra example APIs are added (see **API Endpoints** below).
 
+### Edit mode (authoring)
+
+`--edit <file>` serves a form-based question editor at **http://localhost:3000/** instead of the learner activity. Changes auto-save back to that file.
+
+```bash
+node server.js --edit data/question.md
+```
+
+If the file does not exist yet, the editor asks which activity type to create. It can author **Text Input**, **Multiple Choice**, **Matrix**, **Fill in the Blanks**, and **Matching**. Sort Into Boxes and Swipe Left or Right are not in the editor; write those by hand (see `data/examples/`).
+
+#### Split assessment files
+
+By default the editor writes one combined markdown file, with answers inline (`__Correct Answers__`, `- B - Correct`, `[[blank:answer]]`, and so on). That is the practice format.
+
+Pass `--answer-key <file>` to write the assessment split used by `generate-score.js`:
+
+```bash
+node server.js --edit path/to/question.md --answer-key path/to/question-answer-key.md
+```
+
+On save, answers are stripped from the question file and written to the answer-key file as an `__Answer Key__` list. On load, the editor merges the two files so you still edit answers in the same form. The `assessment-*.md` / `assessment-*-answer-key.md` pairs under `data/examples/` show the split format.
+
+#### Copy markdown
+
+`--copy-markdown` adds a button that copies the editor's combined markdown (answers inline) to the clipboard:
+
+```bash
+node server.js --edit data/question.md --copy-markdown
+```
+
 ### Text Input: repeatable entries
 
 A `validate-later` Text Input question can let the learner add as many entries as they need (for example, one defect report per entry):
@@ -145,6 +175,7 @@ learn_cosmo-activities-web/
 ├── public/                  # Frontend assets
 │   ├── index.html          # Main HTML file
 │   ├── examples-mode.html  # Examples picker shell (served at / when using --examples)
+│   ├── editor.html         # Question editor (served at / when using --edit)
 │   ├── app.js              # Main application logic
 │   ├── styles.css          # Application styles
 │   └── modules/            # Activity-specific modules
@@ -176,6 +207,11 @@ Older content may use `$...$` or `\(...\)` for inline math, or `\[...\]` for dis
 
 - `GET /api/activity` - Retrieves the current activity from `data/question.md`
 - `POST /api/results` - Saves activity results to `data/answer.md`
+
+When the server is started with **`--edit`**:
+
+- `GET /api/editor/load` - Returns `{ "markdown": "...", "filePath": "...", "questionType": "Text Input", "copyMarkdownEnabled": false }` for the file passed to `--edit`. If `--answer-key` is set and that file exists, answers are merged into `markdown` so the editor can show them.
+- `POST /api/editor/save` - Body: `{ "markdown": "..." }`. Writes the file passed to `--edit`. If `--answer-key` is set, splits the markdown and writes both files.
 
 When the server is started with **`--examples`**:
 
