@@ -191,6 +191,35 @@ test('Sort Into Boxes: split strips category assignments', () => {
   ]);
 });
 
+test('Sort Into Boxes: split/merge keeps a colon in the item text', () => {
+  const combined = `__Type__
+
+Sort Into Boxes
+
+__Categories__
+
+- Positive
+- Negative
+
+__Items__
+
+- Note\\: good: Positive
+- Skip this: Negative
+`;
+  const { questionMarkdown, answerKeyMarkdown } = splitCombinedMarkdown(combined);
+  assert.match(questionMarkdown, /Note\\: good/);
+  assert.doesNotMatch(questionMarkdown, /Note: good: Positive/);
+  assert.deepEqual(keyValues(answerKeyMarkdown), [
+    { key: 'Note: good', value: 'Positive' },
+    { key: 'Skip this', value: 'Negative' },
+  ]);
+  const merged = mergeQuestionAndAnswerKey(questionMarkdown, answerKeyMarkdown);
+  const activity = buildActivityFromMarkdown(merged);
+  const byText = Object.fromEntries(activity.items.map(it => [it.text, it.correct]));
+  assert.equal(byText['Note: good'], 'Positive');
+  assert.equal(byText['Skip this'], 'Negative');
+});
+
 test('Swipe: split converts left/right items into a flat list', () => {
   const combined = readExample('swipe-left-right.md');
   const { questionMarkdown, answerKeyMarkdown } = splitCombinedMarkdown(combined);

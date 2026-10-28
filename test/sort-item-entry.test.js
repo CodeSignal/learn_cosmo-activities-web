@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { parseSortItemEntry } = require('../lib/sort-item-entry');
+const { parseSortItemEntry, escapeSortItemText } = require('../lib/sort-item-entry');
 
 test('parseSortItemEntry splits at the first colon', () => {
   assert.deepEqual(parseSortItemEntry('Apple: Fruit'), { text: 'Apple', correct: 'Fruit' });
@@ -32,4 +32,19 @@ test('parseSortItemEntry ignores colons inside math', () => {
 
 test('parseSortItemEntry keeps \\$ for literal dollars', () => {
   assert.deepEqual(parseSortItemEntry('Costs \\$5: Cheap'), { text: 'Costs \\$5', correct: 'Cheap' });
+});
+
+test('escapeSortItemText round-trips colons and backslashes through parseSortItemEntry', () => {
+  const text = 'Note: good a\\b';
+  const escaped = escapeSortItemText(text);
+  assert.deepEqual(parseSortItemEntry(`${escaped}: Positive`), { text, correct: 'Positive' });
+});
+
+test('escapeSortItemText leaves colons inside math alone', () => {
+  const text = '$$f: A \\to B$$';
+  assert.equal(escapeSortItemText(text), text);
+  assert.deepEqual(parseSortItemEntry(`${escapeSortItemText(text)}: Function`), {
+    text,
+    correct: 'Function'
+  });
 });

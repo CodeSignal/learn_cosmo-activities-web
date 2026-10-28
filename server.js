@@ -39,6 +39,17 @@ function resolveCliPath(arg) {
   return path.isAbsolute(arg) ? arg : path.resolve(process.cwd(), arg);
 }
 
+const CLI_FLAGS = ['--edit', '--copy-markdown', '--examples', '--answer-key'];
+
+function takePathOperand(flag, args, i) {
+  const operand = args[i + 1];
+  if (operand === undefined || CLI_FLAGS.includes(operand)) {
+    console.error(`${flag} requires a file path`);
+    process.exit(1);
+  }
+  return resolveCliPath(operand);
+}
+
 // Parse command line arguments for --edit, --answer-key, --copy-markdown, and --examples
 let EDIT_MODE = false;
 let EXAMPLES_MODE = false;
@@ -55,19 +66,25 @@ for (let i = 0; i < args.length; i++) {
     EXAMPLES_MODE = true;
     continue;
   }
-  if (args[i] === '--edit' && i + 1 < args.length) {
+  if (args[i] === '--edit') {
     EDIT_MODE = true;
-    EDIT_FILE_PATH = resolveCliPath(args[++i]);
+    EDIT_FILE_PATH = takePathOperand('--edit', args, i);
+    i++;
     continue;
   }
-  if (args[i] === '--answer-key' && i + 1 < args.length) {
-    ANSWER_KEY_FILE_PATH = resolveCliPath(args[++i]);
+  if (args[i] === '--answer-key') {
+    ANSWER_KEY_FILE_PATH = takePathOperand('--answer-key', args, i);
+    i++;
     continue;
   }
 }
 if (ANSWER_KEY_FILE_PATH && !EDIT_MODE) {
   console.warn('--answer-key is ignored unless --edit is also set');
   ANSWER_KEY_FILE_PATH = null;
+}
+if (EDIT_MODE && ANSWER_KEY_FILE_PATH && EDIT_FILE_PATH === ANSWER_KEY_FILE_PATH) {
+  console.error('--edit and --answer-key must resolve to different files');
+  process.exit(1);
 }
 
 const MIME_TYPES = {
@@ -277,7 +294,8 @@ const server = http.createServer((req, res) => {
           const answerKeyMd = fs.readFileSync(ANSWER_KEY_FILE_PATH, 'utf8');
           markdown = mergeQuestionAndAnswerKey(data, answerKeyMd);
         } catch (e) {
-          markdown = data;
+          respondJson(res, 500, { error: 'Failed to load answer key' });
+          return;
         }
       }
       respondJson(res, 200, {
@@ -312,18 +330,24 @@ const server = http.createServer((req, res) => {
           answerKeyMarkdown = split.answerKeyMarkdown;
         }
 
-        writeUtf8File(EDIT_FILE_PATH, questionMarkdown, (err) => {
-          if (err) {
-            respondJson(res, 500, { error: 'Failed to save file' });
-            return;
-          }
-          if (!ANSWER_KEY_FILE_PATH) {
+        if (!ANSWER_KEY_FILE_PATH) {
+          writeUtf8File(EDIT_FILE_PATH, questionMarkdown, (err) => {
+            if (err) {
+              respondJson(res, 500, { error: 'Failed to save file' });
+              return;
+            }
             respondJson(res, 200, { success: true, filePath: EDIT_FILE_PATH });
+          });
+          return;
+        }
+        writeUtf8File(ANSWER_KEY_FILE_PATH, answerKeyMarkdown || '', (keyErr) => {
+          if (keyErr) {
+            respondJson(res, 500, { error: 'Failed to save answer key' });
             return;
           }
-          writeUtf8File(ANSWER_KEY_FILE_PATH, answerKeyMarkdown || '', (keyErr) => {
-            if (keyErr) {
-              respondJson(res, 500, { error: 'Failed to save answer key' });
+          writeUtf8File(EDIT_FILE_PATH, questionMarkdown, (err) => {
+            if (err) {
+              respondJson(res, 500, { error: 'Failed to save file' });
               return;
             }
             respondJson(res, 200, {
