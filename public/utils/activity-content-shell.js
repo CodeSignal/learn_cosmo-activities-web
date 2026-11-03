@@ -45,7 +45,6 @@ export function mountActivityContentShell({ container, content }) {
   }
 
   let splitPanel = null;
-  let blobUrl = null;
   let cancelled = false;
   let scrollPreventionCleanup = null;
   let preventHorizontalScroll = null;
@@ -118,11 +117,16 @@ export function mountActivityContentShell({ container, content }) {
     }, { passive: false, capture: true });
   }
 
-  leftPanel.className = 'activity-content-pane';
+  leftPanel.className = content?.designSystem
+    ? 'activity-content-pane activity-content-pane--design-system'
+    : 'activity-content-pane';
   const iframe = document.createElement('iframe');
   iframe.className = 'activity-content-iframe';
   iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
   iframe.setAttribute('frameborder', '1');
+  if (hasMarkdown) {
+    iframe.setAttribute('sandbox', 'allow-scripts');
+  }
   const sideUrl = hasUrl ? String(content.url || '') : '';
   iframe.title = sideUrl === '/sim' || sideUrl.startsWith('/sim/') ? 'Simulation' : 'Reference';
   leftPanel.appendChild(iframe);
@@ -209,18 +213,17 @@ export function mountActivityContentShell({ container, content }) {
     fetch('/api/content/markdown', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ markdown: content.markdown })
+      body: JSON.stringify({
+        markdown: content.markdown,
+        designSystem: content.designSystem === true
+      })
     })
       .then(res => res.text())
       .then((html) => {
         if (cancelled) return;
-        if (blobUrl) {
-          URL.revokeObjectURL(blobUrl);
-          blobUrl = null;
-        }
-        const blob = new Blob([html], { type: 'text/html' });
-        blobUrl = URL.createObjectURL(blob);
-        iframe.src = blobUrl;
+        // srcdoc documents resolve /design-system/* against about:srcdoc unless
+        // a <base> points at the app origin.
+        iframe.srcdoc = html.replace('<head>', `<head><base href="${window.location.origin}/">`);
       })
       .catch((err) => {
         if (!cancelled) {
@@ -237,10 +240,6 @@ export function mountActivityContentShell({ container, content }) {
     if (preventHorizontalScroll && mainPaneScroll) {
       mainPaneScroll.removeEventListener('scroll', preventHorizontalScroll, true);
       mainPaneScroll.removeEventListener('scroll', preventHorizontalScroll, false);
-    }
-    if (blobUrl) {
-      URL.revokeObjectURL(blobUrl);
-      blobUrl = null;
     }
     if (splitPanel) {
       splitPanel.destroy();

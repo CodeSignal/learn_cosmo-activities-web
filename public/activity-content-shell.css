@@ -35,6 +35,10 @@
   position: relative;
 }
 
+.activity-content-pane--design-system {
+  background-color: var(--Colors-Backgrounds-Main-Default);
+}
+
 .activity-content-iframe {
   width: 100%;
   height: 100%;
@@ -76,5 +80,9 @@
   .activity-content-pane {
     background-color: var(--Colors-Backgrounds-Main-Top);
     border-right-color: var(--Colors-Stroke-Lighter);
+  }
+
+  .activity-content-pane--design-system {
+    background-color: var(--Colors-Backgrounds-Main-Default);
   }
 }

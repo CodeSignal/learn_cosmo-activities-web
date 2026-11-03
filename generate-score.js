@@ -2737,27 +2737,29 @@ var require_parse_question = __commonJS({
       if (!contentText) return null;
       const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
       const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
-      const contentWithoutWidth = contentWidthMatch ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, "").trim() : contentText;
-      if (/^https?:\/\//i.test(contentWithoutWidth)) {
-        const lines = contentWithoutWidth.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const designSystem = /(?:^|\n)\s*\[designSystem\]\s*(?:\n|$)/i.test(contentText);
+      const contentWithoutModifiers = contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, "").replace(/(?:^|\n)\s*\[designSystem\]\s*(?=\n|$)/gi, "\n").trim();
+      if (/^https?:\/\//i.test(contentWithoutModifiers)) {
+        const lines = contentWithoutModifiers.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
         const firstLine = lines[0] || "";
-        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutModifiers);
         const url = firstLine.replace(/\s+\[openInNewTab\]\s*$/i, "").trim();
         const out2 = { url, openInNewTab: !!openInNewTab };
         if (contentWidth) out2.contentWidth = contentWidth;
         return out2;
       }
-      const pathLines = contentWithoutWidth.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const pathLines = contentWithoutModifiers.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
       const pathFirst = pathLines[0] || "";
       if (pathFirst.startsWith("/")) {
-        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutModifiers);
         const url = pathFirst.replace(/\s+\[openInNewTab\]\s*$/i, "").trim();
         const out2 = { url, openInNewTab: !!openInNewTab };
         if (contentWidth) out2.contentWidth = contentWidth;
         return out2;
       }
-      const out = { markdown: contentWithoutWidth };
+      const out = { markdown: contentWithoutModifiers };
       if (contentWidth) out.contentWidth = contentWidth;
+      if (designSystem) out.designSystem = true;
       return out;
     }
     function attachSideContent(activity, sections) {

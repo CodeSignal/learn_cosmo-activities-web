@@ -1,35 +1,50 @@
 import Dropdown from '/design-system/components/dropdown/dropdown.js';
 
-/** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string } | null} */
+/** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string, designSystem?: boolean } | null} */
 function parseContentTextToStructure(contentText) {
   if (!contentText || !String(contentText).trim()) return null;
   const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
   const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
-  const contentWithoutWidth = contentWidthMatch
-    ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '').trim()
-    : contentText;
+  const designSystem = /(?:^|\n)\s*\[designSystem\]\s*(?:\n|$)/i.test(contentText);
+  const contentWithoutModifiers = contentText
+    .replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '')
+    .replace(/(?:^|\n)\s*\[designSystem\]\s*(?=\n|$)/gi, '\n')
+    .trim();
 
-  if (/^https?:\/\//i.test(contentWithoutWidth)) {
-    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
-    const url = contentWithoutWidth.replace(/\s+\[openInNewTab\]\s*$/im, '').trim();
+  if (/^https?:\/\//i.test(contentWithoutModifiers)) {
+    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutModifiers);
+    const url = contentWithoutModifiers.replace(/\s+\[openInNewTab\]\s*$/im, '').trim();
     const out = { type: 'url', value: url, openInNewTab: !!openInNewTab };
     if (contentWidth) out.contentWidth = contentWidth;
     return out;
   }
 
-  const pathLines = contentWithoutWidth.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const pathLines = contentWithoutModifiers.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const pathFirst = pathLines[0] || '';
   if (pathFirst.startsWith('/')) {
-    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutModifiers);
     const url = pathFirst.replace(/\s+\[openInNewTab\]\s*$/i, '').trim();
     const out = { type: 'url', value: url, openInNewTab: !!openInNewTab };
     if (contentWidth) out.contentWidth = contentWidth;
     return out;
   }
 
-  const out = { type: 'markdown', value: contentWithoutWidth };
+  const out = { type: 'markdown', value: contentWithoutModifiers };
   if (contentWidth) out.contentWidth = contentWidth;
+  if (designSystem) out.designSystem = true;
   return out;
+}
+
+function formatSideContentMarkdown(content) {
+  let contentValue = content.value;
+  if (content.type === 'url') {
+    if (content.openInNewTab) contentValue += ' [openInNewTab]';
+    if (content.contentWidth) contentValue += ` [contentWidth: ${content.contentWidth}]`;
+    return contentValue;
+  }
+  if (content.designSystem) contentValue += '\n[designSystem]';
+  if (content.contentWidth) contentValue += `\n[contentWidth: ${content.contentWidth}]`;
+  return contentValue;
 }
 
 // Parse markdown into editable structure
@@ -275,14 +290,7 @@ function structureToMarkdown(structure) {
 
   // Add content if present
   if (structure.content && structure.content.value) {
-    let contentValue = structure.content.value;
-    if (structure.content.type === 'url') {
-      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
-      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
-    } else {
-      if (structure.content.contentWidth) contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
-    }
-    markdown += `__Content__\n\n${contentValue}\n\n`;
+    markdown += `__Content__\n\n${formatSideContentMarkdown(structure.content)}\n\n`;
   }
 
   return markdown;
@@ -801,14 +809,15 @@ let isMatrixMode = false;
 let isFibMode = false;
 let isMatchingMode = false;
 
-/** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string } | null} */
+/** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string, designSystem?: boolean } | null} */
 function cloneSideContent(content) {
   if (!content) return null;
   return {
     type: content.type,
     value: content.value ?? '',
     openInNewTab: !!content.openInNewTab,
-    contentWidth: content.contentWidth
+    contentWidth: content.contentWidth,
+    designSystem: !!content.designSystem
   };
 }
 
@@ -980,14 +989,7 @@ function matrixStructureToMarkdown(structure) {
   }
 
   if (structure.content && structure.content.value) {
-    let contentValue = structure.content.value;
-    if (structure.content.type === 'url') {
-      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
-      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
-    } else if (structure.content.contentWidth) {
-      contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
-    }
-    markdown += `__Content__\n\n${contentValue}\n\n`;
+    markdown += `__Content__\n\n${formatSideContentMarkdown(structure.content)}\n\n`;
   }
 
   return markdown;
@@ -1066,14 +1068,7 @@ function fibStructureToMarkdown(structure) {
     markdown += `__QuestionStyle__\n\n${f.questionStyle}\n\n`;
   }
   if (structure.content && structure.content.value) {
-    let contentValue = structure.content.value;
-    if (structure.content.type === 'url') {
-      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
-      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
-    } else if (structure.content.contentWidth) {
-      contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
-    }
-    markdown += `__Content__\n\n${contentValue}\n\n`;
+    markdown += `__Content__\n\n${formatSideContentMarkdown(structure.content)}\n\n`;
   }
   return markdown;
 }
@@ -1144,14 +1139,7 @@ function matchingStructureToMarkdown(structure) {
   });
   markdown += '\n';
   if (structure.content && structure.content.value) {
-    let contentValue = structure.content.value;
-    if (structure.content.type === 'url') {
-      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
-      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
-    } else if (structure.content.contentWidth) {
-      contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
-    }
-    markdown += `__Content__\n\n${contentValue}\n\n`;
+    markdown += `__Content__\n\n${formatSideContentMarkdown(structure.content)}\n\n`;
   }
   return markdown;
 }
@@ -1888,14 +1876,7 @@ function mcqStructureToMarkdown(structure) {
   });
 
   if (structure.content && structure.content.value) {
-    let contentValue = structure.content.value;
-    if (structure.content.type === 'url') {
-      if (structure.content.openInNewTab) contentValue += ' [openInNewTab]';
-      if (structure.content.contentWidth) contentValue += ` [contentWidth: ${structure.content.contentWidth}]`;
-    } else {
-      if (structure.content.contentWidth) contentValue += `\n[contentWidth: ${structure.content.contentWidth}]`;
-    }
-    markdown += `__Content__\n\n${contentValue}\n\n`;
+    markdown += `__Content__\n\n${formatSideContentMarkdown(structure.content)}\n\n`;
   }
 
   return markdown;
@@ -2699,7 +2680,7 @@ function wireContentEditorPanel() {
     let contentTypeDropdown = null;
     let openUrlButton = null;
 
-    function createContentInput(type, value, openInNewTab = false, contentWidth = '') {
+    function createContentInput(type, value, openInNewTab = false, contentWidth = '', designSystem = false) {
       contentInputContainer.innerHTML = '';
 
       if (type === 'url') {
@@ -2787,6 +2768,32 @@ function wireContentEditorPanel() {
             updateStructure();
           }
         }, 300);
+
+        const designSystemLabel = document.createElement('label');
+        designSystemLabel.className = 'input-checkbox';
+        designSystemLabel.style.marginTop = 'var(--UI-Spacing-spacing-ms)';
+        designSystemLabel.style.display = 'flex';
+        const designSystemInput = document.createElement('input');
+        designSystemInput.type = 'checkbox';
+        designSystemInput.checked = designSystem;
+        designSystemInput.onchange = () => {
+          if (currentStructure.content) {
+            currentStructure.content.designSystem = designSystemInput.checked;
+            updateStructure();
+          }
+        };
+        const designSystemBox = document.createElement('span');
+        designSystemBox.className = 'input-checkbox-box';
+        const designSystemCheckmark = document.createElement('span');
+        designSystemCheckmark.className = 'input-checkbox-checkmark';
+        designSystemBox.appendChild(designSystemCheckmark);
+        const designSystemText = document.createElement('span');
+        designSystemText.className = 'input-checkbox-label';
+        designSystemText.textContent = 'Use the activity design system';
+        designSystemLabel.appendChild(designSystemInput);
+        designSystemLabel.appendChild(designSystemBox);
+        designSystemLabel.appendChild(designSystemText);
+        contentInputContainer.appendChild(designSystemLabel);
 
         // Content panel width (for markdown)
         const contentWidthGroup = document.createElement('div');
@@ -2924,7 +2931,13 @@ function wireContentEditorPanel() {
             currentStructure.content.type = value;
           }
 
-          createContentInput(value, currentValue, currentStructure.content?.openInNewTab, currentStructure.content?.contentWidth);
+          createContentInput(
+            value,
+            currentValue,
+            currentStructure.content?.openInNewTab,
+            currentStructure.content?.contentWidth,
+            currentStructure.content?.designSystem
+          );
 
           if (value === 'url') {
             createOpenUrlButton();
