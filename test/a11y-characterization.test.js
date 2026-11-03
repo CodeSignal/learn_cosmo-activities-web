@@ -318,6 +318,8 @@ test('A9: side-content iframe has a title from content type', () => {
     /startsWith\(\s*['"]\/sim\//,
     '/sim/ content is titled Simulation'
   );
+  assert.match(block, /iframe\.srcdoc\s*=/, 'markdown/HTML content uses srcdoc');
+  assert.match(block, /<base href=/, 'srcdoc documents get a same-origin base for design-system assets');
 });
 
 test('A11: Matching choices are a labeled group of buttons', () => {

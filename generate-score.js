@@ -2679,6 +2679,66 @@ var require_sort_item_entry = __commonJS({
   }
 });
 
+// lib/side-content-modifiers.js
+var require_side_content_modifiers = __commonJS({
+  "lib/side-content-modifiers.js"(exports2, module2) {
+    function mapOutsideFences(text, fn) {
+      const source = String(text);
+      let out = "";
+      let outsideStart = 0;
+      let fence = null;
+      let i = 0;
+      while (i < source.length) {
+        const nl = source.indexOf("\n", i);
+        const lineEnd = nl === -1 ? source.length : nl + 1;
+        const content = (nl === -1 ? source.slice(i) : source.slice(i, nl)).replace(/\r$/, "");
+        if (!fence) {
+          const open = content.match(/^ *(`{3,}|~{3,})/);
+          if (open) {
+            if (i > outsideStart) out += fn(source.slice(outsideStart, i));
+            fence = { marker: open[1][0], length: open[1].length };
+            out += source.slice(i, lineEnd);
+            outsideStart = lineEnd;
+          }
+        } else {
+          out += source.slice(i, lineEnd);
+          outsideStart = lineEnd;
+          const close = content.match(/^ *(`{3,}|~{3,})[ \t]*$/);
+          if (close && close[1][0] === fence.marker && close[1].length >= fence.length) {
+            fence = null;
+          }
+        }
+        if (nl === -1) break;
+        i = lineEnd;
+      }
+      if (!fence && outsideStart < source.length) {
+        out += fn(source.slice(outsideStart));
+      }
+      return out;
+    }
+    function parseSideContentModifiers(contentText) {
+      let contentWidth = null;
+      let designSystem = false;
+      mapOutsideFences(contentText, (chunk) => {
+        if (!contentWidth) {
+          const match = chunk.match(/\[contentWidth:\s*([^\]]+)\]/i);
+          if (match) contentWidth = match[1].trim();
+        }
+        if (/(?:^|\n)\s*\[designSystem\]\s*(?:\n|$)/i.test(chunk)) {
+          designSystem = true;
+        }
+        return chunk;
+      });
+      const contentWithoutModifiers = mapOutsideFences(
+        contentText,
+        (chunk) => chunk.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, "").replace(/(?:^|\n)\s*\[designSystem\]\s*(?=\n|$)/gi, "\n")
+      ).trim();
+      return { contentWidth, designSystem, contentWithoutModifiers };
+    }
+    module2.exports = { parseSideContentModifiers, mapOutsideFences };
+  }
+});
+
 // lib/parse-question.js
 var require_parse_question = __commonJS({
   "lib/parse-question.js"(exports2, module2) {
@@ -2687,6 +2747,7 @@ var require_parse_question = __commonJS({
     var { parseTextInputAnswers } = require_text_input_answers();
     var { renderMarkdown } = require_render_markdown();
     var { parseSortItemEntry } = require_sort_item_entry();
+    var { parseSideContentModifiers } = require_side_content_modifiers();
     function parseSectionsFromTokens2(tokens) {
       const sections = /* @__PURE__ */ new Map();
       let current = null;
@@ -2735,29 +2796,28 @@ var require_parse_question = __commonJS({
       if (!sectionTokens || sectionTokens.length === 0) return null;
       const contentText = sectionTokens.map((t) => t.raw || t.text || "").join("\n").trim();
       if (!contentText) return null;
-      const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
-      const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
-      const contentWithoutWidth = contentWidthMatch ? contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, "").trim() : contentText;
-      if (/^https?:\/\//i.test(contentWithoutWidth)) {
-        const lines = contentWithoutWidth.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const { contentWidth, designSystem, contentWithoutModifiers } = parseSideContentModifiers(contentText);
+      if (/^https?:\/\//i.test(contentWithoutModifiers)) {
+        const lines = contentWithoutModifiers.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
         const firstLine = lines[0] || "";
-        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutModifiers);
         const url = firstLine.replace(/\s+\[openInNewTab\]\s*$/i, "").trim();
         const out2 = { url, openInNewTab: !!openInNewTab };
         if (contentWidth) out2.contentWidth = contentWidth;
         return out2;
       }
-      const pathLines = contentWithoutWidth.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const pathLines = contentWithoutModifiers.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
       const pathFirst = pathLines[0] || "";
       if (pathFirst.startsWith("/")) {
-        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutWidth);
+        const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutModifiers);
         const url = pathFirst.replace(/\s+\[openInNewTab\]\s*$/i, "").trim();
         const out2 = { url, openInNewTab: !!openInNewTab };
         if (contentWidth) out2.contentWidth = contentWidth;
         return out2;
       }
-      const out = { markdown: contentWithoutWidth };
+      const out = { markdown: contentWithoutModifiers };
       if (contentWidth) out.contentWidth = contentWidth;
+      if (designSystem) out.designSystem = true;
       return out;
     }
     function attachSideContent(activity, sections) {

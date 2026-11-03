@@ -102,11 +102,16 @@ Any activity can render **side content** in a split layout by adding a `__Conten
 | Form | First line of `__Content__` | Use case |
 |------|------------------------------|----------|
 | **External URL** | `https://example.com/docs` | Embed external documentation, datasets, web tools, etc. |
-| **Inline markdown** | Any markdown block (no URL on the first line) | Reference tables, formulas, hints, glossaries — rendered inline. |
+| **Inline markdown or HTML** | Any markdown or HTML block (no URL on the first line) | Reference tables, formulas, hints, glossaries — rendered inline. |
 | **Site-relative URL** | `/sim/` (or any path starting with `/`) | Embed a simulation hosted by this server (split-screen mode — see below). |
+
+A block that starts with an HTML tag is passed through as HTML; everything else is rendered as markdown. Existing markdown/HTML side content keeps the legacy iframe document (no design-system fonts or element styles) unless you opt in.
+
+Add `[designSystem]` to wrap that pane in the activity design system (Work Sans, Founders Grotesk, JetBrains Mono, color/spacing tokens, and table styles). Then use typography classes (`heading-small`, `body-medium`, `code-medium`), table classes (`table`, `table-scroll`), or CSS variables (`var(--Colors-Text-Body-Default)`, `var(--body-family)`) instead of loading extra fonts or hard-coding colors.
 
 Optional modifiers on the same line / block:
 
+- `[designSystem]` — apply the design system to markdown or HTML side content (off by default so legacy content is unchanged).
 - `[contentWidth: 50%]` or `[contentWidth: 320px]` — initial width of the left pane (defaults to 40%).
 - `[openInNewTab]` — adds a toolbar button to open the URL in a new tab (URL forms only).
 
@@ -114,6 +119,7 @@ Examples are in `data/examples/`:
 
 - `mcq-with-url-content.md`, `text-input-with-url-content.md` — external URL
 - `text-input-with-markdown-content.md`, `side-content-markdown-table.md` — inline markdown
+- `assessment-mcq-agent-harness.md` — markdown side content with `[designSystem]`
 
 #### Split-screen mode with an external simulation
 

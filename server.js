@@ -11,7 +11,7 @@ const {
 } = require('./lib/activity-results-validation');
 const { buildActivityReportMarkdown } = require('./lib/build-activity-report');
 const { buildScoreJson } = require('./lib/build-score-json');
-const { renderMarkdown } = require('./lib/render-markdown');
+const { renderContentDocument } = require('./lib/render-content-document');
 const {
   extractQuestionTypeFromMarkdown,
   buildActivityFromMarkdown,
@@ -99,8 +99,14 @@ const MIME_TYPES = {
   '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
   '.ico': 'image/x-icon',
-  '.txt': 'text/plain; charset=utf-8'
+  '.txt': 'text/plain; charset=utf-8',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf'
 };
+
+const FONT_EXTS = new Set(['.woff', '.woff2', '.ttf', '.otf']);
 
 function isPathInside(child, parent) {
   const relative = path.relative(parent, child);
@@ -118,11 +124,16 @@ function isValidExampleBasename(name) {
 function sendFile(res, filePath, status = 200) {
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-  res.writeHead(status, {
+  const headers = {
     'Content-Type': contentType,
     // Disable aggressive caching during development
     'Cache-Control': 'no-store'
-  });
+  };
+  if (FONT_EXTS.has(ext)) {
+    // Sandboxed srcdoc iframes are an opaque origin; @font-face needs CORS.
+    headers['Access-Control-Allow-Origin'] = '*';
+  }
+  res.writeHead(status, headers);
   const read = fs.createReadStream(filePath);
   read.on('error', () => {
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -646,61 +657,9 @@ const server = http.createServer((req, res) => {
       try {
         const data = JSON.parse(body);
         const markdown = data.markdown || '';
-        const html = renderMarkdown(markdown);
-
-        // Return HTML wrapped in a proper document with styles
-        const fullHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Content</title>
-  <link rel="stylesheet" href="/design-system/colors/colors.css" />
-  <link rel="stylesheet" href="/design-system/typography/typography.css" />
-  <link rel="stylesheet" href="/design-system/spacing/spacing.css" />
-  <link rel="stylesheet" href="/design-system/components/table/table.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
-  <style>
-    body {
-      margin: 0;
-      padding: 1.5rem;
-      background-color: var(--Colors-Backgrounds-Main-Top);
-      color: var(--Colors-Text-Body-Default);
-      font-family: var(--body-family);
-    }
-    .markdown-content {
-      max-width: 100%;
-    }
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: var(--Colors-Backgrounds-Main-Top);
-        color: var(--Colors-Text-Body-Default);
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="body-medium markdown-content">${html}</div>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      if (window.renderMathInElement) {
-        renderMathInElement(document.body, {
-          delimiters: [
-            {left: '$$', right: '$$', display: false},
-            {left: '\\\\[', right: '\\\\]', display: true},
-            {left: '$', right: '$', display: false},
-            {left: '\\\\(', right: '\\\\)', display: false}
-          ],
-          ignoredClasses: ['no-math'],
-          throwOnError: false
+        const fullHtml = renderContentDocument(markdown, {
+          designSystem: data.designSystem === true
         });
-      }
-    });
-  </script>
-</body>
-</html>`;
 
         res.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
