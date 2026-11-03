@@ -2693,7 +2693,7 @@ var require_side_content_modifiers = __commonJS({
         const lineEnd = nl === -1 ? source.length : nl + 1;
         const content = nl === -1 ? source.slice(i) : source.slice(i, nl);
         if (!fence) {
-          const open = content.match(/^[ \t]{0,3}(`{3,}|~{3,})/);
+          const open = content.match(/^ {0,3}(`{3,}|~{3,})/);
           if (open) {
             if (i > outsideStart) out += fn(source.slice(outsideStart, i));
             fence = { marker: open[1][0], length: open[1].length };
@@ -2703,7 +2703,7 @@ var require_side_content_modifiers = __commonJS({
         } else {
           out += source.slice(i, lineEnd);
           outsideStart = lineEnd;
-          const close = content.match(/^[ \t]{0,3}(`{3,}|~{3,})[ \t]*$/);
+          const close = content.match(/^ {0,3}(`{3,}|~{3,})[ \t]*$/);
           if (close && close[1][0] === fence.marker && close[1].length >= fence.length) {
             fence = null;
           }

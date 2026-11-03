@@ -90,4 +90,9 @@ test('parseSideContentFromSectionTokens treats designSystem as opt-in', () => {
   ]);
   assert.match(unclosedFence.markdown, /\[designSystem\]/);
   assert.equal(unclosedFence.designSystem, undefined);
+
+  const tabIndentedTicks = parseSideContentFromSectionTokens([
+    { raw: '# Title\n\t```\n[designSystem]' }
+  ]);
+  assert.equal(tabIndentedTicks.designSystem, true);
 });
