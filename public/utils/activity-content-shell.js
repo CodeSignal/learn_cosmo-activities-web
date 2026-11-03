@@ -125,7 +125,7 @@ export function mountActivityContentShell({ container, content }) {
   iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
   iframe.setAttribute('frameborder', '1');
   if (hasMarkdown) {
-    iframe.setAttribute('sandbox', 'allow-scripts');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-popups allow-popups-to-escape-sandbox');
   }
   const sideUrl = hasUrl ? String(content.url || '') : '';
   iframe.title = sideUrl === '/sim' || sideUrl.startsWith('/sim/') ? 'Simulation' : 'Reference';

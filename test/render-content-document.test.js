@@ -69,4 +69,13 @@ test('parseSideContentFromSectionTokens treats designSystem as opt-in', () => {
   ]);
   assert.match(mentionsFlag.markdown, /\[designSystem\]/);
   assert.equal(mentionsFlag.designSystem, undefined);
+
+  const fencedFlag = parseSideContentFromSectionTokens([
+    {
+      raw: 'Example:\n\n```text\n[designSystem]\n[contentWidth: 40%]\n```\n\n# Title'
+    }
+  ]);
+  assert.match(fencedFlag.markdown, /```text\n\[designSystem\]\n\[contentWidth: 40%\]\n```/);
+  assert.equal(fencedFlag.designSystem, undefined);
+  assert.equal(fencedFlag.contentWidth, undefined);
 });
