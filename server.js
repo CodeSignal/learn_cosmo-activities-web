@@ -99,8 +99,14 @@ const MIME_TYPES = {
   '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
   '.ico': 'image/x-icon',
-  '.txt': 'text/plain; charset=utf-8'
+  '.txt': 'text/plain; charset=utf-8',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf'
 };
+
+const FONT_EXTS = new Set(['.woff', '.woff2', '.ttf', '.otf']);
 
 function isPathInside(child, parent) {
   const relative = path.relative(parent, child);
@@ -118,11 +124,16 @@ function isValidExampleBasename(name) {
 function sendFile(res, filePath, status = 200) {
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-  res.writeHead(status, {
+  const headers = {
     'Content-Type': contentType,
     // Disable aggressive caching during development
     'Cache-Control': 'no-store'
-  });
+  };
+  if (FONT_EXTS.has(ext)) {
+    // Sandboxed srcdoc iframes are an opaque origin; @font-face needs CORS.
+    headers['Access-Control-Allow-Origin'] = '*';
+  }
+  res.writeHead(status, headers);
   const read = fs.createReadStream(filePath);
   read.on('error', () => {
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
