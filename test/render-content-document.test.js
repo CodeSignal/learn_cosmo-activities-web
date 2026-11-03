@@ -95,4 +95,18 @@ test('parseSideContentFromSectionTokens treats designSystem as opt-in', () => {
     { raw: '# Title\n\t```\n[designSystem]' }
   ]);
   assert.equal(tabIndentedTicks.designSystem, true);
+
+  const listItemFence = parseSideContentFromSectionTokens([
+    { raw: '1. Example\n\n    ```text\n    [designSystem]\n    ```\n\n[designSystem]\n# Title' }
+  ]);
+  assert.match(listItemFence.markdown, /```text\n    \[designSystem\]\n    ```/);
+  assert.equal(listItemFence.designSystem, true);
+  assert.match(listItemFence.markdown, /# Title/);
+
+  const crlfFence = parseSideContentFromSectionTokens([
+    { raw: '```text\r\n[designSystem]\r\n```\r\n\r\n[designSystem]\r\n# Title' }
+  ]);
+  assert.match(crlfFence.markdown, /```text\r?\n\[designSystem\]\r?\n```/);
+  assert.equal(crlfFence.designSystem, true);
+  assert.match(crlfFence.markdown, /# Title/);
 });

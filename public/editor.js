@@ -10,10 +10,10 @@ function mapOutsideFences(text, fn) {
   while (i < source.length) {
     const nl = source.indexOf('\n', i);
     const lineEnd = nl === -1 ? source.length : nl + 1;
-    const content = nl === -1 ? source.slice(i) : source.slice(i, nl);
+    const content = (nl === -1 ? source.slice(i) : source.slice(i, nl)).replace(/\r$/, '');
 
     if (!fence) {
-      const open = content.match(/^ {0,3}(`{3,}|~{3,})/);
+      const open = content.match(/^ *(`{3,}|~{3,})/);
       if (open) {
         if (i > outsideStart) out += fn(source.slice(outsideStart, i));
         fence = { marker: open[1][0], length: open[1].length };
@@ -23,7 +23,7 @@ function mapOutsideFences(text, fn) {
     } else {
       out += source.slice(i, lineEnd);
       outsideStart = lineEnd;
-      const close = content.match(/^ {0,3}(`{3,}|~{3,})[ \t]*$/);
+      const close = content.match(/^ *(`{3,}|~{3,})[ \t]*$/);
       if (close && close[1][0] === fence.marker && close[1].length >= fence.length) {
         fence = null;
       }
