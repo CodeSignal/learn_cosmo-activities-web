@@ -2679,6 +2679,47 @@ var require_sort_item_entry = __commonJS({
   }
 });
 
+// lib/side-content-modifiers.js
+var require_side_content_modifiers = __commonJS({
+  "lib/side-content-modifiers.js"(exports2, module2) {
+    var FENCE_BLOCK = /^[ \t]{0,3}(```|~~~)[^\n]*\n[\s\S]*?^[ \t]{0,3}\1[^\n]*$/gm;
+    function mapOutsideFences(text, fn) {
+      const source = String(text);
+      const re = new RegExp(FENCE_BLOCK.source, FENCE_BLOCK.flags);
+      let out = "";
+      let last = 0;
+      let match;
+      while (match = re.exec(source)) {
+        out += fn(source.slice(last, match.index));
+        out += match[0];
+        last = match.index + match[0].length;
+      }
+      out += fn(source.slice(last));
+      return out;
+    }
+    function parseSideContentModifiers(contentText) {
+      let contentWidth = null;
+      let designSystem = false;
+      mapOutsideFences(contentText, (chunk) => {
+        if (!contentWidth) {
+          const match = chunk.match(/\[contentWidth:\s*([^\]]+)\]/i);
+          if (match) contentWidth = match[1].trim();
+        }
+        if (/(?:^|\n)\s*\[designSystem\]\s*(?:\n|$)/i.test(chunk)) {
+          designSystem = true;
+        }
+        return chunk;
+      });
+      const contentWithoutModifiers = mapOutsideFences(
+        contentText,
+        (chunk) => chunk.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, "").replace(/(?:^|\n)\s*\[designSystem\]\s*(?=\n|$)/gi, "\n")
+      ).trim();
+      return { contentWidth, designSystem, contentWithoutModifiers };
+    }
+    module2.exports = { parseSideContentModifiers, mapOutsideFences };
+  }
+});
+
 // lib/parse-question.js
 var require_parse_question = __commonJS({
   "lib/parse-question.js"(exports2, module2) {
@@ -2687,6 +2728,7 @@ var require_parse_question = __commonJS({
     var { parseTextInputAnswers } = require_text_input_answers();
     var { renderMarkdown } = require_render_markdown();
     var { parseSortItemEntry } = require_sort_item_entry();
+    var { parseSideContentModifiers } = require_side_content_modifiers();
     function parseSectionsFromTokens2(tokens) {
       const sections = /* @__PURE__ */ new Map();
       let current = null;
@@ -2735,10 +2777,7 @@ var require_parse_question = __commonJS({
       if (!sectionTokens || sectionTokens.length === 0) return null;
       const contentText = sectionTokens.map((t) => t.raw || t.text || "").join("\n").trim();
       if (!contentText) return null;
-      const contentWidthMatch = contentText.match(/\[contentWidth:\s*([^\]]+)\]/i);
-      const contentWidth = contentWidthMatch ? contentWidthMatch[1].trim() : null;
-      const designSystem = /(?:^|\n)\s*\[designSystem\]\s*(?:\n|$)/i.test(contentText);
-      const contentWithoutModifiers = contentText.replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, "").replace(/(?:^|\n)\s*\[designSystem\]\s*(?=\n|$)/gi, "\n").trim();
+      const { contentWidth, designSystem, contentWithoutModifiers } = parseSideContentModifiers(contentText);
       if (/^https?:\/\//i.test(contentWithoutModifiers)) {
         const lines = contentWithoutModifiers.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
         const firstLine = lines[0] || "";
