@@ -78,4 +78,16 @@ test('parseSideContentFromSectionTokens treats designSystem as opt-in', () => {
   assert.match(fencedFlag.markdown, /```text\n\[designSystem\]\n\[contentWidth: 40%\]\n```/);
   assert.equal(fencedFlag.designSystem, undefined);
   assert.equal(fencedFlag.contentWidth, undefined);
+
+  const nestedFence = parseSideContentFromSectionTokens([
+    { raw: '````text\n```\n[designSystem]\n````\n\n# Title' }
+  ]);
+  assert.match(nestedFence.markdown, /\[designSystem\]/);
+  assert.equal(nestedFence.designSystem, undefined);
+
+  const unclosedFence = parseSideContentFromSectionTokens([
+    { raw: '```text\n[designSystem]\n# Title' }
+  ]);
+  assert.match(unclosedFence.markdown, /\[designSystem\]/);
+  assert.equal(unclosedFence.designSystem, undefined);
 });
