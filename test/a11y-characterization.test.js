@@ -182,6 +182,25 @@ test('MCQ options use a 2px offset focus-visible outline against the page', () =
   assert.match(css, /\.mcq-option input:focus-visible\s*\{[^}]*outline:\s*none/);
 });
 
+test('MCQ checked radio and checkbox keep a Highlight fill in forced colors', () => {
+  function forcedColorsBlock(rel) {
+    const m = read(rel).match(/@media \(forced-colors: active\)\s*\{([\s\S]*?\})\s*\}/);
+    assert.ok(m, `${rel} has a forced-colors block`);
+    return m[1];
+  }
+
+  const mcq = forcedColorsBlock('public/modules/mcq.css');
+  assert.ok(mcq.includes('input[type="radio"]:checked ~ .mcq-option-card .input-radio-circle'));
+  assert.ok(mcq.includes('input[type="checkbox"]:checked ~ .mcq-option-card .input-checkbox-box'));
+  assert.match(mcq, /background:\s*Highlight;/);
+  assert.match(mcq, /border-color:\s*Highlight;/);
+
+  const ds = forcedColorsBlock('public/design-system/components/input/input.css');
+  assert.ok(ds.includes('.input-checkbox-checkmark::before'));
+  assert.ok(ds.includes('.input-radio-dot::before'));
+  assert.match(ds, /background-color:\s*HighlightText;/);
+});
+
 test('A1 characterization: learner document has lang and a main landmark', () => {
   const html = read('public/index.html');
   assert.match(html, /<html lang="en">/);
