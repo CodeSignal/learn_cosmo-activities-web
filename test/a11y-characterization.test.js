@@ -183,19 +183,19 @@ test('MCQ options use a 2px offset focus-visible outline against the page', () =
 });
 
 test('MCQ checked radio and checkbox keep a Highlight fill in forced colors', () => {
-  function forcedColorsBlock(rel) {
-    const m = read(rel).match(/@media \(forced-colors: active\)\s*\{([\s\S]*?\})\s*\}/);
-    assert.ok(m, `${rel} has a forced-colors block`);
-    return m[1];
+  function forcedColorsBlocks(rel) {
+    const blocks = [...read(rel).matchAll(/@media \(forced-colors: active\)\s*\{([\s\S]*?\})\s*\}/g)].map((m) => m[1]);
+    assert.ok(blocks.length, `${rel} has a forced-colors block`);
+    return blocks.join('\n');
   }
 
-  const mcq = forcedColorsBlock('public/modules/mcq.css');
+  const mcq = forcedColorsBlocks('public/modules/mcq.css');
   assert.ok(mcq.includes('input[type="radio"]:checked ~ .mcq-option-card .input-radio-circle'));
   assert.ok(mcq.includes('input[type="checkbox"]:checked ~ .mcq-option-card .input-checkbox-box'));
   assert.match(mcq, /background:\s*Highlight;/);
   assert.match(mcq, /border-color:\s*Highlight;/);
 
-  const ds = forcedColorsBlock('public/design-system/components/input/input.css');
+  const ds = forcedColorsBlocks('public/design-system/components/input/input.css');
   assert.ok(ds.includes('.input-checkbox-checkmark::before'));
   assert.ok(ds.includes('.input-radio-dot::before'));
   assert.match(ds, /background-color:\s*HighlightText;/);
