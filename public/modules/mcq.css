@@ -183,6 +183,14 @@
   border-color: var(--Colors-Primary-Default);
 }
 
+@media (forced-colors: active) {
+  .mcq-option.input-checkbox input[type="checkbox"]:checked ~ .mcq-option-card .input-checkbox-box,
+  .mcq-option.input-radio input[type="radio"]:checked ~ .mcq-option-card .input-radio-circle {
+    background: Highlight;
+    border-color: Highlight;
+  }
+}
+
 /* WCAG 2.2 AA (1.4.11) focus indicator: a solid 2px outline held 2px off the
    option card so it contrasts against the page rather than the card's own fill.
    Offsetting it is what lets a single color (--Colors-Input-Focus-Visible)
