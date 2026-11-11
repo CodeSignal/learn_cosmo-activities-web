@@ -942,6 +942,122 @@ test('Text Input: scores answers 10 and above', () => {
   }
 });
 
+// The score shape session-server's POST /score accepts (docs/scoring.md there).
+function assertAcceptedByScoreRoute(score) {
+  assert.ok(score.totalScore >= 0 && score.maxScore > 0 && score.totalScore <= score.maxScore,
+    `${score.totalScore}/${score.maxScore} is not a valid total`);
+  for (const b of score.breakoutScores) {
+    assert.equal(typeof b.title, 'string');
+    assert.ok(b.score >= 0 && b.maxScore > 0 && b.score <= b.maxScore,
+      `"${b.title}" scores ${b.score}/${b.maxScore}`);
+  }
+}
+
+test('Text Input: validate-later questions stay out of a score that /score accepts', () => {
+  withTempDir(dir => {
+    const { score, report } = runScorer(dir,
+      `__Type__
+
+Text Input
+
+__Practice Question__
+
+What is the capital of France?
+
+__Correct Answers__
+
+__Practice Question__
+
+What is 2 + 2?
+
+__Correct Answers__
+
+__Practice Question__
+
+In a few sentences, explain why Paris is the capital of France.
+
+__Correct Answers__
+
+- [kind: string] [options: multiLine=true]
+`,
+      `__Type__
+
+Text Input
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: Paris
+
+2. **Question 2**
+   - Selected Answer: 4
+
+3. **Question 3**
+   - Selected Answer: It is the seat of government.
+`,
+      `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: Paris [kind: string] [options: caseSensitive=false]
+- Question 2: 4 [kind: numeric] [options: threshold=0.01,precision=2]
+- Question 3: [kind: validate-later] [options: multiLine=true]
+`
+    );
+
+    assertAcceptedByScoreRoute(score);
+    assert.equal(score.totalScore, 2);
+    assert.equal(score.maxScore, 2);
+    assert.deepEqual(score.breakoutScores.map(b => b.title), ['Question 1', 'Question 2']);
+    assert.match(report, /It is the seat of government\./);
+    assert.match(report, /Not scored \(submitted for later review\)/);
+  });
+});
+
+test('Text Input: a task with only validate-later questions reports 0/0 for manual scoring', () => {
+  withTempDir(dir => {
+    const { score, report } = runScorer(dir,
+      `__Type__
+
+Text Input
+
+__Practice Question__
+
+Describe the defects you found.
+
+__Correct Answers__
+
+- [kind: string] [options: multiLine=true]
+`,
+      `__Type__
+
+Text Input
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: The total ignores discounts.
+`,
+      `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: [kind: validate-later] [options: multiLine=true]
+`
+    );
+
+    // No question can be scored automatically. Any positive maxScore would be an
+    // invented score, so the grader reports 0/0: /score rejects it, and the
+    // platform asks a reviewer for a manual score instead of recording a zero.
+    assert.deepEqual(score, { totalScore: 0, maxScore: 0, breakoutScores: [] });
+    assert.match(report, /The total ignores discounts\./);
+  });
+});
+
 // -----------------------------------------------------------------------
 // Report output verification
 // -----------------------------------------------------------------------
