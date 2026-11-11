@@ -230,6 +230,11 @@ const MODIFIER_LAYOUTS = [
     name: 'a modifier line between two lines of text',
     raw: 'First paragraph.\n[designSystem]\nSecond paragraph.',
     expected: { markdown: 'First paragraph.\n\nSecond paragraph.', designSystem: true }
+  },
+  {
+    name: 'URL with a note on a later line',
+    raw: 'https://stackblitz.com/edit/x?embed=1 [openInNewTab]\n\nOpens the starter project.',
+    expected: { url: 'https://stackblitz.com/edit/x?embed=1', openInNewTab: true }
   }
 ];
 
@@ -258,11 +263,13 @@ test('parseSideContentFromSectionTokens removes a modifier line without joining 
 test('the editor parses side-content modifiers like the server', () => {
   const editor = fs.readFileSync(path.join(__dirname, '../public/editor.js'), 'utf8');
   const start = editor.indexOf('function mapOutsideFences');
-  const end = editor.indexOf('function formatSideContentMarkdown');
+  const end = editor.indexOf('// Parse markdown into editable structure');
   assert.ok(start !== -1 && end > start, 'editor.js keeps its copy of the parser');
   const sandbox = {};
   vm.runInNewContext(
-    `${editor.slice(start, end)}\nthis.parseContentTextToStructure = parseContentTextToStructure;`,
+    `${editor.slice(start, end)}
+this.parseContentTextToStructure = parseContentTextToStructure;
+this.formatSideContentMarkdown = formatSideContentMarkdown;`,
     sandbox
   );
   for (const { name, raw, expected } of MODIFIER_LAYOUTS) {
@@ -270,10 +277,11 @@ test('the editor parses side-content modifiers like the server', () => {
     const want = url !== undefined
       ? { type: 'url', value: url, ...modifiers }
       : { type: 'markdown', value: markdown, ...modifiers };
-    assert.deepEqual(
-      JSON.parse(JSON.stringify(sandbox.parseContentTextToStructure(raw))),
-      want,
-      name
-    );
+    const structure = sandbox.parseContentTextToStructure(raw);
+    assert.deepEqual(JSON.parse(JSON.stringify(structure)), want, name);
+
+    // Saving from the editor writes the modifiers back where the server reads them.
+    const saved = sandbox.formatSideContentMarkdown(structure);
+    assert.deepEqual(parseSideContentFromSectionTokens([{ raw: saved }]), expected, `${name} (saved)`);
   }
 });
