@@ -1,3 +1,5 @@
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
@@ -48,6 +50,63 @@ test('renderContentDocument loads design-system assets when opted in', () => {
   assert.match(doc, /\.markdown-content \.table th,[\s\S]*white-space: normal/);
   assert.match(doc, /<h1>Scenario<\/h1>/);
   assert.doesNotMatch(doc, /<p><h1>/);
+});
+
+function fontFaces(css, family) {
+  return (css.match(/@font-face\s*\{[^}]*\}/g) || []).filter((face) =>
+    new RegExp(`font-family:\\s*['"]${family}['"]`).test(face)
+  );
+}
+
+function faceDescriptor(face, name) {
+  const match = face.match(new RegExp(`${name}:\\s*([^;]+);`));
+  return match ? match[1].trim() : null;
+}
+
+test('renderContentDocument shows code text while the design-system code font loads', () => {
+  const typography = fs.readFileSync(
+    path.join(__dirname, '../public/design-system/typography/typography.css'),
+    'utf8'
+  );
+  const designSystemFamily = typography.match(/--code-family:\s*"([^"]+)"/)[1];
+  const doc = renderContentDocument('<p>rootHash = <code>e10a8dbe31fe</code></p>', {
+    designSystem: true
+  });
+  assert.match(doc, /<code>e10a8dbe31fe<\/code>/);
+  assert.match(doc, /\.markdown-content code \{\s*font-family: var\(--code-family\), monospace;/);
+
+  // A --code-family set in the document wins over typography.css (loaded earlier).
+  const documentFamilies = [...doc.matchAll(/--code-family:\s*"([^"]+)"/g)].map((m) => m[1]);
+  const codeFamily = documentFamilies.length ? documentFamilies.pop() : designSystemFamily;
+  const codeFaces = [...fontFaces(typography, codeFamily), ...fontFaces(doc, codeFamily)];
+  assert.ok(codeFaces.length > 0, `${codeFamily} is declared`);
+  for (const face of codeFaces) {
+    assert.match(
+      face,
+      /font-display:\s*(?:swap|fallback|optional);/,
+      `a ${codeFamily} face hides code text while it loads`
+    );
+  }
+
+  // Same files, weights and styles as the design system, so code looks the same.
+  const designSystemFaces = fontFaces(typography, designSystemFamily);
+  assert.ok(designSystemFaces.length > 0, `typography.css declares ${designSystemFamily}`);
+  for (const face of designSystemFaces) {
+    const file = face.match(/url\('([^']+\.woff2)'\)/)[1];
+    const match = codeFaces.find((candidate) =>
+      candidate.includes(`url('${file}')`) &&
+      faceDescriptor(candidate, 'font-weight') === faceDescriptor(face, 'font-weight') &&
+      faceDescriptor(candidate, 'font-style') === faceDescriptor(face, 'font-style')
+    );
+    assert.ok(match, `${codeFamily} loads ${file} with the same weight and style`);
+  }
+});
+
+test('renderContentDocument loads no web font for code in the legacy document', () => {
+  const doc = renderContentDocument('<p>rootHash = <code>e10a8dbe31fe</code></p>');
+  assert.doesNotMatch(doc, /@font-face/);
+  assert.doesNotMatch(doc, /--code-family/);
+  assert.match(doc, /<code>e10a8dbe31fe<\/code>/);
 });
 
 test('parseSideContentFromSectionTokens treats designSystem as opt-in', () => {
