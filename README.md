@@ -109,7 +109,7 @@ A block that starts with an HTML tag is passed through as HTML; everything else 
 
 Add `[designSystem]` to wrap that pane in the activity design system (Work Sans, Founders Grotesk, JetBrains Mono, color/spacing tokens, and table styles). Then use typography classes (`heading-small`, `body-medium`, `code-medium`), table classes (`table`, `table-scroll`), or CSS variables (`var(--Colors-Text-Body-Default)`, `var(--body-family)`) instead of loading extra fonts or hard-coding colors.
 
-Optional modifiers on the same line / block:
+Optional modifiers, after the URL on its line or on their own lines anywhere in the block (any order, several per line; not inside code fences):
 
 - `[designSystem]` — apply the design system to markdown or HTML side content (off by default so legacy content is unchanged).
 - `[contentWidth: 50%]` or `[contentWidth: 320px]` — initial width of the left pane (defaults to 40%).

@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
@@ -168,4 +169,100 @@ test('parseSideContentFromSectionTokens treats designSystem as opt-in', () => {
   assert.match(crlfFence.markdown, /```text\r?\n\[designSystem\]\r?\n```/);
   assert.equal(crlfFence.designSystem, true);
   assert.match(crlfFence.markdown, /# Title/);
+});
+
+const MODIFIER_LAYOUTS = [
+  {
+    name: '[designSystem] directly above [contentWidth]',
+    raw: '[designSystem]\n[contentWidth: 40%]\n<h1>Scenario</h1>',
+    expected: { markdown: '<h1>Scenario</h1>', contentWidth: '40%', designSystem: true }
+  },
+  {
+    name: '[contentWidth] directly above [designSystem]',
+    raw: '[contentWidth: 40%]\n[designSystem]\n<h1>Scenario</h1>',
+    expected: { markdown: '<h1>Scenario</h1>', contentWidth: '40%', designSystem: true }
+  },
+  {
+    name: 'modifier lines after the content, in reverse order',
+    raw: '<h1>Scenario</h1>\n[contentWidth: 40%]\n[designSystem]',
+    expected: { markdown: '<h1>Scenario</h1>', contentWidth: '40%', designSystem: true }
+  },
+  {
+    name: 'modifiers sharing one line',
+    raw: '[designSystem] [contentWidth: 40%]\n# Title',
+    expected: { markdown: '# Title', contentWidth: '40%', designSystem: true }
+  },
+  {
+    name: 'modifier paragraphs separated by blank lines',
+    raw: '[contentWidth: 60%]\n\n[designSystem]\n\n<style>\n  .val { color: red; }\n</style>\n<p>Hi</p>',
+    expected: {
+      markdown: '<style>\n  .val { color: red; }\n</style>\n<p>Hi</p>',
+      contentWidth: '60%',
+      designSystem: true
+    }
+  },
+  {
+    name: 'URL followed by modifiers in any order',
+    raw: 'https://stackblitz.com/edit/x?embed=1 [contentWidth: 65%] [openInNewTab]',
+    expected: { url: 'https://stackblitz.com/edit/x?embed=1', openInNewTab: true, contentWidth: '65%' }
+  },
+  {
+    name: 'URL followed by every modifier',
+    raw: 'https://stackblitz.com/edit/x?embed=1 [openInNewTab] [contentWidth: 40%] [designSystem]',
+    expected: { url: 'https://stackblitz.com/edit/x?embed=1', openInNewTab: true, contentWidth: '40%' }
+  },
+  {
+    name: 'URL with modifiers on the next lines',
+    raw: 'https://stackblitz.com/edit/x?embed=1\n[designSystem]\n[openInNewTab]\n[contentWidth: 40%]',
+    expected: { url: 'https://stackblitz.com/edit/x?embed=1', openInNewTab: true, contentWidth: '40%' }
+  },
+  {
+    name: 'site-relative URL with a modifier',
+    raw: '/sim/ [contentWidth: 50%]',
+    expected: { url: '/sim/', openInNewTab: false, contentWidth: '50%' }
+  },
+  {
+    name: 'a flag at the end of a prose line stays text',
+    raw: 'Turn the flag on with [designSystem]\n\n[contentWidth: 35%]',
+    expected: { markdown: 'Turn the flag on with [designSystem]', contentWidth: '35%' }
+  }
+];
+
+test('parseSideContentFromSectionTokens reads modifiers on consecutive lines in any order', () => {
+  for (const { name, raw, expected } of MODIFIER_LAYOUTS) {
+    assert.deepEqual(parseSideContentFromSectionTokens([{ raw }]), expected, name);
+  }
+});
+
+test('parseSideContentFromSectionTokens removes a modifier line without joining its neighbours', () => {
+  const side = parseSideContentFromSectionTokens([
+    { raw: 'First paragraph.\n\n[contentWidth: 40%]\n\nSecond paragraph.' }
+  ]);
+  assert.equal(side.contentWidth, '40%');
+  const html = renderContentBody(side.markdown);
+  assert.match(html, /<p>First paragraph\.<\/p>/);
+  assert.match(html, /<p>Second paragraph\.<\/p>/);
+});
+
+test('the editor parses side-content modifiers like the server', () => {
+  const editor = fs.readFileSync(path.join(__dirname, '../public/editor.js'), 'utf8');
+  const start = editor.indexOf('function mapOutsideFences');
+  const end = editor.indexOf('function formatSideContentMarkdown');
+  assert.ok(start !== -1 && end > start, 'editor.js keeps its copy of the parser');
+  const sandbox = {};
+  vm.runInNewContext(
+    `${editor.slice(start, end)}\nthis.parseContentTextToStructure = parseContentTextToStructure;`,
+    sandbox
+  );
+  for (const { name, raw, expected } of MODIFIER_LAYOUTS) {
+    const { url, markdown, ...modifiers } = expected;
+    const want = url !== undefined
+      ? { type: 'url', value: url, ...modifiers }
+      : { type: 'markdown', value: markdown, ...modifiers };
+    assert.deepEqual(
+      JSON.parse(JSON.stringify(sandbox.parseContentTextToStructure(raw))),
+      want,
+      name
+    );
+  }
 });
