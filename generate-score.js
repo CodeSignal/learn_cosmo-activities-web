@@ -4091,13 +4091,12 @@ var require_build_score_json = __commonJS({
     }
     function buildScoreJson2(activity, results) {
       const list = Array.isArray(results) ? results : [];
-      const breakoutScores = list.map((result, index) => {
+      const breakoutScores = [];
+      list.forEach((result, index) => {
+        if (isResultUnscorable(activity, result, index)) return;
         const title = result.text || `Question ${index + 1}`;
-        if (isResultUnscorable(activity, result, index)) {
-          return { title, score: 0, maxScore: 0 };
-        }
         const correct = evaluateActivityResultCorrect2(activity, result, index);
-        return { title, score: correct ? 1 : 0, maxScore: 1 };
+        breakoutScores.push({ title, score: correct ? 1 : 0, maxScore: 1 });
       });
       const totalScore = breakoutScores.reduce((sum, q) => sum + q.score, 0);
       const maxScore = breakoutScores.reduce((sum, q) => sum + q.maxScore, 0);
