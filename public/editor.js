@@ -90,7 +90,10 @@ function parseContentTextToStructure(contentText) {
     parseSideContentModifiers(contentText);
 
   if (/^https?:\/\//i.test(contentWithoutModifiers)) {
-    const out = { type: 'url', value: contentWithoutModifiers, openInNewTab };
+    // Like the server, only the first line is the URL. Saving appends the
+    // modifiers to the value, and they only count on the URL's line.
+    const url = contentWithoutModifiers.split(/\r?\n/)[0].trim();
+    const out = { type: 'url', value: url, openInNewTab };
     if (contentWidth) out.contentWidth = contentWidth;
     return out;
   }
