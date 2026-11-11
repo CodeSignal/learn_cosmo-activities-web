@@ -225,6 +225,11 @@ const MODIFIER_LAYOUTS = [
     name: 'a flag at the end of a prose line stays text',
     raw: 'Turn the flag on with [designSystem]\n\n[contentWidth: 35%]',
     expected: { markdown: 'Turn the flag on with [designSystem]', contentWidth: '35%' }
+  },
+  {
+    name: 'a modifier line between two lines of text',
+    raw: 'First paragraph.\n[designSystem]\nSecond paragraph.',
+    expected: { markdown: 'First paragraph.\n\nSecond paragraph.', designSystem: true }
   }
 ];
 
@@ -235,13 +240,19 @@ test('parseSideContentFromSectionTokens reads modifiers on consecutive lines in 
 });
 
 test('parseSideContentFromSectionTokens removes a modifier line without joining its neighbours', () => {
-  const side = parseSideContentFromSectionTokens([
-    { raw: 'First paragraph.\n\n[contentWidth: 40%]\n\nSecond paragraph.' }
-  ]);
-  assert.equal(side.contentWidth, '40%');
-  const html = renderContentBody(side.markdown);
-  assert.match(html, /<p>First paragraph\.<\/p>/);
-  assert.match(html, /<p>Second paragraph\.<\/p>/);
+  for (const raw of [
+    'First paragraph.\n\n[contentWidth: 40%]\n\nSecond paragraph.',
+    'First paragraph.\n[contentWidth: 40%]\nSecond paragraph.',
+    'First paragraph.\n[designSystem]\nSecond paragraph.'
+  ]) {
+    const html = renderContentBody(parseSideContentFromSectionTokens([{ raw }]).markdown);
+    assert.match(html, /<p>First paragraph\.<\/p>/, raw);
+    assert.match(html, /<p>Second paragraph\.<\/p>/, raw);
+  }
+
+  // Joined, the text above a rule would become a heading.
+  const rule = parseSideContentFromSectionTokens([{ raw: 'Some text\n[designSystem]\n---' }]);
+  assert.match(renderContentBody(rule.markdown), /^<p>Some text<\/p>\n<hr>/);
 });
 
 test('the editor parses side-content modifiers like the server', () => {
