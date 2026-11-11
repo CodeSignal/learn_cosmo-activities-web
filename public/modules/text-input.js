@@ -104,6 +104,7 @@ export function initTextInput({
   // Same tolerance as isWithinThreshold in lib/text-input-validation.js: |0.31 - 0.3|
   // is a hair above 0.01 in floating point, and must still pass threshold=0.01.
   function isWithinThreshold(a, b, threshold) {
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
     const difference = Math.abs(a - b);
     if (threshold === 0) return difference === 0;
     return difference <= threshold + 4 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b));

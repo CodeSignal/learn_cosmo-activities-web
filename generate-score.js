@@ -2305,6 +2305,7 @@ var require_text_input_validation = __commonJS({
       return String(s).replace(/\s/g, "");
     }
     function isWithinThreshold(a, b, threshold) {
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
       const difference = Math.abs(a - b);
       if (threshold === 0) return difference === 0;
       return difference <= threshold + 4 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b));
@@ -2531,6 +2532,7 @@ var require_text_input_validation = __commonJS({
       validateTextInputNumeric,
       validateTextInputNumericWithUnits,
       validateTextInputNumericWithCurrency,
+      isWithinThreshold,
       parseValidationOptions,
       parseTextInputAnswerItems,
       getTextInputValidationCandidates,

@@ -948,6 +948,44 @@ __Answer Key__
   });
 });
 
+test('Text Input: a numeric answer of Infinity scores 0', () => {
+  withTempDir(dir => {
+    const { score } = runScorer(dir,
+      `__Type__
+
+Text Input
+
+__Practice Question__
+
+What is the approximate value of pi?
+
+__Correct Answers__
+
+`,
+      `__Type__
+
+Text Input
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: Infinity
+`,
+      `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: 3.14 [kind: numeric] [options: precision=2,threshold=0.1]
+`
+    );
+
+    assert.equal(score.totalScore, 0);
+    assert.equal(score.maxScore, 1);
+  });
+});
+
 function textInputFiles(count, indentFor) {
   const questions = [];
   const responses = [];
