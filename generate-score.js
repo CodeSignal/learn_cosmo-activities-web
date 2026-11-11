@@ -2744,7 +2744,7 @@ var require_side_content_modifiers = __commonJS({
         (chunk) => chunk.split(/(?<=\n)/).map((line) => {
           const eol = line.match(/\r?\n$/)?.[0] || "";
           const rest = stripLineModifiers(line.slice(0, line.length - eol.length), found);
-          return rest === null ? "" : rest + eol;
+          return (rest === null ? "" : rest) + eol;
         }).join("")
       ).trim();
       return { ...found, contentWithoutModifiers };
