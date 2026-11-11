@@ -40,12 +40,9 @@ function stripSymbol(text, symbols, ignoreCase) {
   return text;
 }
 
-/**
- * @param {string} text  the answer as typed, or an answer-key value
- * @param {{ currency?: string, units?: string[]|string }} [options]
- * @returns {number} the value, or NaN when the text is empty or not a readable number
- */
-export function parseNumberAnswer(text, options = {}) {
+// Trims the text and drops the currency symbol or unit, keeping a sign that came before it:
+// "-$5" becomes "-5".
+function stripAnswerSymbols(text, options) {
   let body = String(text == null ? '' : text).trim();
   const sign = /^[-+−]/.test(body) ? body[0] : '';
   if (sign) body = body.slice(1);
@@ -58,7 +55,32 @@ export function parseNumberAnswer(text, options = {}) {
     body = stripSymbol(body, units, true);
   }
 
-  return readPlainNumber(sign + body);
+  return sign + body;
+}
+
+/**
+ * @param {string} text  the answer as typed, or an answer-key value
+ * @param {{ currency?: string, units?: string[]|string }} [options]
+ * @returns {number} the value, or NaN when the text is empty or not a readable number
+ */
+export function parseNumberAnswer(text, options = {}) {
+  return readPlainNumber(stripAnswerSymbols(text, options));
+}
+
+/**
+ * Reads an answer-key value. It follows parseNumberAnswer, except that a value those rules
+ * cannot read and that has no comma is read by its leading number, as parseFloat read every
+ * key before: "12.5%" is 12.5, and "500 g" is 500 when g is not one of the units. A value with
+ * a comma is not guessed, because the comma may be a decimal comma.
+ * @param {string} text  the answer-key value
+ * @param {{ currency?: string, units?: string[]|string }} [options]
+ * @returns {number} the value, or NaN when it cannot be read
+ */
+export function parseNumberAnswerKey(text, options = {}) {
+  const stripped = stripAnswerSymbols(text, options);
+  const value = readPlainNumber(stripped);
+  if (!Number.isNaN(value) || stripped.includes(',')) return value;
+  return parseFloat(stripped.replace('−', '-'));
 }
 
 const NUMBER_KINDS = ['numeric', 'numeric-with-currency', 'numeric-with-units'];

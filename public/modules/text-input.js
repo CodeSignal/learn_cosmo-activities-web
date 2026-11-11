@@ -9,7 +9,7 @@ import {
   setValidateStatus
 } from '../utils/validate-status.js';
 import { parseRepeatableAnswer, serializeRepeatableAnswer } from '../utils/repeatable-answers.js';
-import { getNumberFormatMessage, parseNumberAnswer } from '../utils/number-answer.js';
+import { getNumberFormatMessage, parseNumberAnswer, parseNumberAnswerKey } from '../utils/number-answer.js';
 
 export function initTextInput({
   activity,
@@ -158,7 +158,7 @@ export function initTextInput({
     
     // Reads thousands separators and rejects a decimal comma (see utils/number-answer.js)
     const user = parseNumberAnswer(userAnswer);
-    const correct = parseNumberAnswer(correctAnswer);
+    const correct = parseNumberAnswerKey(correctAnswer);
     
     if (isNaN(user) || isNaN(correct)) {
       return false;
@@ -178,7 +178,7 @@ export function initTextInput({
     
     // Drops a unit before or after the number, then reads it like any number answer
     const userValue = parseNumberAnswer(userAnswer, { units });
-    const correctValue = parseNumberAnswer(correctAnswer, { units });
+    const correctValue = parseNumberAnswerKey(correctAnswer, { units });
     
     if (isNaN(userValue) || isNaN(correctValue)) {
       return false;
@@ -195,7 +195,7 @@ export function initTextInput({
     
     // Drops the currency symbol before or after the number, then reads it like any number answer
     const userValue = parseNumberAnswer(userAnswer, { currency });
-    const correctValue = parseNumberAnswer(correctAnswer, { currency });
+    const correctValue = parseNumberAnswerKey(correctAnswer, { currency });
     
     if (isNaN(userValue) || isNaN(correctValue)) {
       return false;

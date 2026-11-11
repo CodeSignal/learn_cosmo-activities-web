@@ -26,6 +26,9 @@ test('number fields read answers with the shared parser', () => {
   const src = read('public/modules/text-input.js');
   assert.match(src, /from '\.\.\/utils\/number-answer\.js'/);
   assert.match(src, /parseNumberAnswer\(/);
+  // Practice mode reads answer keys the way the scorer does (lib/text-input-validation.js)
+  assert.doesNotMatch(src, /parseNumberAnswer\(correctAnswer/, 'keys are read with parseNumberAnswerKey');
+  assert.equal(src.match(/parseNumberAnswerKey\(correctAnswer/g)?.length, 3, 'all three number kinds');
   assert.doesNotMatch(src, /replace\(',',\s*'\.'\)/, 'no first-comma-to-dot rewrite');
 });
 

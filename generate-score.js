@@ -2294,7 +2294,7 @@ var require_number_answer = __commonJS({
       }
       return text;
     }
-    function parseNumberAnswer(text, options = {}) {
+    function stripAnswerSymbols(text, options) {
       let body = String(text == null ? "" : text).trim();
       const sign = /^[-+−]/.test(body) ? body[0] : "";
       if (sign) body = body.slice(1);
@@ -2305,16 +2305,25 @@ var require_number_answer = __commonJS({
         const units = Array.isArray(options.units) ? options.units : String(options.units).split(",");
         body = stripSymbol(body, units, true);
       }
-      return readPlainNumber(sign + body);
+      return sign + body;
     }
-    module2.exports = { parseNumberAnswer };
+    function parseNumberAnswer(text, options = {}) {
+      return readPlainNumber(stripAnswerSymbols(text, options));
+    }
+    function parseNumberAnswerKey(text, options = {}) {
+      const stripped = stripAnswerSymbols(text, options);
+      const value = readPlainNumber(stripped);
+      if (!Number.isNaN(value) || stripped.includes(",")) return value;
+      return parseFloat(stripped.replace("\u2212", "-"));
+    }
+    module2.exports = { parseNumberAnswer, parseNumberAnswerKey };
   }
 });
 
 // lib/text-input-validation.js
 var require_text_input_validation = __commonJS({
   "lib/text-input-validation.js"(exports2, module2) {
-    var { parseNumberAnswer } = require_number_answer();
+    var { parseNumberAnswer, parseNumberAnswerKey } = require_number_answer();
     function levenshteinDistance(str1, str2) {
       const len1 = str1.length;
       const len2 = str2.length;
@@ -2378,7 +2387,7 @@ var require_text_input_validation = __commonJS({
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
       const precision = options.precision !== void 0 ? options.precision : 2;
       const user = parseNumberAnswer(userAnswer);
-      const correct = parseNumberAnswer(correctAnswer);
+      const correct = parseNumberAnswerKey(correctAnswer);
       if (isNaN(user) || isNaN(correct)) return false;
       const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
       const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
@@ -2388,7 +2397,7 @@ var require_text_input_validation = __commonJS({
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
       const units = options.units || [];
       const userValue = parseNumberAnswer(userAnswer, { units });
-      const correctValue = parseNumberAnswer(correctAnswer, { units });
+      const correctValue = parseNumberAnswerKey(correctAnswer, { units });
       if (isNaN(userValue) || isNaN(correctValue)) return false;
       return Math.abs(userValue - correctValue) <= threshold;
     }
@@ -2396,7 +2405,7 @@ var require_text_input_validation = __commonJS({
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
       const currency = options.currency !== void 0 ? options.currency : "$";
       const userValue = parseNumberAnswer(userAnswer, { currency });
-      const correctValue = parseNumberAnswer(correctAnswer, { currency });
+      const correctValue = parseNumberAnswerKey(correctAnswer, { currency });
       if (isNaN(userValue) || isNaN(correctValue)) return false;
       return Math.abs(userValue - correctValue) <= threshold;
     }

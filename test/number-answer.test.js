@@ -94,11 +94,11 @@ test('parseNumberAnswer reads thousands separators and rejects decimal commas', 
   }
 });
 
-// The parser code, from its first constant to the end of parseNumberAnswer, without `export`.
+// The parser code, from its first constant to the end of parseNumberAnswerKey, without `export`.
 function parserSource(rel) {
   const source = fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
   const start = source.indexOf('const GROUP_SPACES');
-  const end = source.indexOf('\n}\n', source.indexOf('function parseNumberAnswer'));
+  const end = source.indexOf('\n}\n', source.indexOf('function parseNumberAnswerKey'));
   assert.ok(start >= 0 && end > start, `parser not found in ${rel}`);
   return source.slice(start, end).replace(/^export /gm, '');
 }
@@ -117,6 +117,11 @@ test('the browser copy of parseNumberAnswer matches lib/', async () => {
       lib.parseNumberAnswer(text, options),
       describeCase(text, options)
     );
+    assert.deepEqual(
+      browser.parseNumberAnswerKey(text, options),
+      lib.parseNumberAnswerKey(text, options),
+      `key ${describeCase(text, options)}`
+    );
   }
 
   // A seeded sweep over the characters people type into number fields.
@@ -125,7 +130,7 @@ test('the browser copy of parseNumberAnswer matches lib/', async () => {
     seed = (seed * 1103515245 + 12345) % 2147483648;
     return seed / 2147483648;
   };
-  const alphabet = '0123456789,. -+$e';
+  const alphabet = '0123456789,. -+$e%g';
   for (let i = 0; i < 3000; i++) {
     let text = '';
     const length = 1 + Math.floor(random() * 9);
@@ -135,6 +140,11 @@ test('the browser copy of parseNumberAnswer matches lib/', async () => {
         browser.parseNumberAnswer(text, options),
         lib.parseNumberAnswer(text, options),
         describeCase(text, options)
+      );
+      assert.deepEqual(
+        browser.parseNumberAnswerKey(text, options),
+        lib.parseNumberAnswerKey(text, options),
+        `key ${describeCase(text, options)}`
       );
     }
   }
@@ -203,6 +213,44 @@ test('unit answers read the comma as a thousands separator', () => {
   assert.equal(validateTextInputNumericWithUnits('1,000 kg', '1000 kg', options), true);
   assert.equal(validateTextInputNumericWithUnits('1,000', '1000', options), true);
   assert.equal(validateTextInputNumericWithUnits('1,5 kg', '1.5 kg', options), false);
+});
+
+// parseFloat read these keys by their leading number before the shared parser. They must keep
+// scoring: "%" or a unit the options do not list ("units=kg,g" keeps only kg), or no units option.
+test('answer keys that parseFloat read keep their value', () => {
+  assert.equal(lib.parseNumberAnswerKey('12.5%'), 12.5);
+  assert.equal(lib.parseNumberAnswerKey('5 (approx)'), 5);
+  assert.equal(lib.parseNumberAnswerKey('500 g', { units: ['kg'] }), 500);
+  assert.equal(lib.parseNumberAnswerKey('1 kg', { units: [] }), 1);
+  assert.equal(lib.parseNumberAnswerKey('$5 USD', { currency: '$' }), 5);
+  assert.equal(lib.parseNumberAnswerKey('-$5 USD', { currency: '$' }), -5);
+  // Keys the shared rules read are unchanged
+  assert.equal(lib.parseNumberAnswerKey('5,000'), 5000);
+  assert.equal(lib.parseNumberAnswerKey('$1,200.50', { currency: '$' }), 1200.5);
+
+  const exact = { precision: 6, threshold: 0 };
+  assert.equal(validateTextInputNumeric('12.5', '12.5%', exact), true);
+  assert.equal(validateTextInputNumericWithUnits('500', '500 g', { threshold: 0, units: ['kg'] }), true);
+  assert.equal(validateTextInputNumericWithUnits('1', '1 kg', { threshold: 0 }), true);
+  assert.equal(validateTextInputNumericWithCurrency('5', '5 dollars', { threshold: 0 }), true);
+
+  const { parseTextInputAnswerItems } = require('../lib/text-input-validation');
+  const grams = parseTextInputAnswerItems(['500 g [kind: numeric-with-units] [options: threshold=0,units=kg,g]']);
+  assert.equal(validateTextInputAnswer(grams, '500'), true);
+});
+
+test('answer keys with a comma are not guessed', () => {
+  assert.ok(Number.isNaN(lib.parseNumberAnswerKey('12,5')));
+  assert.ok(Number.isNaN(lib.parseNumberAnswerKey('4,50 $', { currency: '$' })));
+  assert.ok(Number.isNaN(lib.parseNumberAnswerKey('1,5 g', { units: ['kg'] })));
+  assert.equal(validateTextInputNumeric('12', '12,5', { precision: 6, threshold: 0 }), false);
+  assert.equal(validateTextInputNumericWithCurrency('4.5', '4,50', { threshold: 0.01 }), false);
+});
+
+test('learner answers stay strict when the key is read by its leading number', () => {
+  const exact = { precision: 6, threshold: 0 };
+  assert.equal(validateTextInputNumeric('12.5%', '12.5%', exact), false);
+  assert.equal(validateTextInputNumericWithUnits('500 g', '500 g', { threshold: 0, units: ['kg'] }), false);
 });
 
 test('validateTextInputAnswer treats an empty number answer as unanswered', () => {

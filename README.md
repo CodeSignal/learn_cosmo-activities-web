@@ -103,6 +103,7 @@ See `data/examples/text-input-repeatable.md`.
 - Commas or spaces may separate groups of three digits: `5,000`, `1,234.56`, `-1,000`, `1 234.5`.
 - A currency question also takes its symbol before or after the number (`$1,200.50`, `-$5`, `1,200.50 $`). A units question takes one of its units (`1,000 kg`).
 - A decimal comma (`12,5`), misplaced separators (`1,23,4`), and other text are not read as numbers. A message under the field asks for a dot for decimals, and the answer scores 0 if it is left that way.
+- An answer-key value that these rules can't read and that has no comma is read by its leading number, as before: `12.5%` is 12.5, and `500 g` is 500 when `g` isn't one of the question's units. A key with a comma is never guessed.
 
 The rules live in `lib/number-answer.js`, with a browser copy in `public/utils/number-answer.js`. See `data/examples/assessment-text-input-numbers.md`.
 
