@@ -95,6 +95,17 @@ __Correct Answers__
 
 See `data/examples/text-input-repeatable.md`.
 
+### Text Input: number answers
+
+`numeric`, `numeric-with-currency`, and `numeric-with-units` questions show a text field with a decimal keypad (`inputmode="decimal"`). The answer is saved exactly as typed, so reports show what the learner entered, and the scorer reads the number from it. Answer-key values follow the same rules.
+
+- A dot is the decimal point. A sign and an exponent are allowed: `-12`, `.5`, `1e6`.
+- Commas or spaces may separate groups of three digits: `5,000`, `1,234.56`, `-1,000`, `1 234.5`.
+- A currency question also takes its symbol before or after the number (`$1,200.50`, `-$5`, `1,200.50 $`). A units question takes one of its units (`1,000 kg`).
+- A decimal comma (`12,5`), misplaced separators (`1,23,4`), and other text are not read as numbers. A message under the field asks for a dot for decimals, and the answer scores 0 if it is left that way.
+
+The rules live in `lib/number-answer.js`, with a browser copy in `public/utils/number-answer.js`. See `data/examples/assessment-text-input-numbers.md`.
+
 ### Side content & split-screen layout
 
 Any activity can render **side content** in a split layout by adding a `__Content__` section. The activity UI appears on the right and the side content on the left, with a draggable divider between them. `__Content__` accepts three forms:

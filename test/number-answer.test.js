@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const lib = require('../lib/number-answer');
 const {
@@ -8,6 +10,13 @@ const {
   validateTextInputNumericWithCurrency,
   validateTextInputAnswer
 } = require('../lib/text-input-validation');
+
+// The browser copy is an ES module with no imports; load it through a data: URL so the
+// test does not depend on Node's module-syntax detection for .js files.
+async function loadBrowserCopy() {
+  const source = fs.readFileSync(path.join(__dirname, '../public/utils/number-answer.js'), 'utf8');
+  return import(`data:text/javascript,${encodeURIComponent(source)}`);
+}
 
 // [text, options, expected value or NaN]
 const CASES = [
@@ -83,6 +92,81 @@ test('parseNumberAnswer reads thousands separators and rejects decimal commas', 
       assert.equal(actual, expected, describeCase(text, options));
     }
   }
+});
+
+// The parser code, from its first constant to the end of parseNumberAnswer, without `export`.
+function parserSource(rel) {
+  const source = fs.readFileSync(path.join(__dirname, '..', rel), 'utf8');
+  const start = source.indexOf('const GROUP_SPACES');
+  const end = source.indexOf('\n}\n', source.indexOf('function parseNumberAnswer'));
+  assert.ok(start >= 0 && end > start, `parser not found in ${rel}`);
+  return source.slice(start, end).replace(/^export /gm, '');
+}
+
+test('the browser copy of parseNumberAnswer matches lib/', async () => {
+  assert.equal(
+    parserSource('public/utils/number-answer.js'),
+    parserSource('lib/number-answer.js'),
+    'keep the parser code identical in lib/number-answer.js and public/utils/number-answer.js'
+  );
+
+  const browser = await loadBrowserCopy();
+  for (const [text, options] of CASES) {
+    assert.deepEqual(
+      browser.parseNumberAnswer(text, options),
+      lib.parseNumberAnswer(text, options),
+      describeCase(text, options)
+    );
+  }
+
+  // A seeded sweep over the characters people type into number fields.
+  let seed = 7;
+  const random = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  };
+  const alphabet = '0123456789,. -+$e';
+  for (let i = 0; i < 3000; i++) {
+    let text = '';
+    const length = 1 + Math.floor(random() * 9);
+    for (let j = 0; j < length; j++) text += alphabet[Math.floor(random() * alphabet.length)];
+    for (const options of [{}, { currency: '$' }, { units: ['kg'] }]) {
+      assert.deepEqual(
+        browser.parseNumberAnswer(text, options),
+        lib.parseNumberAnswer(text, options),
+        describeCase(text, options)
+      );
+    }
+  }
+});
+
+test('getNumberFormatMessage stays empty for empty or readable answers', async () => {
+  const { getNumberFormatMessage } = await loadBrowserCopy();
+  assert.equal(getNumberFormatMessage('', 'numeric'), '');
+  assert.equal(getNumberFormatMessage('   ', 'numeric'), '');
+  assert.equal(getNumberFormatMessage('5000', 'numeric'), '');
+  assert.equal(getNumberFormatMessage('5,000', 'numeric'), '');
+  assert.equal(getNumberFormatMessage('-1,000', 'numeric'), '');
+  assert.equal(getNumberFormatMessage('$1,200.50', 'numeric-with-currency', { currency: '$' }), '');
+  assert.equal(getNumberFormatMessage('1,000 kg', 'numeric-with-units', { units: ['kg'] }), '');
+});
+
+test('getNumberFormatMessage explains the accepted format for unreadable answers', async () => {
+  const { getNumberFormatMessage, NUMBER_FORMAT_MESSAGE } = await loadBrowserCopy();
+  assert.match(NUMBER_FORMAT_MESSAGE, /1,234\.5/);
+  assert.match(NUMBER_FORMAT_MESSAGE, /dot for decimals/);
+  assert.equal(getNumberFormatMessage('12,5', 'numeric'), NUMBER_FORMAT_MESSAGE);
+  assert.equal(getNumberFormatMessage('1,23,4', 'numeric'), NUMBER_FORMAT_MESSAGE);
+  assert.equal(getNumberFormatMessage('5k', 'numeric'), NUMBER_FORMAT_MESSAGE);
+  assert.equal(getNumberFormatMessage('$5', 'numeric'), NUMBER_FORMAT_MESSAGE);
+  assert.equal(getNumberFormatMessage('$12,5', 'numeric-with-currency', { currency: '$' }), NUMBER_FORMAT_MESSAGE);
+});
+
+test('getNumberFormatMessage ignores kinds that are not numbers', async () => {
+  const { getNumberFormatMessage } = await loadBrowserCopy();
+  assert.equal(getNumberFormatMessage('12,5', 'string'), '');
+  assert.equal(getNumberFormatMessage('12,5', 'validate-later'), '');
+  assert.equal(getNumberFormatMessage('12,5', undefined), '');
 });
 
 test('numeric answers with thousands separators match the key', () => {

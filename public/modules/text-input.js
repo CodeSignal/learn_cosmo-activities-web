@@ -9,6 +9,7 @@ import {
   setValidateStatus
 } from '../utils/validate-status.js';
 import { parseRepeatableAnswer, serializeRepeatableAnswer } from '../utils/repeatable-answers.js';
+import { getNumberFormatMessage, parseNumberAnswer } from '../utils/number-answer.js';
 
 export function initTextInput({
   activity,
@@ -42,6 +43,9 @@ export function initTextInput({
 
   // Entry lists for repeatable questions, keyed by question id
   const repeatableEntries = {};
+
+  // Format messages under number fields, keyed by question id
+  const formatMessages = {};
   
   // Track validation state
   let isValidating = false;
@@ -152,8 +156,9 @@ export function initTextInput({
     const threshold = options.threshold !== undefined ? options.threshold : 0.01;
     const precision = options.precision !== undefined ? options.precision : 2;
     
-    const user = parseFloat(userAnswer);
-    const correct = parseFloat(correctAnswer);
+    // Reads thousands separators and rejects a decimal comma (see utils/number-answer.js)
+    const user = parseNumberAnswer(userAnswer);
+    const correct = parseNumberAnswer(correctAnswer);
     
     if (isNaN(user) || isNaN(correct)) {
       return false;
@@ -171,35 +176,9 @@ export function initTextInput({
     const precision = options.precision !== undefined ? options.precision : 2;
     const units = options.units || [];
     
-    // Escape unit symbols for regex (handle special regex characters)
-    const escapedUnits = units.map(u => u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    const unitsPattern = escapedUnits.length > 0 ? escapedUnits.join('|') : '';
-    
-    // Remove unit symbols and any whitespace from user answer (similar to currency)
-    let userStr = String(userAnswer).trim();
-    if (unitsPattern) {
-      // Remove unit symbols (could be at start or end, with or without space)
-      const unitRegex = new RegExp(`^\\s*(${unitsPattern})\\s*|\\s*(${unitsPattern})\\s*$`, 'gi');
-      userStr = userStr.replace(unitRegex, '');
-      userStr = userStr.trim();
-    }
-    
-    // Remove unit symbols from correct answer
-    let correctStr = String(correctAnswer).trim();
-    if (unitsPattern) {
-      const unitRegex = new RegExp(`^\\s*(${unitsPattern})\\s*|\\s*(${unitsPattern})\\s*$`, 'gi');
-      correctStr = correctStr.replace(unitRegex, '');
-      correctStr = correctStr.trim();
-    }
-    
-    // Normalize decimal separators: replace comma with period
-    // This allows both "4.50" and "4,50" to be accepted
-    userStr = userStr.replace(',', '.');
-    correctStr = correctStr.replace(',', '.');
-    
-    // Parse numeric values (parseFloat handles trailing zeros automatically: 4.50 = 4.5)
-    const userValue = parseFloat(userStr);
-    const correctValue = parseFloat(correctStr);
+    // Drops a unit before or after the number, then reads it like any number answer
+    const userValue = parseNumberAnswer(userAnswer, { units });
+    const correctValue = parseNumberAnswer(correctAnswer, { units });
     
     if (isNaN(userValue) || isNaN(correctValue)) {
       return false;
@@ -214,28 +193,9 @@ export function initTextInput({
     const threshold = options.threshold !== undefined ? options.threshold : 0.01;
     const currency = options.currency !== undefined ? options.currency : '$';
     
-    // Escape currency symbol for regex
-    const escapedCurrency = currency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    
-    // Remove currency symbol and any whitespace from user answer
-    let userStr = String(userAnswer).trim();
-    // Remove currency symbol (could be at start or end, with or without space)
-    userStr = userStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, 'g'), '');
-    userStr = userStr.trim();
-    
-    // Remove currency symbol from correct answer
-    let correctStr = String(correctAnswer).trim();
-    correctStr = correctStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, 'g'), '');
-    correctStr = correctStr.trim();
-    
-    // Normalize decimal separators: replace comma with period
-    // This allows both "4.50" and "4,50" to be accepted
-    userStr = userStr.replace(',', '.');
-    correctStr = correctStr.replace(',', '.');
-    
-    // Parse numeric values (parseFloat handles trailing zeros automatically: 4.50 = 4.5)
-    const userValue = parseFloat(userStr);
-    const correctValue = parseFloat(correctStr);
+    // Drops the currency symbol before or after the number, then reads it like any number answer
+    const userValue = parseNumberAnswer(userAnswer, { currency });
+    const correctValue = parseNumberAnswer(correctAnswer, { currency });
     
     if (isNaN(userValue) || isNaN(correctValue)) {
       return false;
@@ -399,7 +359,10 @@ export function initTextInput({
     // Create input field (textarea for multi-line, input for single-line)
     const input = isMultiLine ? document.createElement('textarea') : document.createElement('input');
     if (!isMultiLine) {
-      input.type = isNumeric ? 'number' : 'text';
+      // Number answers use a text field too: <input type="number"> reports an empty value for
+      // "5,000" or "$1,200", so the answer would be saved empty. The text is saved as typed.
+      input.type = 'text';
+      if (isNumeric) input.inputMode = 'decimal';
     } else {
       // Set textarea-specific attributes
       input.rows = 4;
@@ -573,10 +536,26 @@ export function initTextInput({
         clearValidation();
         userAnswers[question.id] = input.value;
         updateResultsAndPost();
+        updateFormatMessage(question);
       });
 
       inputWrapper.appendChild(input);
-      inputContainer.appendChild(inputWrapper);
+      if (isNumeric) {
+        const formatMessage = document.createElement('p');
+        formatMessage.id = `q${question.id}-format-message`;
+        formatMessage.className = 'activity-error-text body-small text-input-format-message';
+        // Kept in the DOM while empty so screen readers announce the text when it appears
+        formatMessage.setAttribute('aria-live', 'polite');
+        formatMessages[question.id] = formatMessage;
+        input.addEventListener('change', () => updateFormatMessage(question, { reveal: true }));
+
+        const fieldGroup = document.createElement('div');
+        fieldGroup.className = 'text-input-field-group';
+        fieldGroup.append(inputWrapper, formatMessage);
+        inputContainer.appendChild(fieldGroup);
+      } else {
+        inputContainer.appendChild(inputWrapper);
+      }
     }
     
     // Add "Next" button for non-last questions
@@ -623,6 +602,9 @@ export function initTextInput({
     questionEl.appendChild(inputContainer);
     
     elQuestions.appendChild(questionEl);
+
+    // A restored answer that isn't a readable number shows its message right away
+    updateFormatMessage(question, { reveal: true });
   });
   
   
@@ -758,18 +740,41 @@ export function initTextInput({
   
   function markQuestionIncorrect(questionEl, questionId, incorrect) {
     const errorId = `text-input-error-${questionId}`;
-    const input = document.getElementById(`q${questionId}-input`);
     if (incorrect) {
       questionEl.classList.add('text-input-question-incorrect');
       addErrorIcon(questionEl);
       ensureErrorText(questionEl, errorId);
-      if (input) setControlInvalid(input, errorId);
     } else {
       questionEl.classList.remove('text-input-question-incorrect');
       removeErrorIcon(questionEl);
       removeErrorText(errorId);
-      if (input) clearControlInvalid(input);
     }
+    updateFieldInvalidState(questionId);
+  }
+
+  // A number field keeps the learner's text as typed. When that text can't be read as a number
+  // (utils/number-answer.js), the message under the field says which format works. It appears
+  // when the learner leaves the field, then follows their edits until the text is readable.
+  function updateFormatMessage(question, { reveal = false } = {}) {
+    const formatMessage = formatMessages[question.id];
+    if (!formatMessage) return;
+    const validation = question.validation || {};
+    const text = getNumberFormatMessage(userAnswers[question.id], validation.kind, validation.options);
+    const next = text && (reveal || formatMessage.textContent) ? text : '';
+    if (formatMessage.textContent !== next) formatMessage.textContent = next;
+    updateFieldInvalidState(question.id);
+  }
+
+  // The field is invalid while the Validate error or the format message is shown, and is
+  // described by whichever of the two are present.
+  function updateFieldInvalidState(questionId) {
+    const input = document.getElementById(`q${questionId}-input`);
+    if (!input) return;
+    const describedBy = [`text-input-error-${questionId}`, `q${questionId}-format-message`]
+      .filter(id => document.getElementById(id)?.textContent)
+      .join(' ');
+    if (describedBy) setControlInvalid(input, describedBy);
+    else clearControlInvalid(input);
   }
 
   function clearValidation() {
@@ -854,6 +859,8 @@ export function initTextInput({
 
     // Collapse repeatable questions back to a single empty entry
     Object.values(repeatableEntries).forEach(entryList => entryList.reset());
+
+    textInput.questions.forEach(q => updateFormatMessage(q));
     
     // Clear validation state
     clearValidation();
