@@ -39,37 +39,57 @@ function mapOutsideFences(text, fn) {
   return out;
 }
 
-function parseSideContentModifiers(contentText) {
-  let contentWidth = null;
-  let designSystem = false;
-  mapOutsideFences(contentText, (chunk) => {
-    if (!contentWidth) {
-      const match = chunk.match(/\[contentWidth:\s*([^\]]+)\]/i);
-      if (match) contentWidth = match[1].trim();
+const MODIFIER = /[ \t]*\[(designSystem|openInNewTab|contentWidth:[ \t]*([^\]\r\n]+))\]/gi;
+const TRAILING_MODIFIERS = /(?:\[(?:designSystem|openInNewTab|contentWidth:[^\]\r\n]+)\][ \t]*)+$/i;
+
+/**
+ * Strips modifiers from one line and records them in `found`. Modifiers count
+ * on a line of their own (several per line, any order) or after the URL on a
+ * URL line. [contentWidth: …] also counts anywhere else. Returns null when
+ * only modifiers were on the line, so the caller drops the whole line.
+ */
+function stripLineModifiers(line, found) {
+  const trailing = line.match(TRAILING_MODIFIERS);
+  const lead = trailing ? line.slice(0, trailing.index) : '';
+  const runStart = trailing && /^\s*(?:(?:https?:\/\/|\/)\S*\s+)?$/i.test(lead)
+    ? trailing.index
+    : line.length;
+  let removed = false;
+  const rest = line.replace(MODIFIER, (match, name, width, offset) => {
+    if (width === undefined && offset + match.indexOf('[') < runStart) return match;
+    removed = true;
+    if (width !== undefined) {
+      if (!found.contentWidth) found.contentWidth = width.trim();
+    } else if (/^designSystem$/i.test(name)) {
+      found.designSystem = true;
+    } else {
+      found.openInNewTab = true;
     }
-    if (/(?:^|\n)\s*\[designSystem\]\s*(?:\n|$)/i.test(chunk)) {
-      designSystem = true;
-    }
-    return chunk;
+    return '';
   });
+  return removed && !rest.trim() ? null : rest;
+}
+
+function parseSideContentModifiers(contentText) {
+  const found = { contentWidth: null, designSystem: false, openInNewTab: false };
   const contentWithoutModifiers = mapOutsideFences(contentText, (chunk) =>
-    chunk
-      .replace(/\s*\[contentWidth:\s*[^\]]+\]\s*/gi, '')
-      .replace(/(?:^|\n)\s*\[designSystem\]\s*(?=\n|$)/gi, '\n')
+    chunk.split(/(?<=\n)/).map((line) => {
+      const eol = line.match(/\r?\n$/)?.[0] || '';
+      const rest = stripLineModifiers(line.slice(0, line.length - eol.length), found);
+      return rest === null ? '' : rest + eol;
+    }).join('')
   ).trim();
-  return { contentWidth, designSystem, contentWithoutModifiers };
+  return { ...found, contentWithoutModifiers };
 }
 
 /** @returns {{ type: 'url'|'markdown', value: string, openInNewTab?: boolean, contentWidth?: string, designSystem?: boolean } | null} */
 function parseContentTextToStructure(contentText) {
   if (!contentText || !String(contentText).trim()) return null;
-  const { contentWidth, designSystem, contentWithoutModifiers } =
+  const { contentWidth, designSystem, openInNewTab, contentWithoutModifiers } =
     parseSideContentModifiers(contentText);
 
   if (/^https?:\/\//i.test(contentWithoutModifiers)) {
-    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutModifiers);
-    const url = contentWithoutModifiers.replace(/\s+\[openInNewTab\]\s*$/im, '').trim();
-    const out = { type: 'url', value: url, openInNewTab: !!openInNewTab };
+    const out = { type: 'url', value: contentWithoutModifiers, openInNewTab };
     if (contentWidth) out.contentWidth = contentWidth;
     return out;
   }
@@ -77,9 +97,7 @@ function parseContentTextToStructure(contentText) {
   const pathLines = contentWithoutModifiers.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const pathFirst = pathLines[0] || '';
   if (pathFirst.startsWith('/')) {
-    const openInNewTab = /\[openInNewTab\]/i.test(contentWithoutModifiers);
-    const url = pathFirst.replace(/\s+\[openInNewTab\]\s*$/i, '').trim();
-    const out = { type: 'url', value: url, openInNewTab: !!openInNewTab };
+    const out = { type: 'url', value: pathFirst, openInNewTab };
     if (contentWidth) out.contentWidth = contentWidth;
     return out;
   }
