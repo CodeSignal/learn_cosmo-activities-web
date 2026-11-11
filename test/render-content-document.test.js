@@ -77,8 +77,17 @@ test('renderContentDocument shows code text while the design-system code font lo
   assert.match(doc, /\.markdown-content code \{\s*font-family: var\(--code-family\), monospace;/);
 
   // A --code-family set in the document wins over typography.css (loaded earlier).
-  const documentFamilies = [...doc.matchAll(/--code-family:\s*"([^"]+)"/g)].map((m) => m[1]);
-  const codeFamily = documentFamilies.length ? documentFamilies.pop() : designSystemFamily;
+  const declaration = [...doc.matchAll(/--code-family:\s*([^;]+);/g)].at(-1);
+  const codeFamily = declaration ? declaration[1].match(/"([^"]+)"/)[1] : designSystemFamily;
+  if (declaration) {
+    assert.ok(
+      declaration.index > doc.indexOf('/design-system/typography/typography.css'),
+      'the document sets --code-family after loading typography.css'
+    );
+    // .code-small, .code-medium… use var(--code-family) alone, so the
+    // fallback shown while the font loads has to come from the variable.
+    assert.match(declaration[1], /,\s*monospace\s*$/, 'code-* classes fall back to monospace');
+  }
   const codeFaces = [...fontFaces(typography, codeFamily), ...fontFaces(doc, codeFamily)];
   assert.ok(codeFaces.length > 0, `${codeFamily} is declared`);
   for (const face of codeFaces) {
