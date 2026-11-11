@@ -2304,6 +2304,11 @@ var require_text_input_validation = __commonJS({
     function stripAllWhitespace(s) {
       return String(s).replace(/\s/g, "");
     }
+    function isWithinThreshold(a, b, threshold) {
+      const difference = Math.abs(a - b);
+      if (threshold === 0) return difference === 0;
+      return difference <= threshold + 4 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b));
+    }
     function validateTextInputString(userAnswer, correctAnswer, options = {}) {
       const caseSensitive = options.caseSensitive === true;
       const fuzzy = options.fuzzy;
@@ -2341,7 +2346,7 @@ var require_text_input_validation = __commonJS({
       if (isNaN(user) || isNaN(correct)) return false;
       const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
       const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
-      return Math.abs(userRounded - correctRounded) <= threshold;
+      return isWithinThreshold(userRounded, correctRounded, threshold);
     }
     function validateTextInputNumericWithUnits(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
@@ -2363,7 +2368,7 @@ var require_text_input_validation = __commonJS({
       const userValue = parseFloat(userStr);
       const correctValue = parseFloat(correctStr);
       if (isNaN(userValue) || isNaN(correctValue)) return false;
-      return Math.abs(userValue - correctValue) <= threshold;
+      return isWithinThreshold(userValue, correctValue, threshold);
     }
     function validateTextInputNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
@@ -2378,7 +2383,7 @@ var require_text_input_validation = __commonJS({
       const userValue = parseFloat(userStr);
       const correctValue = parseFloat(correctStr);
       if (isNaN(userValue) || isNaN(correctValue)) return false;
-      return Math.abs(userValue - correctValue) <= threshold;
+      return isWithinThreshold(userValue, correctValue, threshold);
     }
     function parseOptionsText(optionsText) {
       const options = {};

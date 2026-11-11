@@ -101,6 +101,14 @@ export function initTextInput({
     return String(s).replace(/\s/g, '');
   }
 
+  // Same tolerance as isWithinThreshold in lib/text-input-validation.js: |0.31 - 0.3|
+  // is a hair above 0.01 in floating point, and must still pass threshold=0.01.
+  function isWithinThreshold(a, b, threshold) {
+    const difference = Math.abs(a - b);
+    if (threshold === 0) return difference === 0;
+    return difference <= threshold + 4 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b));
+  }
+
   function validateString(userAnswer, correctAnswer, options = {}) {
     const caseSensitive = options.caseSensitive === true; // Default false (case-insensitive)
     const fuzzy = options.fuzzy; // Can be true, false, or a number (0-1)
@@ -163,7 +171,7 @@ export function initTextInput({
     const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
     const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
     
-    return Math.abs(userRounded - correctRounded) <= threshold;
+    return isWithinThreshold(userRounded, correctRounded, threshold);
   }
   
   function validateNumericWithUnits(userAnswer, correctAnswer, options = {}) {
@@ -207,7 +215,7 @@ export function initTextInput({
     
     // Compare numeric values directly (parseFloat normalizes trailing zeros)
     // Use threshold to allow small differences
-    return Math.abs(userValue - correctValue) <= threshold;
+    return isWithinThreshold(userValue, correctValue, threshold);
   }
   
   function validateNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
@@ -243,7 +251,7 @@ export function initTextInput({
     
     // Compare numeric values directly (parseFloat normalizes trailing zeros)
     // Use threshold to allow small differences
-    return Math.abs(userValue - correctValue) <= threshold;
+    return isWithinThreshold(userValue, correctValue, threshold);
   }
   
   function getValidationCandidates(question) {

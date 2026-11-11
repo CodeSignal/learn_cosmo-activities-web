@@ -139,6 +139,42 @@ test('validateTextInputNumericWithCurrency accepts currency formatting', () => {
   assert.equal(validateTextInputNumericWithCurrency('$5.00', '4.50', options), false);
 });
 
+test('validateTextInputNumeric accepts an answer exactly one threshold away', () => {
+  // In floating point, 0.31 - 0.3 is 0.010000000000000009: a hair above 0.01.
+  assert.equal(validateTextInputNumeric('0.31', '0.3', { threshold: 0.01, precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('0.29', '0.3', { threshold: 0.01, precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('1.1', '1', { threshold: 0.1, precision: 1 }), true);
+  assert.equal(
+    validateTextInputNumeric('123456.789013', '123456.789012', { threshold: 0.000001, precision: 6 }),
+    true
+  );
+});
+
+test('validateTextInputNumeric rejects an answer two thresholds away', () => {
+  assert.equal(validateTextInputNumeric('0.32', '0.3', { threshold: 0.01, precision: 2 }), false);
+  assert.equal(
+    validateTextInputNumeric('123456.789014', '123456.789012', { threshold: 0.000001, precision: 6 }),
+    false
+  );
+});
+
+test('validateTextInputNumeric with threshold 0 needs an exact match after rounding', () => {
+  assert.equal(validateTextInputNumeric('0.30', '0.3', { threshold: 0, precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('0.304', '0.3', { threshold: 0, precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('0.31', '0.3', { threshold: 0, precision: 2 }), false);
+});
+
+test('validateTextInputNumericWithUnits and WithCurrency accept an answer exactly one threshold away', () => {
+  const units = { threshold: 0.01, units: ['kg'] };
+  assert.equal(validateTextInputNumericWithUnits('1.01 kg', '1 kg', units), true);
+  assert.equal(validateTextInputNumericWithUnits('1.02 kg', '1 kg', units), false);
+
+  const currency = { threshold: 0.01, currency: '$' };
+  assert.equal(validateTextInputNumericWithCurrency('$0.99', '1.00', currency), true);
+  assert.equal(validateTextInputNumericWithCurrency('$1234567.90', '1234567.89', currency), true);
+  assert.equal(validateTextInputNumericWithCurrency('$1234567.91', '1234567.89', currency), false);
+});
+
 test('getTextInputValidationCandidates supports legacy and modern shapes', () => {
   const legacy = getTextInputValidationCandidates({
     correctAnswer: 'Paris',

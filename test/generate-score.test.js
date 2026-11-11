@@ -910,6 +910,44 @@ __Answer Key__
   });
 });
 
+test('Text Input: numeric answer one unit off in the last decimal is within threshold=10^-precision', () => {
+  withTempDir(dir => {
+    const { score } = runScorer(dir,
+      `__Type__
+
+Text Input
+
+__Practice Question__
+
+What is the conversion rate, to two decimal places?
+
+__Correct Answers__
+
+`,
+      `__Type__
+
+Text Input
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: 0.31
+`,
+      `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: 0.3 [kind: numeric] [options: precision=2,threshold=0.01]
+`
+    );
+
+    assert.equal(score.totalScore, 1);
+    assert.equal(score.maxScore, 1);
+  });
+});
+
 function textInputFiles(count, indentFor) {
   const questions = [];
   const responses = [];
