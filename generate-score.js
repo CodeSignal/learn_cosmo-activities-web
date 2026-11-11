@@ -2271,9 +2271,50 @@ var require_marked = __commonJS({
   }
 });
 
+// lib/number-answer.js
+var require_number_answer = __commonJS({
+  "lib/number-answer.js"(exports2, module2) {
+    var GROUP_SPACES = " \\u00a0\\u2009\\u202f";
+    var NUMBER_PATTERN = new RegExp(
+      `^[-+\\u2212]?(?:(?:[1-9]\\d{0,2}(?:,\\d{3})+|[1-9]\\d{0,2}(?:[${GROUP_SPACES}]\\d{3})+|\\d+)(?:\\.\\d*)?|\\.\\d+)(?:e[-+]?\\d+)?$`,
+      "i"
+    );
+    function readPlainNumber(text) {
+      if (!NUMBER_PATTERN.test(text)) return NaN;
+      return Number(text.replace(/[,\s]/g, "").replace("\u2212", "-"));
+    }
+    function stripSymbol(text, symbols, ignoreCase) {
+      const fold = (s) => ignoreCase ? s.toLowerCase() : s;
+      const folded = fold(text);
+      const sorted = symbols.map((s) => String(s).trim()).filter(Boolean).sort((a, b) => b.length - a.length);
+      for (const symbol of sorted) {
+        const target = fold(symbol);
+        if (folded.endsWith(target)) return text.slice(0, text.length - symbol.length).trimEnd();
+        if (folded.startsWith(target)) return text.slice(symbol.length).trimStart();
+      }
+      return text;
+    }
+    function parseNumberAnswer(text, options = {}) {
+      let body = String(text == null ? "" : text).trim();
+      const sign = /^[-+−]/.test(body) ? body[0] : "";
+      if (sign) body = body.slice(1);
+      if (options.currency !== void 0 && options.currency !== null) {
+        body = stripSymbol(body, [String(options.currency)], false);
+      }
+      if (options.units) {
+        const units = Array.isArray(options.units) ? options.units : String(options.units).split(",");
+        body = stripSymbol(body, units, true);
+      }
+      return readPlainNumber(sign + body);
+    }
+    module2.exports = { parseNumberAnswer };
+  }
+});
+
 // lib/text-input-validation.js
 var require_text_input_validation = __commonJS({
   "lib/text-input-validation.js"(exports2, module2) {
+    var { parseNumberAnswer } = require_number_answer();
     function levenshteinDistance(str1, str2) {
       const len1 = str1.length;
       const len2 = str2.length;
@@ -2336,8 +2377,8 @@ var require_text_input_validation = __commonJS({
     function validateTextInputNumeric(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
       const precision = options.precision !== void 0 ? options.precision : 2;
-      const user = parseFloat(userAnswer);
-      const correct = parseFloat(correctAnswer);
+      const user = parseNumberAnswer(userAnswer);
+      const correct = parseNumberAnswer(correctAnswer);
       if (isNaN(user) || isNaN(correct)) return false;
       const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
       const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
@@ -2346,37 +2387,16 @@ var require_text_input_validation = __commonJS({
     function validateTextInputNumericWithUnits(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
       const units = options.units || [];
-      const escapedUnits = units.map((u) => u.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-      const unitsPattern = escapedUnits.length > 0 ? escapedUnits.join("|") : "";
-      let userStr = String(userAnswer).trim();
-      if (unitsPattern) {
-        const unitRegex = new RegExp(`^\\s*(${unitsPattern})\\s*|\\s*(${unitsPattern})\\s*$`, "gi");
-        userStr = userStr.replace(unitRegex, "").trim();
-      }
-      let correctStr = String(correctAnswer).trim();
-      if (unitsPattern) {
-        const unitRegex = new RegExp(`^\\s*(${unitsPattern})\\s*|\\s*(${unitsPattern})\\s*$`, "gi");
-        correctStr = correctStr.replace(unitRegex, "").trim();
-      }
-      userStr = userStr.replace(",", ".");
-      correctStr = correctStr.replace(",", ".");
-      const userValue = parseFloat(userStr);
-      const correctValue = parseFloat(correctStr);
+      const userValue = parseNumberAnswer(userAnswer, { units });
+      const correctValue = parseNumberAnswer(correctAnswer, { units });
       if (isNaN(userValue) || isNaN(correctValue)) return false;
       return Math.abs(userValue - correctValue) <= threshold;
     }
     function validateTextInputNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
       const currency = options.currency !== void 0 ? options.currency : "$";
-      const escapedCurrency = currency.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      let userStr = String(userAnswer).trim();
-      userStr = userStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, "g"), "").trim();
-      let correctStr = String(correctAnswer).trim();
-      correctStr = correctStr.replace(new RegExp(`^\\s*${escapedCurrency}\\s*|\\s*${escapedCurrency}\\s*$`, "g"), "").trim();
-      userStr = userStr.replace(",", ".");
-      correctStr = correctStr.replace(",", ".");
-      const userValue = parseFloat(userStr);
-      const correctValue = parseFloat(correctStr);
+      const userValue = parseNumberAnswer(userAnswer, { currency });
+      const correctValue = parseNumberAnswer(correctAnswer, { currency });
       if (isNaN(userValue) || isNaN(correctValue)) return false;
       return Math.abs(userValue - correctValue) <= threshold;
     }

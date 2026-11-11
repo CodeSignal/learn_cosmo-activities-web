@@ -125,17 +125,17 @@ test('validateTextInputNumeric respects threshold and precision', () => {
   assert.equal(validateTextInputNumeric('abc', '3.14', { threshold: 0.01, precision: 2 }), false);
 });
 
-test('validateTextInputNumericWithUnits accepts valid units and decimal commas', () => {
+test('validateTextInputNumericWithUnits accepts valid units', () => {
   const options = { threshold: 0.01, units: ['kg', 'g'] };
   assert.equal(validateTextInputNumericWithUnits('1 kg', '1 kg', options), true);
-  assert.equal(validateTextInputNumericWithUnits('1,0 kg', '1 kg', options), true);
+  assert.equal(validateTextInputNumericWithUnits('1.0 kg', '1 kg', options), true);
   assert.equal(validateTextInputNumericWithUnits('2 kg', '1 kg', options), false);
 });
 
 test('validateTextInputNumericWithCurrency accepts currency formatting', () => {
   const options = { threshold: 0.01, currency: '$' };
   assert.equal(validateTextInputNumericWithCurrency('$4.50', '4.50', options), true);
-  assert.equal(validateTextInputNumericWithCurrency('4,50$', '4.50', options), true);
+  assert.equal(validateTextInputNumericWithCurrency('4.50$', '4.50', options), true);
   assert.equal(validateTextInputNumericWithCurrency('$5.00', '4.50', options), false);
 });
 
