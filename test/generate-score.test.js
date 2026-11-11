@@ -910,6 +910,38 @@ __Answer Key__
   });
 });
 
+function textInputFiles(count, indentFor) {
+  const questions = [];
+  const responses = [];
+  const keys = [];
+  for (let n = 1; n <= count; n++) {
+    questions.push(`__Practice Question__\n\nQuestion ${n}?\n\n__Correct Answers__\n\n`);
+    responses.push(`${n}. **Question ${n}**\n${indentFor(n)}- Selected Answer: answer ${n}\n`);
+    keys.push(`- Question ${n}: answer ${n} [kind: string] [options: caseSensitive=false]\n`);
+  }
+  return [
+    `__Type__\n\nText Input\n\n${questions.join('')}`,
+    `__Type__\n\nText Input\n\n__Responses__\n\n${responses.join('\n')}`,
+    `__Type__\n\nText Input\n\n__Answer Key__\n\n${keys.join('')}`
+  ];
+}
+
+test('Text Input: scores answers 10 and above', () => {
+  const indents = {
+    'list-marker width': n => ' '.repeat(String(n).length + 2),
+    'three spaces (older releases)': () => '   '
+  };
+  for (const [label, indentFor] of Object.entries(indents)) {
+    withTempDir(dir => {
+      const { score } = runScorer(dir, ...textInputFiles(12, indentFor));
+
+      assert.equal(score.totalScore, 12, label);
+      assert.equal(score.maxScore, 12, label);
+      assert.deepEqual(score.breakoutScores.map(b => b.score), new Array(12).fill(1), label);
+    });
+  }
+});
+
 // -----------------------------------------------------------------------
 // Report output verification
 // -----------------------------------------------------------------------

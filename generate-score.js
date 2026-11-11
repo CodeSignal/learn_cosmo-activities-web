@@ -2537,8 +2537,11 @@ var require_text_input_validation = __commonJS({
 // lib/text-input-answers.js
 var require_text_input_answers = __commonJS({
   "lib/text-input-answers.js"(exports2, module2) {
-    var RESPONSE_HEADER_REGEX = /^(\d+)\.\s*\*\*[^*\n]+\*\*[ \t]*\r?\n[ \t]*- Selected Answer:[ \t]?/gm;
+    var RESPONSE_HEADER_REGEX = /^(\d+)\.\s*\*\*[^*\n]+\*\*[ \t]*\r?\n(?:[ \t]*\r?\n)*[ \t]*- Selected Answer:[ \t]?/gm;
     var CORRECT_ANSWER_LINE_REGEX = /\r?\n[ \t]*- Correct Answer:/g;
+    function responseDetailIndent(number) {
+      return " ".repeat(String(number).length + 2);
+    }
     function lastMatchIndex(regex, text) {
       let index = -1;
       const pattern = new RegExp(regex.source, "g");
@@ -2563,7 +2566,7 @@ var require_text_input_answers = __commonJS({
       });
       return answers;
     }
-    module2.exports = { parseTextInputAnswers };
+    module2.exports = { parseTextInputAnswers, responseDetailIndent };
   }
 });
 
@@ -2868,7 +2871,7 @@ var require_parse_question = __commonJS({
       const answers = {};
       if (/^multiple choice$/i.test(type)) {
         const explanations = {};
-        const questionBlocks = responsesText.split(/(?=\d+\.\s*\*\*[^*]+\*\*)/);
+        const questionBlocks = responsesText.split(/(?=^\d+\.\s*\*\*[^*]+\*\*)/m);
         questionBlocks.forEach((block) => {
           const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
           if (questionMatch) {
@@ -2928,7 +2931,7 @@ var require_parse_question = __commonJS({
         Object.assign(answers, parseTextInputAnswers(responsesText));
       } else if (/^matrix$/i.test(type)) {
         const explanations = {};
-        const questionBlocks = responsesText.split(/(?=\d+\.\s*\*\*[^*]+\*\*)/);
+        const questionBlocks = responsesText.split(/(?=^\d+\.\s*\*\*[^*]+\*\*)/m);
         questionBlocks.forEach((block) => {
           const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
           if (questionMatch) {
