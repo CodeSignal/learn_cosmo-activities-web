@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const {
   parseValidationOptions,
@@ -8,6 +10,7 @@ const {
   validateTextInputNumeric,
   validateTextInputNumericWithUnits,
   validateTextInputNumericWithCurrency,
+  isWithinThreshold,
   getTextInputValidationCandidates,
   validateTextInputAnswer
 } = require('../lib/text-input-validation');
@@ -173,6 +176,50 @@ test('validateTextInputNumericWithUnits and WithCurrency accept an answer exactl
   assert.equal(validateTextInputNumericWithCurrency('$0.99', '1.00', currency), true);
   assert.equal(validateTextInputNumericWithCurrency('$1234567.90', '1234567.89', currency), true);
   assert.equal(validateTextInputNumericWithCurrency('$1234567.91', '1234567.89', currency), false);
+});
+
+test('numeric validators reject answers that parse or round to Infinity', () => {
+  // parseFloat reads "Infinity" and "1e999" as Infinity, and rounding 1e307 to two decimals
+  // overflows to it. The slack grows with the numbers compared, so Infinity <= Infinity held.
+  const options = { threshold: 0.1, precision: 2 };
+  for (const answer of ['Infinity', '-Infinity', '1e999', '1e307']) {
+    assert.equal(validateTextInputNumeric(answer, '3.14', options), false, answer);
+  }
+  assert.equal(validateTextInputNumeric('Infinity', 'Infinity', options), false);
+  assert.equal(validateTextInputNumericWithUnits('Infinity kg', '1 kg', { threshold: 0.01, units: ['kg'] }), false);
+  assert.equal(validateTextInputNumericWithCurrency('$Infinity', '1.00', { threshold: 0.01, currency: '$' }), false);
+});
+
+function loadPracticeModeIsWithinThreshold() {
+  // The practice-mode copy is a closure inside initTextInput; evaluate its source directly.
+  const src = fs.readFileSync(path.join(__dirname, '../public/modules/text-input.js'), 'utf8');
+  const start = src.indexOf('function isWithinThreshold(');
+  assert.notEqual(start, -1, 'missing function isWithinThreshold');
+  const end = src.indexOf('\n  function ', start + 1);
+  return new Function(`${src.slice(start, end === -1 ? src.length : end)}\nreturn isWithinThreshold;`)();
+}
+
+test('practice mode compares numbers with the same tolerance as the scorer', () => {
+  const practice = loadPracticeModeIsWithinThreshold();
+  const cases = [
+    [0.31, 0.3, 0.01, true],
+    [0.29, 0.3, 0.01, true],
+    [0.32, 0.3, 0.01, false],
+    [0.31, 0.3, 0, false],
+    [0.3, 0.3, 0, true],
+    [123456.789013, 123456.789012, 0.000001, true],
+    [123456.789014, 123456.789012, 0.000001, false],
+    [Infinity, 3.14, 0.1, false],
+    [-Infinity, 3.14, 0.1, false],
+    [3.14, Infinity, 0.1, false],
+    [Infinity, Infinity, 0.1, false],
+    [Infinity, Infinity, 0, false],
+    [NaN, 3.14, 0.1, false]
+  ];
+  for (const [a, b, threshold, expected] of cases) {
+    assert.equal(isWithinThreshold(a, b, threshold), expected, `scorer: ${a} vs ${b} at ${threshold}`);
+    assert.equal(practice(a, b, threshold), expected, `practice: ${a} vs ${b} at ${threshold}`);
+  }
 });
 
 test('getTextInputValidationCandidates supports legacy and modern shapes', () => {
