@@ -758,11 +758,21 @@ export function initTextInput({
   function updateFormatMessage(question, { reveal = false } = {}) {
     const formatMessage = formatMessages[question.id];
     if (!formatMessage) return;
-    const validation = question.validation || {};
-    const text = getNumberFormatMessage(userAnswers[question.id], validation.kind, validation.options);
+    const text = getAnswerFormatMessage(question);
     const next = text && (reveal || formatMessage.textContent) ? text : '';
     if (formatMessage.textContent !== next) formatMessage.textContent = next;
     updateFieldInvalidState(question.id);
+  }
+
+  // Each accepted answer has its own kind and options (answerFormats, from lib/text-input-validation.js),
+  // so another answer may take another unit or plain text. The message is shown only when none of
+  // them can read the answer.
+  function getAnswerFormatMessage(question) {
+    const formats = (question.answerFormats || [question.validation || {}])
+      .filter(format => format && format.kind !== 'validate-later');
+    const messages = formats.map(format =>
+      getNumberFormatMessage(userAnswers[question.id], format.kind, format.options || {}));
+    return messages.length > 0 && messages.every(Boolean) ? messages[0] : '';
   }
 
   // The field is invalid while the Validate error or the format message is shown, and is

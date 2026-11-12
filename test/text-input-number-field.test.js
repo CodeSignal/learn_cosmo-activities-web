@@ -41,3 +41,12 @@ test('unreadable numbers get a polite live message linked to the field', () => {
   assert.match(src, /setControlInvalid\(input,\s*describedBy\)/);
   assert.match(src, /addEventListener\('change'/, 'the message appears when the candidate leaves the field');
 });
+
+test('the format message checks every accepted answer format, not only the first', () => {
+  const src = read('public/modules/text-input.js');
+  const fn = src.match(/function getAnswerFormatMessage\(question\) \{[\s\S]*?\n  \}/)?.[0] || '';
+  assert.match(fn, /question\.answerFormats/);
+  assert.match(fn, /messages\.every\(Boolean\)/);
+  assert.match(src, /const text = getAnswerFormatMessage\(question\)/);
+  assert.match(read('lib/parse-question.js'), /currentQuestion\.answerFormats = parsed\.answerFormats/);
+});

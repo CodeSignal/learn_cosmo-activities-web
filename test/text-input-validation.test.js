@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const {
   parseValidationOptions,
@@ -75,6 +77,44 @@ test('parseTextInputAnswerItems keeps repeatable options when answer text is str
     repeatable: true,
     itemLabel: 'Defect'
   });
+});
+
+test('parseValidationOptions keeps every unit of a comma-separated units list', () => {
+  const middle = parseValidationOptions('1 kg [kind: numeric-with-units] [options: threshold=0.01,units=kg,g,precision=2]');
+  assert.deepEqual(middle.validation.options, { threshold: 0.01, units: ['kg', 'g'], precision: 2 });
+
+  const last = parseValidationOptions('[kind: numeric-with-units] [options: threshold=0,units=kg, g]');
+  assert.deepEqual(last.validation.options.units, ['kg', 'g']);
+
+  // A piece without "=" that does not follow units is still ignored
+  const stray = parseValidationOptions('Paris [kind: string] [options: fuzzy=0,stray]');
+  assert.deepEqual(stray.validation.options, { fuzzy: 0 });
+});
+
+test('the editor reads a units list the way it writes it', () => {
+  const src = fs.readFileSync(path.join(__dirname, '../public/editor.js'), 'utf8');
+  const parseOptionsSrc = src.match(/^function parseOptions\(optionsText\) \{[\s\S]*?^\}/m)[0];
+  const parseAnswerLineSrc = src.match(/^function parseAnswerLine\(answerLine\) \{[\s\S]*?^\}/m)[0];
+  const parseAnswerLine = new Function(`${parseOptionsSrc}\n${parseAnswerLineSrc}\nreturn parseAnswerLine;`)();
+
+  const parsed = parseAnswerLine('1 kg [kind: numeric-with-units] [options: threshold=0.01,precision=2,units=kg,g]');
+  assert.deepEqual(parsed.validation.options, { threshold: 0.01, precision: 2, units: ['kg', 'g'] });
+});
+
+test('parseTextInputAnswerItems lists the format of every accepted answer', () => {
+  const split = parseTextInputAnswerItems([
+    '[kind: numeric-with-units] [options: units=kg]',
+    '[kind: numeric-with-units] [options: units=lb]'
+  ]);
+  assert.equal(split.correctAnswers.length, 0);
+  assert.deepEqual(split.validation.options, { units: ['kg'] });
+  assert.deepEqual(split.answerFormats.map(format => format.options.units), [['kg'], ['lb']]);
+
+  const merged = parseTextInputAnswerItems([
+    '2 kg [kind: numeric-with-units] [options: units=kg]',
+    '4.4 lb [kind: numeric-with-units] [options: units=lb]'
+  ]);
+  assert.deepEqual(merged.answerFormats.map(format => format.options.units), [['kg'], ['lb']]);
 });
 
 test('parseTextInputAnswerItems keeps all accepted answers', () => {

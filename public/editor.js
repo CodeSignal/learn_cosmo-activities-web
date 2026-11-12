@@ -234,9 +234,18 @@ function parseMarkdownToStructure(markdown) {
 function parseOptions(optionsText) {
   const options = {};
   if (optionsText && optionsText.trim()) {
+    // units takes a comma-separated list (units=kg,g), so a piece without "=" right after it is
+    // another unit. Same rule as parseOptionsText in lib/text-input-validation.js.
+    let lastKey = '';
     const optionPairs = optionsText.split(',');
     optionPairs.forEach(pair => {
+      if (!pair.includes('=')) {
+        const unit = pair.trim();
+        if (lastKey === 'units' && unit) options.units = `${options.units},${unit}`;
+        return;
+      }
       const [key, value] = pair.split('=').map(s => s.trim());
+      lastKey = key;
       if (key && value !== undefined) {
         if (value === 'true') {
           options[key] = true;

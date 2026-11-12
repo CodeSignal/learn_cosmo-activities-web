@@ -2412,9 +2412,16 @@ var require_text_input_validation = __commonJS({
     function parseOptionsText(optionsText) {
       const options = {};
       if (!optionsText) return options;
+      let lastKey = "";
       const optionPairs = optionsText.split(",");
       optionPairs.forEach((pair) => {
+        if (!pair.includes("=")) {
+          const unit = pair.trim();
+          if (lastKey === "units" && unit) options.units = `${options.units},${unit}`;
+          return;
+        }
         const [key, value] = pair.split("=").map((s) => s.trim());
+        lastKey = key;
         if (key && value !== void 0) {
           if (value === "true") {
             options[key] = true;
@@ -2485,7 +2492,7 @@ var require_text_input_validation = __commonJS({
         return hasAnswerText || isValidateLater;
       });
       if (parsedAnswers.length === 0) {
-        const optionsOnly = allParsed.find((entry) => {
+        const optionsOnly = allParsed.filter((entry) => {
           const kind = entry.validation && entry.validation.kind;
           const options = entry.validation && entry.validation.options || {};
           return Boolean(kind) || Object.keys(options).length > 0;
@@ -2493,7 +2500,8 @@ var require_text_input_validation = __commonJS({
         return {
           correctAnswers: [],
           correctAnswer: "",
-          validation: optionsOnly ? optionsOnly.validation : {}
+          validation: optionsOnly.length > 0 ? optionsOnly[0].validation : {},
+          answerFormats: optionsOnly.map((entry) => entry.validation)
         };
       }
       return {
@@ -2502,7 +2510,8 @@ var require_text_input_validation = __commonJS({
           validation: entry.validation || {}
         })),
         correctAnswer: parsedAnswers[0].correctAnswer,
-        validation: parsedAnswers[0].validation || {}
+        validation: parsedAnswers[0].validation || {},
+        answerFormats: parsedAnswers.map((entry) => entry.validation || {})
       };
     }
     function getTextInputValidationCandidates(question) {
@@ -3426,6 +3435,7 @@ var require_parse_question = __commonJS({
               currentQuestion.correctAnswers = parsed.correctAnswers;
               currentQuestion.correctAnswer = parsed.correctAnswer;
               currentQuestion.validation = parsed.validation;
+              currentQuestion.answerFormats = parsed.answerFormats;
             }
           }
           questions.push(currentQuestion);

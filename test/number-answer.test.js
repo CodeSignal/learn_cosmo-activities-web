@@ -239,6 +239,37 @@ test('answer keys that parseFloat read keep their value', () => {
   assert.equal(validateTextInputAnswer(grams, '500'), true);
 });
 
+test('every unit in a units list is read, in the answer and in the key', () => {
+  const { parseTextInputAnswerItems } = require('../lib/text-input-validation');
+  const grams = parseTextInputAnswerItems(['500 g [kind: numeric-with-units] [options: threshold=0,units=kg,g]']);
+  assert.deepEqual(grams.validation.options.units, ['kg', 'g']);
+  assert.equal(validateTextInputAnswer(grams, '500 g'), true);
+  assert.equal(validateTextInputAnswer(grams, '500 kg'), true, 'units are not converted');
+  assert.equal(validateTextInputAnswer(grams, '500 lb'), false, 'lb is not one of the units');
+});
+
+test('a number answer readable by any accepted answer format gets no format message', async () => {
+  const browser = await loadBrowserCopy();
+  const { parseTextInputAnswerItems } = require('../lib/text-input-validation');
+  // As in an assessment: the question file keeps each answer's [kind]/[options] without the answer
+  const question = parseTextInputAnswerItems([
+    '[kind: numeric-with-units] [options: threshold=0.01,units=kg]',
+    '[kind: numeric-with-units] [options: threshold=0.01,units=lb]'
+  ]);
+  assert.equal(question.answerFormats.length, 2);
+  const messages = text => question.answerFormats.map(format =>
+    browser.getNumberFormatMessage(text, format.kind, format.options));
+  assert.deepEqual(messages('2 lb').map(Boolean), [true, false], 'only the second format reads 2 lb');
+  assert.deepEqual(messages('2,5 lb').map(Boolean), [true, true], 'no format reads a decimal comma');
+
+  const practice = parseTextInputAnswerItems([
+    '2 kg [kind: numeric-with-units] [options: threshold=0.01,units=kg]',
+    '4.4 lb [kind: numeric-with-units] [options: threshold=0.01,units=lb]'
+  ]);
+  assert.deepEqual(practice.answerFormats, practice.correctAnswers.map(entry => entry.validation));
+  assert.equal(validateTextInputAnswer(practice, '4.4 lb'), true);
+});
+
 test('answer keys with a comma are not guessed', () => {
   assert.ok(Number.isNaN(lib.parseNumberAnswerKey('12,5')));
   assert.ok(Number.isNaN(lib.parseNumberAnswerKey('4,50 $', { currency: '$' })));
