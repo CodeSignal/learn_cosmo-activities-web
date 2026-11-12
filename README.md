@@ -79,6 +79,32 @@ On save, answers are stripped from the question file and written to the answer-k
 node server.js --edit data/question.md --copy-markdown
 ```
 
+### Assessment scoring groups
+
+`generate-score.js` gives each question (each row of a Matrix) 1 point on its own. To score some of them all or nothing, list them in a `__Scoring Groups__` section of the answer-key file:
+
+```markdown
+__Answer Key__
+
+- Question 1: B
+- Question 2: C
+- Question 3: A
+- Question 4: B
+
+__Scoring Groups__
+
+- Questions 1-3
+```
+
+- Each list item is one group. It works for **Text Input**, **Multiple Choice**, and **Matrix**. Name members by position in question.md: `Question N` for Text Input and Multiple Choice, `Row N` for Matrix. Write a range (`Questions 1-3`, `Rows 1-5`), a comma-separated list (`Question 2, Question 5`), or both.
+- A group is worth 1 point per member, as the same questions would be ungrouped, and earns them only when every member is correct. Above, a wrong answer to question 2 scores 0 / 3 for questions 1-3 instead of 2 / 3. Question 4 is scored on its own.
+- `validate-later` questions and questions without an answer-key entry are skipped, inside a group as outside one. A group with nothing left to score is left out of the score.
+- `score.json` has one breakout per group, titled as written (`Questions 1-3`). In `report.md`, the summary adds the points and each group's result, and each member names its group.
+- A question can be in one group only. A group that names a question the task does not have, or a group in another activity type, fails grading with an error that names the group.
+- The section stays in the answer-key file, so the browser never receives it. Practice mode does not use it. The editor (`--edit` with `--answer-key`) has no field for it and keeps it when it saves.
+
+See `data/examples/assessment-mcq-scoring-groups.md` and `data/examples/assessment-matrix-scoring-group.md`.
+
 ### Text Input: numeric tolerance
 
 A `numeric`, `numeric-with-units`, or `numeric-with-currency` answer is correct when it is within `threshold` of the key, inclusive. The default is `0.01`. `threshold` takes two forms:

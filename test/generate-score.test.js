@@ -1269,7 +1269,7 @@ test('creates output directories if they do not exist', () => {
 });
 
 // -----------------------------------------------------------------------
-// Percentage thresholds
+// Scoring groups and percentage thresholds
 // -----------------------------------------------------------------------
 
 const EXAMPLES = path.resolve(__dirname, '..', 'data', 'examples');
@@ -1284,6 +1284,65 @@ function answerMd(type, selected) {
   );
   return `__Type__\n\n${type}\n\n__Responses__\n\n${items.join('\n')}`;
 }
+
+test('Matrix: a Rows 1-5 group scores 5/5 or 0/5', () => {
+  withTempDir(dir => {
+    const question = readExample('assessment-matrix-scoring-group.md');
+    const key = readExample('assessment-matrix-scoring-group-answer-key.md');
+
+    const right = runScorer(dir, question, answerMd('Matrix', ['Debit', 'Debit', 'Credit', 'Debit', 'Credit']), key);
+    assertAcceptedByScoreRoute(right.score);
+    assert.deepEqual(right.score, {
+      totalScore: 5,
+      maxScore: 5,
+      breakoutScores: [{ title: 'Rows 1-5', score: 5, maxScore: 5 }]
+    });
+
+    const oneWrong = runScorer(dir, question, answerMd('Matrix', ['Debit', 'Debit', 'Credit', 'Debit', 'Debit']), key);
+    assertAcceptedByScoreRoute(oneWrong.score);
+    assert.deepEqual(oneWrong.score, {
+      totalScore: 0,
+      maxScore: 5,
+      breakoutScores: [{ title: 'Rows 1-5', score: 0, maxScore: 5 }]
+    });
+    assert.match(oneWrong.report, /\*\*Score:\*\* 4 \/ 5 correct/);
+    assert.match(oneWrong.report, /\*\*Points:\*\* 0 \/ 5/);
+    assert.match(oneWrong.report, /- \*\*Rows 1-5:\*\* 4 of 5 rows correct, 0 \/ 5 points/);
+    assert.match(oneWrong.report, /### Inventory\n\n- \*\*Candidate's Answer:\*\* Debit\n- \*\*Expected Column:\*\* Credit\n- \*\*Result:\*\* Incorrect\n- \*\*Scoring group:\*\* Rows 1-5 \(all or nothing\)/);
+  });
+});
+
+test('MCQ: Questions 1-3 score together and question 4 on its own', () => {
+  withTempDir(dir => {
+    const question = readExample('assessment-mcq-scoring-groups.md');
+    const key = readExample('assessment-mcq-scoring-groups-answer-key.md');
+
+    const all = runScorer(dir, question, answerMd('Multiple Choice', ['B', 'C', 'A', 'B']), key).score;
+    assert.deepEqual(all, {
+      totalScore: 4,
+      maxScore: 4,
+      breakoutScores: [
+        { title: 'Questions 1-3', score: 3, maxScore: 3 },
+        { title: 'Question 4', score: 1, maxScore: 1 }
+      ]
+    });
+
+    const groupMissed = runScorer(dir, question, answerMd('Multiple Choice', ['B', 'B', 'A', 'B']), key).score;
+    assertAcceptedByScoreRoute(groupMissed);
+    assert.deepEqual(groupMissed, {
+      totalScore: 1,
+      maxScore: 4,
+      breakoutScores: [
+        { title: 'Questions 1-3', score: 0, maxScore: 3 },
+        { title: 'Question 4', score: 1, maxScore: 1 }
+      ]
+    });
+
+    const fourthMissed = runScorer(dir, question, answerMd('Multiple Choice', ['B', 'C', 'A', 'A']), key).score;
+    assert.equal(fourthMissed.totalScore, 3);
+    assert.equal(fourthMissed.maxScore, 4);
+  });
+});
 
 test('Text Input: percentage thresholds grade estimates within 20% of the key', () => {
   withTempDir(dir => {
@@ -1311,5 +1370,98 @@ test('Text Input: percentage thresholds grade estimates within 20% of the key', 
         { title: 'Question 3', score: 0, maxScore: 1 }
       ]
     });
+  });
+});
+
+test('Text Input: a group skips its validate-later member and keeps per-field options', () => {
+  withTempDir(dir => {
+    const question = `__Type__
+
+Text Input
+
+__Practice Question__
+
+What is the capital of France?
+
+__Correct Answers__
+
+__Practice Question__
+
+Explain your answer.
+
+__Correct Answers__
+
+- [kind: string] [options: multiLine=true]
+
+__Practice Question__
+
+What is 6 x 7?
+
+__Correct Answers__
+
+__Practice Question__
+
+What is 2 + 2?
+
+__Correct Answers__
+`;
+    const key = `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: Paris [kind: string] [options: caseSensitive=false]
+- Question 2: [kind: validate-later] [options: multiLine=true]
+- Question 3: 42 [kind: numeric] [options: precision=2,threshold=0.01]
+- Question 4: 4 [kind: numeric] [options: precision=2,threshold=0.01]
+
+__Scoring Groups__
+
+- Questions 1-3
+`;
+    const right = runScorer(dir, question, answerMd('Text Input', ['paris', 'It is.', '42.01', '5']), key);
+    assertAcceptedByScoreRoute(right.score);
+    assert.deepEqual(right.score, {
+      totalScore: 2,
+      maxScore: 3,
+      breakoutScores: [
+        { title: 'Questions 1-3', score: 2, maxScore: 2 },
+        { title: 'Question 4', score: 0, maxScore: 1 }
+      ]
+    });
+    assert.match(right.report, /- \*\*Questions 1-3:\*\* 2 of 2 questions correct, 2 \/ 2 points \(1 not scored\)/);
+
+    const wrong = runScorer(dir, question, answerMd('Text Input', ['paris', 'It is.', '42.02', '4']), key).score;
+    assert.deepEqual(wrong.breakoutScores, [
+      { title: 'Questions 1-3', score: 0, maxScore: 2 },
+      { title: 'Question 4', score: 1, maxScore: 1 }
+    ]);
+  });
+});
+
+test('an answer key without __Scoring Groups__ scores every question on its own, as before', () => {
+  withTempDir(dir => {
+    const question = readExample('assessment-mcq-scoring-groups.md');
+    const key = readExample('assessment-mcq-scoring-groups-answer-key.md').replace(/__Scoring Groups__[\s\S]*$/, '');
+    const { score, report } = runScorer(dir, question, answerMd('Multiple Choice', ['B', 'B', 'A', 'B']), key);
+    assert.deepEqual(score.breakoutScores.map(b => [b.title, b.score, b.maxScore]), [
+      ['Question 1', 1, 1],
+      ['Question 2', 0, 1],
+      ['Question 3', 1, 1],
+      ['Question 4', 1, 1]
+    ]);
+    assert.doesNotMatch(report, /Points:|Scoring group/);
+  });
+});
+
+test('a scoring group naming a question the task does not have fails grading with a clear error', () => {
+  withTempDir(dir => {
+    const question = readExample('assessment-mcq-scoring-groups.md');
+    const key = readExample('assessment-mcq-scoring-groups-answer-key.md').replace('Questions 1-3', 'Questions 1-5');
+    assert.throws(
+      () => runScorer(dir, question, answerMd('Multiple Choice', ['B', 'C', 'A', 'B']), key),
+      (err) => err.status !== 0 && /"Questions 1-5" is outside questions 1-4/.test(String(err.stderr))
+    );
   });
 });

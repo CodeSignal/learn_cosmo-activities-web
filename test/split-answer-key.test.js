@@ -7,6 +7,7 @@ const {
   parseAnswerKey,
   splitCombinedMarkdown,
   mergeQuestionAndAnswerKey,
+  keepScoringGroups,
 } = require('../lib/split-answer-key');
 const {
   buildActivityFromMarkdown,
@@ -326,6 +327,8 @@ test('assessment examples merge then split back to the same key entries', () => 
     ['assessment-matrix.md', 'assessment-matrix-answer-key.md'],
     ['assessment-sort.md', 'assessment-sort-answer-key.md'],
     ['assessment-swipe.md', 'assessment-swipe-answer-key.md'],
+    ['assessment-matrix-scoring-group.md', 'assessment-matrix-scoring-group-answer-key.md'],
+    ['assessment-mcq-scoring-groups.md', 'assessment-mcq-scoring-groups-answer-key.md'],
     ['assessment-text-input-estimates.md', 'assessment-text-input-estimates-answer-key.md'],
   ];
   for (const [questionFile, keyFile] of pairs) {
@@ -339,4 +342,29 @@ test('assessment examples merge then split back to the same key entries', () => 
       `${questionFile} round-trip`
     );
   }
+});
+
+test('editor save keeps the __Scoring Groups__ section of the answer key it replaces', () => {
+  for (const name of ['assessment-mcq-scoring-groups', 'assessment-matrix-scoring-group']) {
+    const question = readExample(`${name}.md`);
+    const key = readExample(`${name}-answer-key.md`);
+    const { questionMarkdown, answerKeyMarkdown } = splitCombinedMarkdown(mergeQuestionAndAnswerKey(question, key));
+    assert.doesNotMatch(answerKeyMarkdown, /Scoring Groups/, 'the form has no scoring groups');
+    assert.equal(keepScoringGroups(key, answerKeyMarkdown), key, `${name} round-trip`);
+    assert.doesNotMatch(questionMarkdown, /Scoring Groups|Rows 1-5|Questions 1-3/);
+  }
+});
+
+test('keepScoringGroups changes nothing when there is no section to keep', () => {
+  const key = readExample('assessment-mcq-answer-key.md');
+  assert.equal(keepScoringGroups(key, key), key);
+  assert.equal(keepScoringGroups('', key), key);
+  assert.equal(keepScoringGroups('__Type__\n\nMatrix\n\n__Scoring Groups__\n\n', key), key);
+});
+
+test('keepScoringGroups does not add a section to an empty key or duplicate one', () => {
+  const previous = readExample('assessment-mcq-scoring-groups-answer-key.md');
+  assert.equal(keepScoringGroups(previous, ''), '');
+  const edited = previous.replace('Questions 1-3', 'Questions 1-2');
+  assert.equal(keepScoringGroups(previous, edited), edited);
 });

@@ -18,7 +18,11 @@ const {
   parseAnswersFromMarkdown,
   detectAnswersPresent,
 } = require('./lib/parse-question');
-const { splitCombinedMarkdown, mergeQuestionAndAnswerKey } = require('./lib/split-answer-key');
+const {
+  splitCombinedMarkdown,
+  mergeQuestionAndAnswerKey,
+  keepScoringGroups
+} = require('./lib/split-answer-key');
 const { responseDetailIndent } = require('./lib/text-input-answers');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -352,7 +356,10 @@ const server = http.createServer((req, res) => {
         if (ANSWER_KEY_FILE_PATH) {
           const split = splitCombinedMarkdown(markdown);
           questionMarkdown = split.questionMarkdown;
-          answerKeyMarkdown = split.answerKeyMarkdown;
+          const previousAnswerKey = fs.existsSync(ANSWER_KEY_FILE_PATH)
+            ? fs.readFileSync(ANSWER_KEY_FILE_PATH, 'utf8')
+            : '';
+          answerKeyMarkdown = keepScoringGroups(previousAnswerKey, split.answerKeyMarkdown);
         }
 
         if (!ANSWER_KEY_FILE_PATH) {

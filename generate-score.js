@@ -3841,6 +3841,126 @@ var require_activity_results_validation = __commonJS({
   }
 });
 
+// lib/build-score-json.js
+var require_build_score_json = __commonJS({
+  "lib/build-score-json.js"(exports2, module2) {
+    var {
+      evaluateActivityResultCorrect: evaluateActivityResultCorrect2,
+      isTextInputResultValidateLater
+    } = require_activity_results_validation();
+    function isResultUnscorable(activity, result, index) {
+      if (isTextInputResultValidateLater(activity, result, index)) return true;
+      if (!result.correct || String(result.correct).trim() === "") return true;
+      return false;
+    }
+    function scoreScoringGroups(activity, results) {
+      const list = Array.isArray(results) ? results : [];
+      const groups = activity && Array.isArray(activity.scoringGroups) ? activity.scoringGroups : [];
+      return groups.map((group) => {
+        const scorable = group.members.filter((i) => list[i] && !isResultUnscorable(activity, list[i], i));
+        const correct = scorable.filter((i) => evaluateActivityResultCorrect2(activity, list[i], i));
+        const maxScore = scorable.length;
+        const score = maxScore > 0 && correct.length === maxScore ? maxScore : 0;
+        return { group, scorable, correct, score, maxScore };
+      });
+    }
+    function buildScoreJson2(activity, results) {
+      const list = Array.isArray(results) ? results : [];
+      const groupScoreByIndex = /* @__PURE__ */ new Map();
+      scoreScoringGroups(activity, list).forEach((groupScore) => {
+        groupScore.group.members.forEach((i) => groupScoreByIndex.set(i, groupScore));
+      });
+      const breakoutScores = [];
+      list.forEach((result, index) => {
+        const groupScore = groupScoreByIndex.get(index);
+        if (groupScore) {
+          if (index === groupScore.group.members[0] && groupScore.maxScore > 0) {
+            const { group, score, maxScore: maxScore2 } = groupScore;
+            breakoutScores.push({ title: group.title, score, maxScore: maxScore2 });
+          }
+          return;
+        }
+        if (isResultUnscorable(activity, result, index)) return;
+        const title = result.text || `Question ${index + 1}`;
+        const correct = evaluateActivityResultCorrect2(activity, result, index);
+        breakoutScores.push({ title, score: correct ? 1 : 0, maxScore: 1 });
+      });
+      const totalScore = breakoutScores.reduce((sum, q) => sum + q.score, 0);
+      const maxScore = breakoutScores.reduce((sum, q) => sum + q.maxScore, 0);
+      return { totalScore, maxScore, breakoutScores };
+    }
+    module2.exports = { buildScoreJson: buildScoreJson2, scoreScoringGroups };
+  }
+});
+
+// lib/scoring-groups.js
+var require_scoring_groups = __commonJS({
+  "lib/scoring-groups.js"(exports2, module2) {
+    var MEMBER_NOUNS = [
+      { type: /^multiple choice$/i, noun: "Question", count: (a) => a.mcq?.questions?.length },
+      { type: /^text input$/i, noun: "Question", count: (a) => a.textInput?.questions?.length },
+      { type: /^matrix$/i, noun: "Row", count: (a) => a.matrix?.rows?.length }
+    ];
+    function memberNounFor(activity) {
+      const type = String(activity?.type || "").trim();
+      return MEMBER_NOUNS.find((entry) => entry.type.test(type)) || null;
+    }
+    function parseScoringGroups2(items, activity) {
+      const lines = (items || []).map((item) => String(item).trim()).filter(Boolean);
+      if (lines.length === 0) return [];
+      const entry = memberNounFor(activity);
+      if (!entry) {
+        throw new Error(
+          `__Scoring Groups__ works with Text Input, Multiple Choice and Matrix, not ${activity?.type || "this activity"}`
+        );
+      }
+      const { noun } = entry;
+      const count = entry.count(activity) || 0;
+      const memberPattern = new RegExp(`^${noun}s?\\s+(\\d+)(?:\\s*[-\u2013]\\s*(\\d+))?$`, "i");
+      const seen = /* @__PURE__ */ new Set();
+      return lines.map((title) => {
+        const members = [];
+        const parts = title.split(",").map((part) => part.trim()).filter(Boolean);
+        if (parts.length === 0) {
+          throw new Error(`Scoring group "${title}" lists no ${noun.toLowerCase()}s`);
+        }
+        for (const part of parts) {
+          const match = part.match(memberPattern);
+          if (!match) {
+            throw new Error(
+              `Scoring group "${title}": cannot read "${part}". Write "${noun} 2" or "${noun}s 1-3".`
+            );
+          }
+          const from = parseInt(match[1], 10);
+          const to = match[2] === void 0 ? from : parseInt(match[2], 10);
+          if (from > to) {
+            throw new Error(`Scoring group "${title}": "${part}" counts down; write the smaller number first`);
+          }
+          if (from < 1 || to > count) {
+            throw new Error(
+              `Scoring group "${title}": "${part}" is outside ${noun.toLowerCase()}s 1-${count}`
+            );
+          }
+          for (let n = from; n <= to; n++) {
+            if (seen.has(n)) {
+              throw new Error(`Scoring group "${title}": ${noun} ${n} is already in a group`);
+            }
+            seen.add(n);
+            members.push(n - 1);
+          }
+        }
+        members.sort((a, b) => a - b);
+        return { title, members };
+      });
+    }
+    function scoringGroupMemberNoun(activity) {
+      const entry = memberNounFor(activity);
+      return entry ? entry.noun.toLowerCase() : null;
+    }
+    module2.exports = { parseScoringGroups: parseScoringGroups2, scoringGroupMemberNoun };
+  }
+});
+
 // lib/build-activity-report.js
 var require_build_activity_report = __commonJS({
   "lib/build-activity-report.js"(exports2, module2) {
@@ -3850,6 +3970,8 @@ var require_build_activity_report = __commonJS({
       isTextInputResultValidateLater,
       countValidateLaterTextInputResults
     } = require_activity_results_validation();
+    var { buildScoreJson: buildScoreJson2, scoreScoringGroups } = require_build_score_json();
+    var { scoringGroupMemberNoun } = require_scoring_groups();
     var MAX_PROMPT_CHARS = 600;
     function stripHtmlToPlain(html) {
       if (!html) return "";
@@ -3911,6 +4033,40 @@ var require_build_activity_report = __commonJS({
       const ok = evaluateActivityResultCorrect2(activity, result, index);
       return ok ? "**Result:** Correct" : "**Result:** Incorrect";
     }
+    function plural(count, noun) {
+      return `${count} ${noun}${count === 1 ? "" : "s"}`;
+    }
+    function pushScoringGroupsSummary(lines, activity, results) {
+      const groupScores = scoreScoringGroups(activity, results);
+      if (groupScores.length === 0) return;
+      const noun = scoringGroupMemberNoun(activity) || "question";
+      const { totalScore, maxScore } = buildScoreJson2(activity, results);
+      lines.push(`**Points:** ${totalScore} / ${maxScore}`);
+      lines.push("");
+      lines.push(
+        `**Scoring groups** (all or nothing: a group earns its points only when every scored ${noun} in it is correct)`
+      );
+      lines.push("");
+      for (const { group, scorable, correct, score, maxScore: groupMax } of groupScores) {
+        const unscored = group.members.length - scorable.length;
+        let line = `- **${group.title}:** `;
+        if (groupMax === 0) {
+          line += `not scored (no ${noun} in it is scored automatically)`;
+        } else {
+          line += `${correct.length} of ${plural(groupMax, noun)} correct, ${score} / ${groupMax} points`;
+          if (unscored > 0) line += ` (${unscored} not scored)`;
+        }
+        lines.push(line);
+      }
+      lines.push("");
+    }
+    function pushScoringGroupLine(lines, activity, index) {
+      const groups = activity && activity.scoringGroups || [];
+      const group = groups.find((g) => g.members.includes(index));
+      if (group) {
+        lines.push(`- **Scoring group:** ${group.title} (all or nothing)`);
+      }
+    }
     function buildActivityReportMarkdown2(activity, results) {
       const lines = [];
       const type = activity && activity.type ? String(activity.type) : "Unknown";
@@ -3935,6 +4091,9 @@ var require_build_activity_report = __commonJS({
         lines.push(scoreLine);
       }
       lines.push("");
+      if (list.length > 0) {
+        pushScoringGroupsSummary(lines, activity, list);
+      }
       lines.push("---");
       lines.push("");
       if (list.length === 0) {
@@ -3961,6 +4120,7 @@ var require_build_activity_report = __commonJS({
           lines.push(`- **Candidate's Answer:** ${formatMcqLettersForReport(result.selected)}`);
           lines.push(`- **Correct answer(s):** ${formatMcqLettersForReport(result.correct)}`);
           lines.push(`- ${resultStatusLine(activity, result, index)}`);
+          pushScoringGroupLine(lines, activity, index);
           if (result.explanation && String(result.explanation).trim()) {
             lines.push(`- **Your explanation:** ${String(result.explanation).trim()}`);
           }
@@ -3984,6 +4144,7 @@ var require_build_activity_report = __commonJS({
           lines.push(`- **Candidate's Answer:** ${formatSelected(result.selected)}`);
           lines.push(`- **Accepted answer(s):** ${formatSelected(result.correct)}`);
           lines.push(`- ${resultStatusLine(activity, result, index)}`);
+          pushScoringGroupLine(lines, activity, index);
           lines.push("");
         });
       } else if (/^matrix$/i.test(type)) {
@@ -4014,6 +4175,7 @@ var require_build_activity_report = __commonJS({
           lines.push(`- **Candidate's Answer:** ${formatSelected(result.selected)}`);
           lines.push(`- **Expected Column:** ${formatSelected(result.correct)}`);
           lines.push(`- ${resultStatusLine(activity, result, index)}`);
+          pushScoringGroupLine(lines, activity, index);
           if (result.explanation && String(result.explanation).trim() && index === 0) {
             lines.push(`- **Your explanation:** ${String(result.explanation).trim()}`);
           }
@@ -4091,35 +4253,6 @@ var require_build_activity_report = __commonJS({
   }
 });
 
-// lib/build-score-json.js
-var require_build_score_json = __commonJS({
-  "lib/build-score-json.js"(exports2, module2) {
-    var {
-      evaluateActivityResultCorrect: evaluateActivityResultCorrect2,
-      isTextInputResultValidateLater
-    } = require_activity_results_validation();
-    function isResultUnscorable(activity, result, index) {
-      if (isTextInputResultValidateLater(activity, result, index)) return true;
-      if (!result.correct || String(result.correct).trim() === "") return true;
-      return false;
-    }
-    function buildScoreJson2(activity, results) {
-      const list = Array.isArray(results) ? results : [];
-      const breakoutScores = [];
-      list.forEach((result, index) => {
-        if (isResultUnscorable(activity, result, index)) return;
-        const title = result.text || `Question ${index + 1}`;
-        const correct = evaluateActivityResultCorrect2(activity, result, index);
-        breakoutScores.push({ title, score: correct ? 1 : 0, maxScore: 1 });
-      });
-      const totalScore = breakoutScores.reduce((sum, q) => sum + q.score, 0);
-      const maxScore = breakoutScores.reduce((sum, q) => sum + q.maxScore, 0);
-      return { totalScore, maxScore, breakoutScores };
-    }
-    module2.exports = { buildScoreJson: buildScoreJson2 };
-  }
-});
-
 // lib/generate-score.js
 var fs = require("fs");
 var path = require("path");
@@ -4133,6 +4266,7 @@ var {
 var { evaluateActivityResultCorrect } = require_activity_results_validation();
 var { buildActivityReportMarkdown } = require_build_activity_report();
 var { buildScoreJson } = require_build_score_json();
+var { parseScoringGroups } = require_scoring_groups();
 function parseArgs(argv) {
   const args = {};
   const keys = ["--question", "--answer", "--answer-key", "--report", "--score"];
@@ -4161,7 +4295,8 @@ function parseAnswerKey(markdown) {
     const { text, correct } = parseSortItemEntry(item);
     return { key: text, value: correct };
   });
-  return { type, answers };
+  const scoringGroups = readListItems(sections.get("Scoring Groups") || sections.get("Scoring groups"));
+  return { type, answers, scoringGroups };
 }
 function mergeAnswerKeyIntoActivity(activity, answerKey) {
   const type = String(activity.type || "");
@@ -4367,6 +4502,8 @@ function main() {
   const activity = buildActivityFromMarkdown(questionMd);
   const answerKey = parseAnswerKey(answerKeyMd);
   mergeAnswerKeyIntoActivity(activity, answerKey);
+  const scoringGroups = parseScoringGroups(answerKey.scoringGroups, activity);
+  if (scoringGroups.length > 0) activity.scoringGroups = scoringGroups;
   const results = buildResultsFromAnswerMd(activity, answerMd);
   const reportMarkdown = buildActivityReportMarkdown(activity, results);
   const scoreJson = JSON.stringify(buildScoreJson(activity, results), null, 2);
