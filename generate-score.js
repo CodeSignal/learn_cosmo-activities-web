@@ -2310,6 +2310,12 @@ var require_text_input_validation = __commonJS({
       if (threshold === 0) return difference === 0;
       return difference <= threshold + 4 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b));
     }
+    function resolveThreshold(threshold, key) {
+      if (typeof threshold !== "string") return threshold;
+      const match = threshold.trim().match(/^(\d+(?:\.\d*)?|\.\d+)\s*%$/);
+      if (!match) return NaN;
+      return Math.abs(key) * parseFloat(match[1]) / 100;
+    }
     function validateTextInputString(userAnswer, correctAnswer, options = {}) {
       const caseSensitive = options.caseSensitive === true;
       const fuzzy = options.fuzzy;
@@ -2347,7 +2353,7 @@ var require_text_input_validation = __commonJS({
       if (isNaN(user) || isNaN(correct)) return false;
       const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
       const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
-      return isWithinThreshold(userRounded, correctRounded, threshold);
+      return isWithinThreshold(userRounded, correctRounded, resolveThreshold(threshold, correctRounded));
     }
     function validateTextInputNumericWithUnits(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
@@ -2369,7 +2375,7 @@ var require_text_input_validation = __commonJS({
       const userValue = parseFloat(userStr);
       const correctValue = parseFloat(correctStr);
       if (isNaN(userValue) || isNaN(correctValue)) return false;
-      return isWithinThreshold(userValue, correctValue, threshold);
+      return isWithinThreshold(userValue, correctValue, resolveThreshold(threshold, correctValue));
     }
     function validateTextInputNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
@@ -2384,7 +2390,7 @@ var require_text_input_validation = __commonJS({
       const userValue = parseFloat(userStr);
       const correctValue = parseFloat(correctStr);
       if (isNaN(userValue) || isNaN(correctValue)) return false;
-      return isWithinThreshold(userValue, correctValue, threshold);
+      return isWithinThreshold(userValue, correctValue, resolveThreshold(threshold, correctValue));
     }
     function parseOptionsText(optionsText) {
       const options = {};
@@ -2533,6 +2539,7 @@ var require_text_input_validation = __commonJS({
       validateTextInputNumericWithUnits,
       validateTextInputNumericWithCurrency,
       isWithinThreshold,
+      resolveThreshold,
       parseValidationOptions,
       parseTextInputAnswerItems,
       getTextInputValidationCandidates,

@@ -110,6 +110,15 @@ export function initTextInput({
     return difference <= threshold + 4 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b));
   }
 
+  // Same as resolveThreshold in lib/text-input-validation.js: `threshold=20%` is 20% of
+  // the key's absolute value, a key of 0 makes it exact, and a malformed percentage is NaN.
+  function resolveThreshold(threshold, key) {
+    if (typeof threshold !== 'string') return threshold;
+    const match = threshold.trim().match(/^(\d+(?:\.\d*)?|\.\d+)\s*%$/);
+    if (!match) return NaN;
+    return (Math.abs(key) * parseFloat(match[1])) / 100;
+  }
+
   function validateString(userAnswer, correctAnswer, options = {}) {
     const caseSensitive = options.caseSensitive === true; // Default false (case-insensitive)
     const fuzzy = options.fuzzy; // Can be true, false, or a number (0-1)
@@ -172,7 +181,7 @@ export function initTextInput({
     const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
     const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
     
-    return isWithinThreshold(userRounded, correctRounded, threshold);
+    return isWithinThreshold(userRounded, correctRounded, resolveThreshold(threshold, correctRounded));
   }
   
   function validateNumericWithUnits(userAnswer, correctAnswer, options = {}) {
@@ -216,7 +225,7 @@ export function initTextInput({
     
     // Compare numeric values directly (parseFloat normalizes trailing zeros)
     // Use threshold to allow small differences
-    return isWithinThreshold(userValue, correctValue, threshold);
+    return isWithinThreshold(userValue, correctValue, resolveThreshold(threshold, correctValue));
   }
   
   function validateNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
@@ -252,7 +261,7 @@ export function initTextInput({
     
     // Compare numeric values directly (parseFloat normalizes trailing zeros)
     // Use threshold to allow small differences
-    return isWithinThreshold(userValue, correctValue, threshold);
+    return isWithinThreshold(userValue, correctValue, resolveThreshold(threshold, correctValue));
   }
   
   function getValidationCandidates(question) {
