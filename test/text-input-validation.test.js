@@ -11,6 +11,7 @@ const {
   validateTextInputNumericWithUnits,
   validateTextInputNumericWithCurrency,
   isWithinThreshold,
+  resolveThreshold,
   getTextInputValidationCandidates,
   validateTextInputAnswer
 } = require('../lib/text-input-validation');
@@ -274,4 +275,183 @@ test('validateTextInputAnswer supports mixed answer types', () => {
   assert.equal(validateTextInputAnswer(question, '0.5'), true);
   assert.equal(validateTextInputAnswer(question, '.5'), true);
   assert.equal(validateTextInputAnswer(question, '0.6'), false);
+});
+
+// -----------------------------------------------------------------------
+// Percentage thresholds
+// -----------------------------------------------------------------------
+
+test('resolveThreshold leaves a number threshold as it is', () => {
+  assert.equal(resolveThreshold(0.01, 50), 0.01);
+  assert.equal(resolveThreshold(0, 50), 0);
+  assert.equal(resolveThreshold(10, -50), 10);
+});
+
+test('resolveThreshold turns a percentage into that share of the key', () => {
+  assert.equal(resolveThreshold('20%', 50), 10);
+  assert.equal(resolveThreshold('20%', -50), 10);
+  assert.equal(resolveThreshold('12.5%', 8), 1);
+  assert.equal(resolveThreshold('.5%', 200), 1);
+  assert.equal(resolveThreshold(' 20 % ', 50), 10);
+  assert.equal(resolveThreshold('20%', 0), 0);
+  assert.equal(resolveThreshold('0%', 50), 0);
+});
+
+test('resolveThreshold returns NaN for a string that is not a percentage', () => {
+  for (const threshold of ['abc%', '%', '20%%', '-20%', '20 percent', '20', '']) {
+    assert.ok(Number.isNaN(resolveThreshold(threshold, 50)), JSON.stringify(threshold));
+  }
+});
+
+test('validateTextInputNumeric with threshold=20% accepts answers within 20% of the key, inclusive', () => {
+  const options = { threshold: '20%', precision: 2 };
+  assert.equal(validateTextInputNumeric('50', '50', options), true);
+  assert.equal(validateTextInputNumeric('60', '50', options), true);
+  assert.equal(validateTextInputNumeric('40', '50', options), true);
+  assert.equal(validateTextInputNumeric('60.01', '50', options), false);
+  assert.equal(validateTextInputNumeric('39.99', '50', options), false);
+  // 20% of 231 is 46.2: 184.8 to 277.2.
+  const whole = { threshold: '20%', precision: 0 };
+  assert.equal(validateTextInputNumeric('185', '231', whole), true);
+  assert.equal(validateTextInputNumeric('277', '231', whole), true);
+  assert.equal(validateTextInputNumeric('184', '231', whole), false);
+  assert.equal(validateTextInputNumeric('278', '231', whole), false);
+});
+
+test('a percentage threshold on a decimal key keeps the floating-point slack', () => {
+  // 10% of 0.3 is 0.03, and |0.33 - 0.3| is 0.030000000000000027 in floating point.
+  const options = { threshold: '10%', precision: 2 };
+  assert.equal(validateTextInputNumeric('0.33', '0.3', options), true);
+  assert.equal(validateTextInputNumeric('0.27', '0.3', options), true);
+  assert.equal(validateTextInputNumeric('0.34', '0.3', options), false);
+  assert.equal(validateTextInputNumeric('0.26', '0.3', options), false);
+});
+
+test('a percentage threshold on a negative key is a band around the key', () => {
+  const options = { threshold: '20%', precision: 2 };
+  assert.equal(validateTextInputNumeric('-60', '-50', options), true);
+  assert.equal(validateTextInputNumeric('-40', '-50', options), true);
+  assert.equal(validateTextInputNumeric('-60.01', '-50', options), false);
+  assert.equal(validateTextInputNumeric('-39.99', '-50', options), false);
+  assert.equal(validateTextInputNumeric('50', '-50', options), false);
+});
+
+test('a percentage threshold with key 0, or threshold=0%, needs an exact match after rounding', () => {
+  assert.equal(validateTextInputNumeric('0', '0', { threshold: '20%', precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('0.004', '0', { threshold: '20%', precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('0.01', '0', { threshold: '20%', precision: 2 }), false);
+  assert.equal(validateTextInputNumeric('-0.01', '0', { threshold: '20%', precision: 2 }), false);
+  assert.equal(validateTextInputNumeric('50.004', '50', { threshold: '0%', precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('50.01', '50', { threshold: '0%', precision: 2 }), false);
+});
+
+test('a malformed percentage threshold matches nothing, like any other threshold that is not a number', () => {
+  assert.equal(validateTextInputNumeric('50', '50', { threshold: 'abc%', precision: 2 }), false);
+  assert.equal(validateTextInputNumeric('50', '50', { threshold: 'abc', precision: 2 }), false);
+  assert.equal(validateTextInputNumericWithUnits('10 TB', '10 TB', { threshold: 'abc%', units: ['TB'] }), false);
+  assert.equal(validateTextInputNumericWithCurrency('$100', '100', { threshold: 'abc%', currency: '$' }), false);
+});
+
+test('absolute thresholds are unchanged next to percentage ones', () => {
+  assert.equal(validateTextInputNumeric('60', '50', { threshold: 10, precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('60.01', '50', { threshold: 10, precision: 2 }), false);
+  assert.equal(validateTextInputNumeric('0.31', '0.3', { threshold: 0.01, precision: 2 }), true);
+  assert.equal(validateTextInputNumeric('3.14', '3.14', {}), true);
+  assert.equal(validateTextInputNumeric('3.16', '3.14', {}), false);
+});
+
+test('numeric-with-units and numeric-with-currency take percentage thresholds', () => {
+  const units = { threshold: '20%', units: ['TB'] };
+  assert.equal(validateTextInputNumericWithUnits('12 TB', '10 TB', units), true);
+  assert.equal(validateTextInputNumericWithUnits('8TB', '10 TB', units), true);
+  assert.equal(validateTextInputNumericWithUnits('12.01 TB', '10 TB', units), false);
+  assert.equal(validateTextInputNumericWithUnits('7.99 TB', '10 TB', units), false);
+
+  const currency = { threshold: '20%', currency: '$' };
+  assert.equal(validateTextInputNumericWithCurrency('$120', '100', currency), true);
+  assert.equal(validateTextInputNumericWithCurrency('80$', '$100', currency), true);
+  assert.equal(validateTextInputNumericWithCurrency('$120.01', '100', currency), false);
+  assert.equal(validateTextInputNumericWithCurrency('$79.99', '100', currency), false);
+});
+
+test('threshold=20% in an answer key reaches the validator as a percentage', () => {
+  const parsed = parseTextInputAnswerItems(['50 [kind: numeric] [options: precision=2,threshold=20%]']);
+  assert.deepEqual(parsed.validation, { kind: 'numeric', options: { precision: 2, threshold: '20%' } });
+  assert.equal(validateTextInputAnswer(parsed, '60'), true);
+  assert.equal(validateTextInputAnswer(parsed, '61'), false);
+});
+
+test('the browser gets threshold=20% without the key', () => {
+  // /api/activity sends buildActivityFromMarkdown(question.md) as is.
+  const { buildActivityFromMarkdown } = require('../lib/parse-question');
+  const questionMd = fs.readFileSync(
+    path.join(__dirname, '../data/examples/assessment-text-input-estimates.md'),
+    'utf8'
+  );
+  const activity = buildActivityFromMarkdown(questionMd);
+  const [first] = activity.textInput.questions;
+  assert.equal(first.correctAnswer, '');
+  assert.deepEqual(first.correctAnswers, []);
+  assert.deepEqual(first.validation, { kind: 'numeric', options: { precision: 0, threshold: '20%' } });
+  const sent = JSON.stringify(activity);
+  for (const key of ['20000000', '231', '10 TB']) {
+    assert.equal(sent.includes(key), false, `browser payload contains ${key}`);
+  }
+});
+
+function loadPracticeModeFunctions(names) {
+  // The practice-mode copies are closures inside initTextInput; evaluate their source directly.
+  const src = fs.readFileSync(path.join(__dirname, '../public/modules/text-input.js'), 'utf8');
+  const bodies = names.map(name => {
+    const start = src.indexOf(`function ${name}(`);
+    assert.notEqual(start, -1, `missing function ${name}`);
+    const end = src.indexOf('\n  function ', start + 1);
+    return src.slice(start, end === -1 ? src.length : end);
+  });
+  return new Function(`${bodies.join('\n')}\nreturn { ${names.join(', ')} };`)();
+}
+
+test('practice mode applies percentage thresholds like the scorer', () => {
+  const practice = loadPracticeModeFunctions([
+    'isWithinThreshold',
+    'resolveThreshold',
+    'validateNumeric',
+    'validateNumericWithUnits',
+    'validateNumericWithCurrency'
+  ]);
+  const scorer = {
+    numeric: validateTextInputNumeric,
+    'numeric-with-units': validateTextInputNumericWithUnits,
+    'numeric-with-currency': validateTextInputNumericWithCurrency
+  };
+  const browser = {
+    numeric: practice.validateNumeric,
+    'numeric-with-units': practice.validateNumericWithUnits,
+    'numeric-with-currency': practice.validateNumericWithCurrency
+  };
+  const pct = { threshold: '20%', precision: 2 };
+  const cases = [
+    ['numeric', '60', '50', pct, true],
+    ['numeric', '60.01', '50', pct, false],
+    ['numeric', '-40', '-50', pct, true],
+    ['numeric', '-39.99', '-50', pct, false],
+    ['numeric', '0', '0', pct, true],
+    ['numeric', '0.01', '0', pct, false],
+    ['numeric', '0.33', '0.3', { threshold: '10%', precision: 2 }, true],
+    ['numeric', '0.34', '0.3', { threshold: '10%', precision: 2 }, false],
+    ['numeric', '50.004', '50', { threshold: '0%', precision: 2 }, true],
+    ['numeric', '50.01', '50', { threshold: '0%', precision: 2 }, false],
+    ['numeric', '50', '50', { threshold: 'abc%', precision: 2 }, false],
+    ['numeric', '60', '50', { threshold: 10, precision: 2 }, true],
+    ['numeric', '60.01', '50', { threshold: 10, precision: 2 }, false],
+    ['numeric-with-units', '12 TB', '10 TB', { threshold: '20%', units: ['TB'] }, true],
+    ['numeric-with-units', '12.01 TB', '10 TB', { threshold: '20%', units: ['TB'] }, false],
+    ['numeric-with-currency', '$80', '100', { threshold: '20%', currency: '$' }, true],
+    ['numeric-with-currency', '$79.99', '100', { threshold: '20%', currency: '$' }, false]
+  ];
+  for (const [kind, answer, key, options, expected] of cases) {
+    const label = `${kind}: ${answer} vs ${key} at ${JSON.stringify(options)}`;
+    assert.equal(scorer[kind](answer, key, options), expected, `scorer ${label}`);
+    assert.equal(browser[kind](answer, key, options), expected, `practice ${label}`);
+  }
 });
