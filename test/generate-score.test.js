@@ -1267,3 +1267,49 @@ test('creates output directories if they do not exist', () => {
     assert.ok(fs.existsSync(scoreFile), 'score.json should exist in nested dir');
   });
 });
+
+// -----------------------------------------------------------------------
+// Percentage thresholds
+// -----------------------------------------------------------------------
+
+const EXAMPLES = path.resolve(__dirname, '..', 'data', 'examples');
+
+function readExample(name) {
+  return fs.readFileSync(path.join(EXAMPLES, name), 'utf8');
+}
+
+function answerMd(type, selected) {
+  const items = selected.map((value, i) =>
+    `${i + 1}. **Question ${i + 1}**\n   - Selected Answer: ${value}\n`
+  );
+  return `__Type__\n\n${type}\n\n__Responses__\n\n${items.join('\n')}`;
+}
+
+test('Text Input: percentage thresholds grade estimates within 20% of the key', () => {
+  withTempDir(dir => {
+    const question = readExample('assessment-text-input-estimates.md');
+    const key = readExample('assessment-text-input-estimates-answer-key.md');
+
+    // 20% of 20000000, 231 and 10 TB: 16-24 million, 184.8-277.2, 8-12 TB.
+    const inside = runScorer(dir, question,
+      answerMd('Text Input', ['24000000', '200', '8 TB', 'Photo size.']), key).score;
+    assertAcceptedByScoreRoute(inside);
+    assert.deepEqual(inside.breakoutScores, [
+      { title: 'Question 1', score: 1, maxScore: 1 },
+      { title: 'Question 2', score: 1, maxScore: 1 },
+      { title: 'Question 3', score: 1, maxScore: 1 }
+    ]);
+
+    const outside = runScorer(dir, question,
+      answerMd('Text Input', ['24000001', '184', '12.5 TB', 'Photo size.']), key).score;
+    assert.deepEqual(outside, {
+      totalScore: 0,
+      maxScore: 3,
+      breakoutScores: [
+        { title: 'Question 1', score: 0, maxScore: 1 },
+        { title: 'Question 2', score: 0, maxScore: 1 },
+        { title: 'Question 3', score: 0, maxScore: 1 }
+      ]
+    });
+  });
+});

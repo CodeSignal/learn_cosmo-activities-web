@@ -79,6 +79,19 @@ On save, answers are stripped from the question file and written to the answer-k
 node server.js --edit data/question.md --copy-markdown
 ```
 
+### Text Input: numeric tolerance
+
+A `numeric`, `numeric-with-units`, or `numeric-with-currency` answer is correct when it is within `threshold` of the key, inclusive. The default is `0.01`. `threshold` takes two forms:
+
+- A number is the largest difference accepted: `threshold=0.5` with key 10 accepts 9.5 to 10.5. `threshold=0` needs an exact match (after `precision` rounding for `numeric`).
+- A percentage is a share of the key: `threshold=20%` with key 50 accepts 40 to 60, and with key -50 accepts -60 to -40. With key 0, only 0 is correct. A percentage that does not parse (`threshold=abc%`) matches no answer, like a threshold that is not a number.
+
+```markdown
+- Question 1: 20000000 [kind: numeric] [options: precision=0,threshold=20%]
+```
+
+In an assessment, question.md keeps each answer's `[kind: …] [options: …]`, and the browser receives them. A number threshold set as a share of the key gives the key away (`threshold=10` for 20% of 50). A percentage does not. See `data/examples/assessment-text-input-estimates.md`.
+
 ### Text Input: repeatable entries
 
 A `validate-later` Text Input question can let the learner add as many entries as they need (for example, one defect report per entry):
