@@ -19,6 +19,7 @@ const {
   detectAnswersPresent,
 } = require('./lib/parse-question');
 const { splitCombinedMarkdown, mergeQuestionAndAnswerKey } = require('./lib/split-answer-key');
+const { responseDetailIndent } = require('./lib/text-input-answers');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -697,11 +698,12 @@ const server = http.createServer((req, res) => {
             markdown += `__Type__\n\n${activity.type}\n\n`;
             markdown += '__Responses__\n\n';
             data.results.forEach((result, index) => {
+              const indent = responseDetailIndent(index + 1);
               markdown += `${index + 1}. **${result.text}**\n`;
-              markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
+              markdown += `${indent}- Selected Answer: ${result.selected || 'No answer selected'}\n`;
               if (result.explanation) {
                 const explanationText = String(result.explanation).replace(/\n/g, '\n     ');
-                markdown += `   - Explanation: ${explanationText}\n`;
+                markdown += `${indent}- Explanation: ${explanationText}\n`;
               }
               markdown += '\n';
             });
@@ -740,9 +742,10 @@ const server = http.createServer((req, res) => {
           markdown += '__Responses__\n\n';
 
           data.results.forEach((result, index) => {
+            const indent = responseDetailIndent(index + 1);
             markdown += `${index + 1}. **${result.text}**\n`;
-            markdown += `   - Selected Answer: ${result.selected || 'No answer selected'}\n`;
-            markdown += `   - Correct Answer: ${result.correct}\n`;
+            markdown += `${indent}- Selected Answer: ${result.selected || 'No answer selected'}\n`;
+            markdown += `${indent}- Correct Answer: ${result.correct}\n`;
             const isValidateLater = isTextInputResultValidateLater(activity, result, index);
             if (activity && /^multiple choice$/i.test(activity.type)) {
               const questionIndex = questionIndexFromOrderedResult(
@@ -753,7 +756,7 @@ const server = http.createServer((req, res) => {
               const question = activity.mcq?.questions?.[questionIndex];
               if (question && question.isMultiSelect) {
                 const multiMode = question.multiSelectMode === 'any' ? 'any' : 'all';
-                markdown += `   - Multi Mode: ${multiMode}\n`;
+                markdown += `${indent}- Multi Mode: ${multiMode}\n`;
               }
             }
             const isCorrect = isValidateLater
@@ -762,15 +765,15 @@ const server = http.createServer((req, res) => {
 
             // Show result status
             if (isValidateLater) {
-              markdown += `   - Result: Unvalidated\n`;
+              markdown += `${indent}- Result: Unvalidated\n`;
             } else {
-              markdown += `   - Result: ${isCorrect ? '✓ Correct' : '✗ Incorrect'}\n`;
+              markdown += `${indent}- Result: ${isCorrect ? '✓ Correct' : '✗ Incorrect'}\n`;
             }
 
             // Add explanation if present (for MCQ questions with explainAnswer enabled)
             if (result.explanation) {
               const explanationText = String(result.explanation).replace(/\n/g, '\n     ');
-              markdown += `   - Explanation: ${explanationText}\n`;
+              markdown += `${indent}- Explanation: ${explanationText}\n`;
             }
             markdown += '\n';
           });

@@ -910,6 +910,230 @@ __Answer Key__
   });
 });
 
+test('Text Input: numeric answer one unit off in the last decimal is within threshold=10^-precision', () => {
+  withTempDir(dir => {
+    const { score } = runScorer(dir,
+      `__Type__
+
+Text Input
+
+__Practice Question__
+
+What is the conversion rate, to two decimal places?
+
+__Correct Answers__
+
+`,
+      `__Type__
+
+Text Input
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: 0.31
+`,
+      `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: 0.3 [kind: numeric] [options: precision=2,threshold=0.01]
+`
+    );
+
+    assert.equal(score.totalScore, 1);
+    assert.equal(score.maxScore, 1);
+  });
+});
+
+test('Text Input: a numeric answer of Infinity scores 0', () => {
+  withTempDir(dir => {
+    const { score } = runScorer(dir,
+      `__Type__
+
+Text Input
+
+__Practice Question__
+
+What is the approximate value of pi?
+
+__Correct Answers__
+
+`,
+      `__Type__
+
+Text Input
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: Infinity
+`,
+      `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: 3.14 [kind: numeric] [options: precision=2,threshold=0.1]
+`
+    );
+
+    assert.equal(score.totalScore, 0);
+    assert.equal(score.maxScore, 1);
+  });
+});
+
+function textInputFiles(count, indentFor) {
+  const questions = [];
+  const responses = [];
+  const keys = [];
+  for (let n = 1; n <= count; n++) {
+    questions.push(`__Practice Question__\n\nQuestion ${n}?\n\n__Correct Answers__\n\n`);
+    responses.push(`${n}. **Question ${n}**\n${indentFor(n)}- Selected Answer: answer ${n}\n`);
+    keys.push(`- Question ${n}: answer ${n} [kind: string] [options: caseSensitive=false]\n`);
+  }
+  return [
+    `__Type__\n\nText Input\n\n${questions.join('')}`,
+    `__Type__\n\nText Input\n\n__Responses__\n\n${responses.join('\n')}`,
+    `__Type__\n\nText Input\n\n__Answer Key__\n\n${keys.join('')}`
+  ];
+}
+
+test('Text Input: scores answers 10 and above', () => {
+  const indents = {
+    'list-marker width': n => ' '.repeat(String(n).length + 2),
+    'three spaces (older releases)': () => '   '
+  };
+  for (const [label, indentFor] of Object.entries(indents)) {
+    withTempDir(dir => {
+      const { score } = runScorer(dir, ...textInputFiles(12, indentFor));
+
+      assert.equal(score.totalScore, 12, label);
+      assert.equal(score.maxScore, 12, label);
+      assert.deepEqual(score.breakoutScores.map(b => b.score), new Array(12).fill(1), label);
+    });
+  }
+});
+
+// The score shape session-server's POST /score accepts (docs/scoring.md there).
+function assertAcceptedByScoreRoute(score) {
+  assert.ok(score.totalScore >= 0 && score.maxScore > 0 && score.totalScore <= score.maxScore,
+    `${score.totalScore}/${score.maxScore} is not a valid total`);
+  for (const b of score.breakoutScores) {
+    assert.equal(typeof b.title, 'string');
+    assert.ok(b.score >= 0 && b.maxScore > 0 && b.score <= b.maxScore,
+      `"${b.title}" scores ${b.score}/${b.maxScore}`);
+  }
+}
+
+test('Text Input: validate-later questions stay out of a score that /score accepts', () => {
+  withTempDir(dir => {
+    const { score, report } = runScorer(dir,
+      `__Type__
+
+Text Input
+
+__Practice Question__
+
+What is the capital of France?
+
+__Correct Answers__
+
+__Practice Question__
+
+What is 2 + 2?
+
+__Correct Answers__
+
+__Practice Question__
+
+In a few sentences, explain why Paris is the capital of France.
+
+__Correct Answers__
+
+- [kind: string] [options: multiLine=true]
+`,
+      `__Type__
+
+Text Input
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: Paris
+
+2. **Question 2**
+   - Selected Answer: 4
+
+3. **Question 3**
+   - Selected Answer: It is the seat of government.
+`,
+      `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: Paris [kind: string] [options: caseSensitive=false]
+- Question 2: 4 [kind: numeric] [options: threshold=0.01,precision=2]
+- Question 3: [kind: validate-later] [options: multiLine=true]
+`
+    );
+
+    assertAcceptedByScoreRoute(score);
+    assert.equal(score.totalScore, 2);
+    assert.equal(score.maxScore, 2);
+    assert.deepEqual(score.breakoutScores.map(b => b.title), ['Question 1', 'Question 2']);
+    assert.match(report, /It is the seat of government\./);
+    assert.match(report, /Not scored \(submitted for later review\)/);
+  });
+});
+
+test('Text Input: a task with only validate-later questions reports 0/0 for manual scoring', () => {
+  withTempDir(dir => {
+    const { score, report } = runScorer(dir,
+      `__Type__
+
+Text Input
+
+__Practice Question__
+
+Describe the defects you found.
+
+__Correct Answers__
+
+- [kind: string] [options: multiLine=true]
+`,
+      `__Type__
+
+Text Input
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: The total ignores discounts.
+`,
+      `__Type__
+
+Text Input
+
+__Answer Key__
+
+- Question 1: [kind: validate-later] [options: multiLine=true]
+`
+    );
+
+    // No question can be scored automatically. Any positive maxScore would be an
+    // invented score, so the grader reports 0/0: /score rejects it, and the
+    // platform asks a reviewer for a manual score instead of recording a zero.
+    assert.deepEqual(score, { totalScore: 0, maxScore: 0, breakoutScores: [] });
+    assert.match(report, /The total ignores discounts\./);
+  });
+});
+
 // -----------------------------------------------------------------------
 // Report output verification
 // -----------------------------------------------------------------------

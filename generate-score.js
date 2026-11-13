@@ -2304,6 +2304,12 @@ var require_text_input_validation = __commonJS({
     function stripAllWhitespace(s) {
       return String(s).replace(/\s/g, "");
     }
+    function isWithinThreshold(a, b, threshold) {
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
+      const difference = Math.abs(a - b);
+      if (threshold === 0) return difference === 0;
+      return difference <= threshold + 4 * Number.EPSILON * Math.max(1, Math.abs(a), Math.abs(b));
+    }
     function validateTextInputString(userAnswer, correctAnswer, options = {}) {
       const caseSensitive = options.caseSensitive === true;
       const fuzzy = options.fuzzy;
@@ -2341,7 +2347,7 @@ var require_text_input_validation = __commonJS({
       if (isNaN(user) || isNaN(correct)) return false;
       const userRounded = Math.round(user * Math.pow(10, precision)) / Math.pow(10, precision);
       const correctRounded = Math.round(correct * Math.pow(10, precision)) / Math.pow(10, precision);
-      return Math.abs(userRounded - correctRounded) <= threshold;
+      return isWithinThreshold(userRounded, correctRounded, threshold);
     }
     function validateTextInputNumericWithUnits(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
@@ -2363,7 +2369,7 @@ var require_text_input_validation = __commonJS({
       const userValue = parseFloat(userStr);
       const correctValue = parseFloat(correctStr);
       if (isNaN(userValue) || isNaN(correctValue)) return false;
-      return Math.abs(userValue - correctValue) <= threshold;
+      return isWithinThreshold(userValue, correctValue, threshold);
     }
     function validateTextInputNumericWithCurrency(userAnswer, correctAnswer, options = {}) {
       const threshold = options.threshold !== void 0 ? options.threshold : 0.01;
@@ -2378,7 +2384,7 @@ var require_text_input_validation = __commonJS({
       const userValue = parseFloat(userStr);
       const correctValue = parseFloat(correctStr);
       if (isNaN(userValue) || isNaN(correctValue)) return false;
-      return Math.abs(userValue - correctValue) <= threshold;
+      return isWithinThreshold(userValue, correctValue, threshold);
     }
     function parseOptionsText(optionsText) {
       const options = {};
@@ -2526,6 +2532,7 @@ var require_text_input_validation = __commonJS({
       validateTextInputNumeric,
       validateTextInputNumericWithUnits,
       validateTextInputNumericWithCurrency,
+      isWithinThreshold,
       parseValidationOptions,
       parseTextInputAnswerItems,
       getTextInputValidationCandidates,
@@ -2537,8 +2544,11 @@ var require_text_input_validation = __commonJS({
 // lib/text-input-answers.js
 var require_text_input_answers = __commonJS({
   "lib/text-input-answers.js"(exports2, module2) {
-    var RESPONSE_HEADER_REGEX = /^(\d+)\.\s*\*\*[^*\n]+\*\*[ \t]*\r?\n[ \t]*- Selected Answer:[ \t]?/gm;
+    var RESPONSE_HEADER_REGEX = /^(\d+)\.\s*\*\*[^*\n]+\*\*[ \t]*\r?\n(?:[ \t]*\r?\n)*[ \t]*- Selected Answer:[ \t]?/gm;
     var CORRECT_ANSWER_LINE_REGEX = /\r?\n[ \t]*- Correct Answer:/g;
+    function responseDetailIndent(number) {
+      return " ".repeat(String(number).length + 2);
+    }
     function lastMatchIndex(regex, text) {
       let index = -1;
       const pattern = new RegExp(regex.source, "g");
@@ -2563,7 +2573,7 @@ var require_text_input_answers = __commonJS({
       });
       return answers;
     }
-    module2.exports = { parseTextInputAnswers };
+    module2.exports = { parseTextInputAnswers, responseDetailIndent };
   }
 });
 
@@ -2868,7 +2878,7 @@ var require_parse_question = __commonJS({
       const answers = {};
       if (/^multiple choice$/i.test(type)) {
         const explanations = {};
-        const questionBlocks = responsesText.split(/(?=\d+\.\s*\*\*[^*]+\*\*)/);
+        const questionBlocks = responsesText.split(/(?=^\d+\.\s*\*\*[^*]+\*\*)/m);
         questionBlocks.forEach((block) => {
           const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
           if (questionMatch) {
@@ -2928,7 +2938,7 @@ var require_parse_question = __commonJS({
         Object.assign(answers, parseTextInputAnswers(responsesText));
       } else if (/^matrix$/i.test(type)) {
         const explanations = {};
-        const questionBlocks = responsesText.split(/(?=\d+\.\s*\*\*[^*]+\*\*)/);
+        const questionBlocks = responsesText.split(/(?=^\d+\.\s*\*\*[^*]+\*\*)/m);
         questionBlocks.forEach((block) => {
           const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
           if (questionMatch) {
@@ -4088,13 +4098,12 @@ var require_build_score_json = __commonJS({
     }
     function buildScoreJson2(activity, results) {
       const list = Array.isArray(results) ? results : [];
-      const breakoutScores = list.map((result, index) => {
+      const breakoutScores = [];
+      list.forEach((result, index) => {
+        if (isResultUnscorable(activity, result, index)) return;
         const title = result.text || `Question ${index + 1}`;
-        if (isResultUnscorable(activity, result, index)) {
-          return { title, score: 0, maxScore: 0 };
-        }
         const correct = evaluateActivityResultCorrect2(activity, result, index);
-        return { title, score: correct ? 1 : 0, maxScore: 1 };
+        breakoutScores.push({ title, score: correct ? 1 : 0, maxScore: 1 });
       });
       const totalScore = breakoutScores.reduce((sum, q) => sum + q.score, 0);
       const maxScore = breakoutScores.reduce((sum, q) => sum + q.maxScore, 0);
