@@ -122,10 +122,10 @@ export function mountActivityContentShell({ container, content }) {
     : 'activity-content-pane';
   const iframe = document.createElement('iframe');
   iframe.className = 'activity-content-iframe';
-  iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
+  iframe.setAttribute('allow', hasUrl ? 'clipboard-read; clipboard-write; fullscreen' : 'clipboard-read; clipboard-write');
   iframe.setAttribute('frameborder', '1');
   if (hasMarkdown) {
-    iframe.setAttribute('sandbox', 'allow-scripts allow-popups allow-popups-to-escape-sandbox');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox');
   }
   const sideUrl = hasUrl ? String(content.url || '') : '';
   iframe.title = sideUrl === '/sim' || sideUrl.startsWith('/sim/') ? 'Simulation' : 'Reference';
