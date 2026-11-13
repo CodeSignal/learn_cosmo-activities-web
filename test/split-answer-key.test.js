@@ -326,6 +326,7 @@ test('assessment examples merge then split back to the same key entries', () => 
     ['assessment-matrix.md', 'assessment-matrix-answer-key.md'],
     ['assessment-sort.md', 'assessment-sort-answer-key.md'],
     ['assessment-swipe.md', 'assessment-swipe-answer-key.md'],
+    ['assessment-text-input-estimates.md', 'assessment-text-input-estimates-answer-key.md'],
   ];
   for (const [questionFile, keyFile] of pairs) {
     const question = readExample(questionFile);
