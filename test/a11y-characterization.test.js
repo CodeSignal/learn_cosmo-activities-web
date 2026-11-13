@@ -542,6 +542,20 @@ test('D2: split divider is named and uses a 24px pointer target', () => {
   assert.match(css, /\.split-panel-divider\s*\{[\s\S]*?min-height:\s*24px/);
 });
 
+test('split divider target is shifted onto the main pane, clear of the content iframe scrollbar', () => {
+  // .activity-with-side-content, not .activity-content-split-root: SplitPanel
+  // replaces its host's className, so that class is gone at runtime.
+  const css = read('public/activity-content-shell.css');
+  const divider = css.match(/\.activity-with-side-content \.split-panel-divider\s*\{[^}]+\}/);
+  assert.ok(divider, 'scoped divider rule exists');
+  assert.match(divider[0], /left:\s*10px/);
+  const marks = css.match(
+    /\.activity-with-side-content \.split-panel-divider::after,\s*\.activity-with-side-content \.split-panel-divider-handle\s*\{[^}]+\}/
+  );
+  assert.ok(marks, 'line and handle rule exists');
+  assert.match(marks[0], /left:\s*calc\(50% - 10px\)/);
+});
+
 test('D3: split divider line uses Neutral-800, not a hardcoded hex', () => {
   const css = read('public/design-system/components/split-panel/split-panel.css');
   assert.doesNotMatch(css, /#2b3b52/i);

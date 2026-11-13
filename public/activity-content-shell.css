@@ -28,6 +28,21 @@
   overflow: hidden !important;
 }
 
+/* The design-system divider centers its 24px pointer target on the panel
+   boundary, so 12px of it sits over the right edge of the content iframe, where
+   an embedded page (e.g. a Google Sheet) draws its vertical scrollbar. Shift the
+   target 10px onto the main pane, whose 1.5rem left padding is empty: it now
+   reaches 2px into the content pane and 22px into the main pane. It stays 24px
+   wide, and the line and handle stay on the panel boundary. */
+.activity-with-side-content .split-panel-divider {
+  left: 10px;
+}
+
+.activity-with-side-content .split-panel-divider::after,
+.activity-with-side-content .split-panel-divider-handle {
+  left: calc(50% - 10px);
+}
+
 .activity-content-pane {
   height: 100%;
   overflow: auto;
