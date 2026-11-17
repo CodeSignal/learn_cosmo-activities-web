@@ -110,6 +110,21 @@ const HTML = `<!DOCTYPE html>
     }
 
     #clock { font-family: monospace; color: #60a5fa; }
+
+    .fullscreen-btn {
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: #2563eb;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+    .fullscreen-btn:hover { background: #1d4ed8; }
+    .fullscreen-btn:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+    #fullscreen-status { min-height: 1.6em; }
   </style>
 </head>
 <body>
@@ -142,6 +157,9 @@ const HTML = `<!DOCTYPE html>
     </div>
   </div>
 
+  <button type="button" class="fullscreen-btn" id="fullscreen-btn">Full screen</button>
+  <p id="fullscreen-status" aria-live="polite"></p>
+
   <script>
     const clock = document.getElementById('clock');
     function tick() {
@@ -149,6 +167,15 @@ const HTML = `<!DOCTYPE html>
     }
     tick();
     setInterval(tick, 1000);
+
+    // Used by side-content-url-fullscreen.md: the request only works when the
+    // embedding iframe allows fullscreen.
+    const fullscreenStatus = document.getElementById('fullscreen-status');
+    document.getElementById('fullscreen-btn').addEventListener('click', () => {
+      document.documentElement.requestFullscreen()
+        .then(() => { fullscreenStatus.textContent = 'Full screen worked'; })
+        .catch((err) => { fullscreenStatus.textContent = 'Full screen blocked: ' + err.message; });
+    });
   </script>
 </body>
 </html>`;
