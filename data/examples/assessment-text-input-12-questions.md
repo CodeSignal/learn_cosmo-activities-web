@@ -4,7 +4,7 @@ Text Input
 
 __Heading__
 
-Twelve questions. Answer all of them and click **Grade**: each of the 12 rows should show 1 / 1. Questions 10 to 12 have two-digit numbers in the saved answer file, so this checks that their answers are read and kept separate from question 9's.
+Twelve questions. Answer all of them and click Grade: each of the 12 rows should show 1 / 1. Questions 10 to 12 have two-digit numbers in the saved answer file, so this checks that their answers are read and kept separate from question 9's.
 
 __Practice Question__
 
