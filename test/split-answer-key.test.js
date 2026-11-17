@@ -320,6 +320,8 @@ test('merge rejects non-empty answer-key content with no parseable entries', () 
 test('assessment examples merge then split back to the same key entries', () => {
   const pairs = [
     ['assessment-text-input.md', 'assessment-text-input-answer-key.md'],
+    ['assessment-text-input-12-questions.md', 'assessment-text-input-12-questions-answer-key.md'],
+    ['assessment-text-input-thresholds.md', 'assessment-text-input-thresholds-answer-key.md'],
     ['assessment-mcq.md', 'assessment-mcq-answer-key.md'],
     ['assessment-fib.md', 'assessment-fib-answer-key.md'],
     ['assessment-matching.md', 'assessment-matching-answer-key.md'],
