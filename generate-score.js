@@ -12,9 +12,9 @@ var __commonJS = (cb, mod) => function __require() {
   }
 };
 
-// node_modules/marked/lib/marked.cjs
+// ../../../Users/briangenisio/codesignal/learn_cosmo-activities-web/node_modules/marked/lib/marked.cjs
 var require_marked = __commonJS({
-  "node_modules/marked/lib/marked.cjs"(exports2) {
+  "../../../Users/briangenisio/codesignal/learn_cosmo-activities-web/node_modules/marked/lib/marked.cjs"(exports2) {
     "use strict";
     function _defineProperties(target, props) {
       for (var i = 0; i < props.length; i++) {
@@ -3882,25 +3882,36 @@ var require_build_activity_report = __commonJS({
       }
       return String(labelsCsv).split(",").map((s) => s.trim()).filter(Boolean);
     }
+    function mcqOptionText(opt) {
+      return stripHtmlToPlain(opt.textHtml) || String(opt.text || "").trim();
+    }
     function pushMcqOptionsList(lines, q) {
       if (!q || !Array.isArray(q.options) || q.options.length === 0) {
         return;
       }
-      const sorted = q.options.slice().sort(
-        (a, b) => String(a.label || "").localeCompare(String(b.label || ""))
-      );
       lines.push("**Options**");
       lines.push("");
-      for (const opt of sorted) {
-        const lab = String(opt.label || "").trim() || "?";
-        const body = stripHtmlToPlain(opt.textHtml) || String(opt.text || "").trim();
-        lines.push(body ? `- **${lab}.** ${body}` : `- **${lab}.**`);
+      for (const opt of q.options) {
+        lines.push(`- ${mcqOptionText(opt) || "_(empty option)_"}`);
       }
       lines.push("");
     }
-    function formatMcqLettersForReport(labelsCsv) {
-      const parts = expandMcqLetterParts(labelsCsv);
-      return parts.length === 0 ? "_No answer_" : parts.join(", ");
+    function pushMcqAnswerLine(lines, title, labelsCsv, q) {
+      const options = Array.isArray(q?.options) ? q.options : [];
+      const texts = expandMcqLetterParts(labelsCsv).map((label) => {
+        const opt = options.find((o) => String(o.label || "").trim() === label);
+        return opt && mcqOptionText(opt) || label;
+      });
+      if (texts.length === 0) {
+        lines.push(`- **${title}:** _No answer_`);
+      } else if (texts.length === 1) {
+        lines.push(`- **${title}:** ${texts[0]}`);
+      } else {
+        lines.push(`- **${title}:**`);
+        for (const text of texts) {
+          lines.push(`  - ${text}`);
+        }
+      }
     }
     function stripFibBlockquoteLines(content) {
       return String(content || "").split(/\r?\n/).map((line) => line.replace(/^\s*>\s?/, "").trimEnd()).join("\n").replace(/\n{3,}/g, "\n\n").trim();
@@ -3968,8 +3979,8 @@ var require_build_activity_report = __commonJS({
           pushMcqOptionsList(lines, q);
           lines.push("**Response**");
           lines.push("");
-          lines.push(`- **Candidate's Answer:** ${formatMcqLettersForReport(result.selected)}`);
-          lines.push(`- **Correct answer(s):** ${formatMcqLettersForReport(result.correct)}`);
+          pushMcqAnswerLine(lines, "Candidate's Answer", result.selected, q);
+          pushMcqAnswerLine(lines, "Correct answer(s)", result.correct, q);
           lines.push(`- ${resultStatusLine(activity, result, index)}`);
           if (result.explanation && String(result.explanation).trim()) {
             lines.push(`- **Your explanation:** ${String(result.explanation).trim()}`);
