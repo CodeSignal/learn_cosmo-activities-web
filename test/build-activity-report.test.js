@@ -64,6 +64,29 @@ test('report mcq lists multiple selections by option text', () => {
   assert.ok(md.includes('- **Correct answer(s):**\n  - Alpha\n  - Beta'));
 });
 
+test('report mcq does not truncate long option text', () => {
+  const shared = 'x'.repeat(700);
+  const activity = {
+    type: 'Multiple Choice',
+    mcq: {
+      questions: [
+        {
+          id: 0,
+          text: 'Pick one',
+          options: [
+            { label: 'A', textHtml: `<p>${shared} first</p>`, correct: false },
+            { label: 'B', textHtml: `<p>${shared} second</p>`, correct: true }
+          ]
+        }
+      ]
+    }
+  };
+  const results = [{ text: 'Question 1', selected: 'A', correct: 'B' }];
+  const md = buildActivityReportMarkdown(activity, results);
+  assert.ok(md.includes(`- **Candidate's Answer:** ${shared} first`));
+  assert.ok(md.includes(`- **Correct answer(s):** ${shared} second`));
+});
+
 test('report mcq shows no answer when nothing selected', () => {
   const activity = {
     type: 'Multiple Choice',

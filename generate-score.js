@@ -3861,14 +3861,14 @@ var require_build_activity_report = __commonJS({
       countValidateLaterTextInputResults
     } = require_activity_results_validation();
     var MAX_PROMPT_CHARS = 600;
-    function stripHtmlToPlain(html) {
+    function stripHtmlToPlain(html, maxChars = MAX_PROMPT_CHARS) {
       if (!html) return "";
       let s = String(html).replace(/<script[\s\S]*?<\/script>/gi, "");
       s = s.replace(/<style[\s\S]*?<\/style>/gi, "");
       s = s.replace(/<[^>]+>/g, " ");
       s = s.replace(/\s+/g, " ").trim();
-      if (s.length > MAX_PROMPT_CHARS) {
-        s = `${s.slice(0, MAX_PROMPT_CHARS)}\u2026`;
+      if (s.length > maxChars) {
+        s = `${s.slice(0, maxChars)}\u2026`;
       }
       return s;
     }
@@ -3883,7 +3883,7 @@ var require_build_activity_report = __commonJS({
       return String(labelsCsv).split(",").map((s) => s.trim()).filter(Boolean);
     }
     function mcqOptionText(opt) {
-      return stripHtmlToPlain(opt.textHtml) || String(opt.text || "").trim();
+      return stripHtmlToPlain(opt.textHtml, Infinity) || String(opt.text || "").trim();
     }
     function pushMcqOptionsList(lines, q) {
       if (!q || !Array.isArray(q.options) || q.options.length === 0) {
