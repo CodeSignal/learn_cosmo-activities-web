@@ -12,9 +12,9 @@ var __commonJS = (cb, mod) => function __require() {
   }
 };
 
-// ../../../Users/briangenisio/codesignal/learn_cosmo-activities-web/node_modules/marked/lib/marked.cjs
+// node_modules/marked/lib/marked.cjs
 var require_marked = __commonJS({
-  "../../../Users/briangenisio/codesignal/learn_cosmo-activities-web/node_modules/marked/lib/marked.cjs"(exports2) {
+  "node_modules/marked/lib/marked.cjs"(exports2) {
     "use strict";
     function _defineProperties(target, props) {
       for (var i = 0; i < props.length; i++) {
