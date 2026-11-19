@@ -604,7 +604,6 @@ const server = http.createServer((req, res) => {
           const parsed = parseAnswersFromMarkdown(answerData);
           let { answers, type, explanations } = parsed;
 
-          // For MCQ, map answer text back to labels and result indices to question IDs
           if (/^multiple choice$/i.test(type)) {
             const activity = buildActivityFromMarkdown(activityData);
             const questions = activity?.mcq?.questions || [];
@@ -817,7 +816,7 @@ const server = http.createServer((req, res) => {
                 if (q.name && String(q.name).trim()) {
                   markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;
                 }
-                // q.options is already in the shuffled order the learner saw.
+                // q.options is in the shuffled order the learner saw.
                 markdown += `__Practice Question__\n\n${q.text}\n\n`;
                 markdown += `__Options__\n\n`;
                 q.options.forEach(opt => {
