@@ -45,6 +45,38 @@ test('mcqLabelsFromAnswerValues drops values that match no option', () => {
   assert.deepEqual(mcqLabelsFromAnswerValues(question, ['Bananas', 'Z']), []);
 });
 
+test('a "- Selected Answer:" line inside an explanation is not read as a selection', () => {
+  const parsed = parseAnswersFromMarkdown(`__Type__
+
+Multiple Choice
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: Apples, pears
+   - Explanation: First line
+     - Selected Answer: $$x = 2$$
+`);
+  assert.deepEqual(parsed.answers, { 0: ['Apples, pears'] });
+  assert.equal(parsed.explanations[0], 'First line\n- Selected Answer: $$x = 2$$');
+});
+
+test('question names containing "*" still start their own response block', () => {
+  const parsed = parseAnswersFromMarkdown(`__Type__
+
+Multiple Choice
+
+__Responses__
+
+1. **What is 2 * 3?**
+   - Selected Answer: Apples, pears
+
+2. **Question 2**
+   - Selected Answer: $$x = 2$$
+`);
+  assert.deepEqual(parsed.answers, { 0: ['Apples, pears'], 1: ['$$x = 2$$'] });
+});
+
 test('answer.md written with option text parses back to labels and explanations', () => {
   const indent = '   ';
   const md = [

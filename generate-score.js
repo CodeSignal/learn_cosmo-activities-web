@@ -2895,9 +2895,9 @@ var require_parse_question = __commonJS({
       const answers = {};
       if (/^multiple choice$/i.test(type)) {
         const explanations = {};
-        const questionBlocks = responsesText.split(/(?=^\d+\.\s*\*\*[^*]+\*\*)/m);
+        const questionBlocks = responsesText.split(/(?=^\d+\.\s*\*\*.+\*\*[ \t]*$)/m);
         questionBlocks.forEach((block) => {
-          const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
+          const questionMatch = block.match(/^(\d+)\.\s*\*\*.+\*\*[ \t]*$/m);
           if (!questionMatch) return;
           const questionIndex = parseInt(questionMatch[1], 10) - 1;
           const explanationMatch = block.match(EXPLANATION_PATTERN);
@@ -2907,7 +2907,8 @@ var require_parse_question = __commonJS({
               explanations[questionIndex] = explanationStr;
             }
           }
-          const selected = [...block.matchAll(/^[ \t]*- Selected Answer:[ \t]*(.*)$/gm)].map((m) => m[1].trim()).filter((v) => v && v !== "No answer selected");
+          const fields = explanationMatch ? block.slice(0, explanationMatch.index) : block;
+          const selected = [...fields.matchAll(/^[ \t]*- Selected Answer:[ \t]*(.*)$/gm)].map((m) => m[1].trim()).filter((v) => v && v !== "No answer selected");
           if (selected.length > 0) {
             answers[questionIndex] = selected;
           }
@@ -3860,8 +3861,8 @@ var require_build_activity_report = __commonJS({
           const code = ref[1].toLowerCase() === "x" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
           return Number.isFinite(code) && code <= 1114111 ? String.fromCodePoint(code) : match;
         }
-        const named = NAMED_ENTITIES[ref.toLowerCase()];
-        return named === void 0 ? match : named;
+        const name = ref.toLowerCase();
+        return Object.hasOwn(NAMED_ENTITIES, name) ? NAMED_ENTITIES[name] : match;
       });
     }
     function stripHtmlToPlain(html, maxChars = MAX_PROMPT_CHARS) {
@@ -3869,7 +3870,7 @@ var require_build_activity_report = __commonJS({
       let s = String(html).replace(/<script[\s\S]*?<\/script>/gi, "");
       s = s.replace(/<style[\s\S]*?<\/style>/gi, "");
       s = s.replace(/<[^>]+>/g, " ");
-      s = decodeHtmlEntities(s);
+      s = decodeHtmlEntities(s).replace(/</g, "&lt;");
       s = s.replace(/\s+/g, " ").trim();
       if (s.length > maxChars) {
         s = `${s.slice(0, maxChars)}\u2026`;
