@@ -29,14 +29,15 @@ test('report includes title, summary, and MCQ sections', () => {
   assert.match(md, /### Question 1/);
   assert.match(md, /Pick one/);
   assert.match(md, /\*\*Options\*\*/);
-  assert.match(md, /\*\*A\.\*\* Apple/);
-  assert.match(md, /\*\*B\.\*\* Berry/);
-  assert.match(md, /\*\*Candidate's Answer:\*\* A\b/);
-  assert.match(md, /\*\*Correct answer\(s\):\*\* A\b/);
+  assert.match(md, /^- Apple$/m);
+  assert.match(md, /^- Berry$/m);
+  assert.match(md, /\*\*Candidate's Answer:\*\* Apple$/m);
+  assert.match(md, /\*\*Correct answer\(s\):\*\* Apple$/m);
   assert.match(md, /\*\*Result:\*\* Correct/);
+  assert.doesNotMatch(md, /\*\*[AB]\.\*\*/);
 });
 
-test('report mcq formats multiple selections as comma-separated letters', () => {
+test('report mcq lists multiple selections by option text', () => {
   const activity = {
     type: 'Multiple Choice',
     mcq: {
@@ -55,13 +56,57 @@ test('report mcq formats multiple selections as comma-separated letters', () => 
       ]
     }
   };
-  const results = [{ text: 'Question 1', selected: 'A, B', correct: 'A, B' }];
+  const results = [{ text: 'Question 1', selected: 'A, C', correct: 'A, B' }];
   const md = buildActivityReportMarkdown(activity, results);
   assert.ok(md.includes('**Options**'));
-  assert.ok(md.includes('- **A.** Alpha'));
-  assert.ok(md.includes('- **C.** Gamma'));
-  assert.ok(md.includes("- **Candidate's Answer:** A, B"));
-  assert.ok(md.includes('- **Correct answer(s):** A, B'));
+  assert.ok(md.includes('- Alpha\n- Beta\n- Gamma'));
+  assert.ok(md.includes("- **Candidate's Answer:**\n  - Alpha\n  - Gamma"));
+  assert.ok(md.includes('- **Correct answer(s):**\n  - Alpha\n  - Beta'));
+});
+
+test('report mcq does not truncate long option text', () => {
+  const shared = 'x'.repeat(700);
+  const activity = {
+    type: 'Multiple Choice',
+    mcq: {
+      questions: [
+        {
+          id: 0,
+          text: 'Pick one',
+          options: [
+            { label: 'A', textHtml: `<p>${shared} first</p>`, correct: false },
+            { label: 'B', textHtml: `<p>${shared} second</p>`, correct: true }
+          ]
+        }
+      ]
+    }
+  };
+  const results = [{ text: 'Question 1', selected: 'A', correct: 'B' }];
+  const md = buildActivityReportMarkdown(activity, results);
+  assert.ok(md.includes(`- **Candidate's Answer:** ${shared} first`));
+  assert.ok(md.includes(`- **Correct answer(s):** ${shared} second`));
+});
+
+test('report mcq shows no answer when nothing selected', () => {
+  const activity = {
+    type: 'Multiple Choice',
+    mcq: {
+      questions: [
+        {
+          id: 0,
+          text: 'Pick one',
+          options: [
+            { label: 'A', text: 'Apple', correct: true },
+            { label: 'B', text: 'Berry', correct: false }
+          ]
+        }
+      ]
+    }
+  };
+  const results = [{ text: 'Question 1', selected: '', correct: 'A' }];
+  const md = buildActivityReportMarkdown(activity, results);
+  assert.ok(md.includes("- **Candidate's Answer:** _No answer_"));
+  assert.ok(md.includes('- **Correct answer(s):** Apple'));
 });
 
 test('report text input shows validate-later as not scored', () => {
