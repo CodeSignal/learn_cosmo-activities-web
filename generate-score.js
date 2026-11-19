@@ -2882,7 +2882,7 @@ var require_parse_question = __commonJS({
       }
       return items;
     }
-    var EXPLANATION_PATTERN = /Explanation:\s*([^\n]*(?:\n {5}[^\n]*)*)/;
+    var EXPLANATION_PATTERN = /^[ \t]*- Explanation:[ \t]*([^\n]*(?:\n {5}[^\n]*)*)/m;
     function unindentExplanation(text) {
       return String(text || "").split("\n").map((line, i) => i === 0 ? line : line.replace(/^ {5}/, "")).join("\n").trim();
     }
@@ -2898,28 +2898,20 @@ var require_parse_question = __commonJS({
         const questionBlocks = responsesText.split(/(?=^\d+\.\s*\*\*[^*]+\*\*)/m);
         questionBlocks.forEach((block) => {
           const questionMatch = block.match(/^(\d+)\.\s*\*\*[^*]+\*\*/);
-          if (questionMatch) {
-            const questionNumber = parseInt(questionMatch[1], 10);
-            const explanationMatch = block.match(EXPLANATION_PATTERN);
-            if (explanationMatch) {
-              const questionIndex = questionNumber - 1;
-              const explanationStr = unindentExplanation(explanationMatch[1]);
-              if (explanationStr) {
-                explanations[questionIndex] = explanationStr;
-              }
+          if (!questionMatch) return;
+          const questionIndex = parseInt(questionMatch[1], 10) - 1;
+          const explanationMatch = block.match(EXPLANATION_PATTERN);
+          if (explanationMatch) {
+            const explanationStr = unindentExplanation(explanationMatch[1]);
+            if (explanationStr) {
+              explanations[questionIndex] = explanationStr;
             }
           }
-        });
-        const responseRegex = /(\d+)\.\s*\*\*[^*]+\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
-        let match;
-        while ((match = responseRegex.exec(responsesText)) !== null) {
-          const questionIndex = parseInt(match[1], 10) - 1;
-          const selectedAnswerStr = match[2].trim();
-          const selectedAnswers = selectedAnswerStr.split(",").map((s) => s.trim()).filter(Boolean);
-          if (selectedAnswers.length > 0 && selectedAnswers[0] !== "No answer selected") {
-            answers[questionIndex] = selectedAnswers;
+          const selected = [...block.matchAll(/^[ \t]*- Selected Answer:[ \t]*(.*)$/gm)].map((m) => m[1].trim()).filter((v) => v && v !== "No answer selected");
+          if (selected.length > 0) {
+            answers[questionIndex] = selected;
           }
-        }
+        });
         return { answers, type, explanations };
       } else if (/^fill in the blanks$/i.test(type)) {
         const responseRegex = /(\d+)\.\s*\*\*Blank (\d+)\*\*[\s\S]*?Selected Answer:\s*([^\n]+)/g;
@@ -4141,6 +4133,50 @@ var require_build_score_json = __commonJS({
   }
 });
 
+// lib/mcq-answer-text.js
+var require_mcq_answer_text = __commonJS({
+  "lib/mcq-answer-text.js"(exports2, module2) {
+    function mcqOptionText(opt) {
+      return String(opt?.text || "").replace(/\s+/g, " ").trim();
+    }
+    function mcqOptions(question) {
+      return Array.isArray(question?.options) ? question.options : [];
+    }
+    function mcqAnswerLines(question, labelsCsv, title, indent, emptyText) {
+      const labels = String(labelsCsv || "").split(",").map((s) => s.trim()).filter(Boolean);
+      if (labels.length === 0) {
+        return `${indent}- ${title}: ${emptyText}
+`;
+      }
+      const options = mcqOptions(question);
+      return labels.map((label) => {
+        const opt = options.find((o) => String(o.label || "").trim() === label);
+        return `${indent}- ${title}: ${mcqOptionText(opt) || label}
+`;
+      }).join("");
+    }
+    function mcqLabelsFromAnswerValues2(question, values) {
+      const options = mcqOptions(question);
+      const labels = new Set(options.map((o) => String(o.label || "").trim()));
+      const result = [];
+      for (const value of values || []) {
+        const v = String(value).trim();
+        const byText = options.find((o) => mcqOptionText(o) === v);
+        if (byText) {
+          result.push(String(byText.label).trim());
+          continue;
+        }
+        const parts = v.split(",").map((s) => s.trim()).filter(Boolean);
+        if (parts.length > 0 && parts.every((p) => labels.has(p))) {
+          result.push(...parts);
+        }
+      }
+      return result;
+    }
+    module2.exports = { mcqOptionText, mcqAnswerLines, mcqLabelsFromAnswerValues: mcqLabelsFromAnswerValues2 };
+  }
+});
+
 // lib/generate-score.js
 var fs = require("fs");
 var path = require("path");
@@ -4154,6 +4190,7 @@ var {
 var { evaluateActivityResultCorrect } = require_activity_results_validation();
 var { buildActivityReportMarkdown } = require_build_activity_report();
 var { buildScoreJson } = require_build_score_json();
+var { mcqLabelsFromAnswerValues } = require_mcq_answer_text();
 function parseArgs(argv) {
   const args = {};
   const keys = ["--question", "--answer", "--answer-key", "--report", "--score"];
@@ -4299,8 +4336,7 @@ function buildResultsFromAnswerMd(activity, answerMd) {
     const questions = activity.mcq && activity.mcq.questions;
     if (!questions) return [];
     return questions.map((q, idx) => {
-      const sel = answers[idx];
-      const selected = Array.isArray(sel) ? sel.join(", ") : sel || "";
+      const selected = mcqLabelsFromAnswerValues(q, answers[idx]).join(", ");
       const correct = q.options.filter((o) => o.correct).map((o) => o.label).join(", ");
       const result = {
         text: q.name && String(q.name).trim() || `Question ${idx + 1}`,
