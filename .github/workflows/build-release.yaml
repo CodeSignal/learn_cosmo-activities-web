@@ -117,8 +117,10 @@ jobs:
             exit 0
           fi
 
+          # `npm ci` installs the repo's .githooks via `prepare`; the developer
+          # pre-push hook must not gate this tag push.
           git tag -f prerelease "${SOURCE_SHA}"
-          git push origin refs/tags/prerelease --force
+          git push --no-verify origin refs/tags/prerelease --force
 
           notes="Floating alias for the newest build (stable or pre-release).
 
