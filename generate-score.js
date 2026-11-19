@@ -3853,11 +3853,23 @@ var require_build_activity_report = __commonJS({
       countValidateLaterTextInputResults
     } = require_activity_results_validation();
     var MAX_PROMPT_CHARS = 600;
+    var NAMED_ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
+    function decodeHtmlEntities(s) {
+      return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, ref) => {
+        if (ref[0] === "#") {
+          const code = ref[1].toLowerCase() === "x" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
+          return Number.isFinite(code) && code <= 1114111 ? String.fromCodePoint(code) : match;
+        }
+        const named = NAMED_ENTITIES[ref.toLowerCase()];
+        return named === void 0 ? match : named;
+      });
+    }
     function stripHtmlToPlain(html, maxChars = MAX_PROMPT_CHARS) {
       if (!html) return "";
       let s = String(html).replace(/<script[\s\S]*?<\/script>/gi, "");
       s = s.replace(/<style[\s\S]*?<\/style>/gi, "");
       s = s.replace(/<[^>]+>/g, " ");
+      s = decodeHtmlEntities(s);
       s = s.replace(/\s+/g, " ").trim();
       if (s.length > maxChars) {
         s = `${s.slice(0, maxChars)}\u2026`;
