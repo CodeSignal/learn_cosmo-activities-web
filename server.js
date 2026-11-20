@@ -20,6 +20,7 @@ const {
 } = require('./lib/parse-question');
 const { splitCombinedMarkdown, mergeQuestionAndAnswerKey } = require('./lib/split-answer-key');
 const { responseDetailIndent } = require('./lib/text-input-answers');
+const { mcqOptionText, mcqAnswerLines, mcqLabelsFromAnswerValues } = require('./lib/mcq-answer-text');
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -603,18 +604,25 @@ const server = http.createServer((req, res) => {
           const parsed = parseAnswersFromMarkdown(answerData);
           let { answers, type, explanations } = parsed;
 
-          // For MCQ, map result indices to question IDs
-          if (/^multiple choice$/i.test(type) && explanations) {
+          if (/^multiple choice$/i.test(type)) {
             const activity = buildActivityFromMarkdown(activityData);
-            if (activity && activity.mcq && activity.mcq.questions) {
+            const questions = activity?.mcq?.questions || [];
+            const mappedAnswers = {};
+            Object.keys(answers).forEach(resultIndex => {
+              const labels = mcqLabelsFromAnswerValues(questions[resultIndex], answers[resultIndex]);
+              if (labels.length > 0) mappedAnswers[resultIndex] = labels;
+            });
+            answers = mappedAnswers;
+
+            if (explanations && questions.length > 0) {
               // Map explanations from result index to question ID
               // Result indices (0, 1, 2, 3...) should match question IDs (0, 1, 2, 3...)
               // since questions are created sequentially
               const mappedExplanations = {};
               Object.keys(explanations).forEach(resultIndex => {
                 const idx = parseInt(resultIndex, 10);
-                if (idx >= 0 && idx < activity.mcq.questions.length) {
-                  const questionId = activity.mcq.questions[idx].id;
+                if (idx >= 0 && idx < questions.length) {
+                  const questionId = questions[idx].id;
                   mappedExplanations[questionId] = explanations[resultIndex];
                 }
               });
@@ -690,6 +698,11 @@ const server = http.createServer((req, res) => {
         // Format results as markdown
         const activity = data.activity;
         const isAssessmentMode = !!(activity && activity.assessmentMode);
+        const isMcq = !!(activity && /^multiple choice$/i.test(activity.type));
+        const mcqQuestionFor = (result, index) => {
+          const questions = activity?.mcq?.questions || [];
+          return questions[questionIndexFromOrderedResult(result, index, questions.length)];
+        };
 
         // In assessment mode, write only candidate responses (no grading)
         if (isAssessmentMode) {
@@ -700,7 +713,11 @@ const server = http.createServer((req, res) => {
             data.results.forEach((result, index) => {
               const indent = responseDetailIndent(index + 1);
               markdown += `${index + 1}. **${result.text}**\n`;
-              markdown += `${indent}- Selected Answer: ${result.selected || 'No answer selected'}\n`;
+              if (isMcq) {
+                markdown += mcqAnswerLines(mcqQuestionFor(result, index), result.selected, 'Selected Answer', indent, 'No answer selected');
+              } else {
+                markdown += `${indent}- Selected Answer: ${result.selected || 'No answer selected'}\n`;
+              }
               if (result.explanation) {
                 const explanationText = String(result.explanation).replace(/\n/g, '\n     ');
                 markdown += `${indent}- Explanation: ${explanationText}\n`;
@@ -744,20 +761,18 @@ const server = http.createServer((req, res) => {
           data.results.forEach((result, index) => {
             const indent = responseDetailIndent(index + 1);
             markdown += `${index + 1}. **${result.text}**\n`;
-            markdown += `${indent}- Selected Answer: ${result.selected || 'No answer selected'}\n`;
-            markdown += `${indent}- Correct Answer: ${result.correct}\n`;
+            const question = isMcq ? mcqQuestionFor(result, index) : undefined;
+            if (isMcq) {
+              markdown += mcqAnswerLines(question, result.selected, 'Selected Answer', indent, 'No answer selected');
+              markdown += mcqAnswerLines(question, result.correct, 'Correct Answer', indent, '');
+            } else {
+              markdown += `${indent}- Selected Answer: ${result.selected || 'No answer selected'}\n`;
+              markdown += `${indent}- Correct Answer: ${result.correct}\n`;
+            }
             const isValidateLater = isTextInputResultValidateLater(activity, result, index);
-            if (activity && /^multiple choice$/i.test(activity.type)) {
-              const questionIndex = questionIndexFromOrderedResult(
-                result,
-                index,
-                activity.mcq?.questions?.length ?? 0
-              );
-              const question = activity.mcq?.questions?.[questionIndex];
-              if (question && question.isMultiSelect) {
-                const multiMode = question.multiSelectMode === 'any' ? 'any' : 'all';
-                markdown += `${indent}- Multi Mode: ${multiMode}\n`;
-              }
+            if (question && question.isMultiSelect) {
+              const multiMode = question.multiSelectMode === 'any' ? 'any' : 'all';
+              markdown += `${indent}- Multi Mode: ${multiMode}\n`;
             }
             const isCorrect = isValidateLater
               ? false
@@ -801,20 +816,12 @@ const server = http.createServer((req, res) => {
                 if (q.name && String(q.name).trim()) {
                   markdown += `__Question Name__\n\n${String(q.name).trim()}\n\n`;
                 }
-                // List options in authored source order (A, B, C, ...) rather than
-                // shuffled display order, so the persisted question mirrors question.md.
-                const orderedOptions = q.options.slice().sort((a, b) =>
-                  String(a.label || '').localeCompare(String(b.label || ''))
-                );
+                // q.options is in the shuffled order the learner saw.
                 markdown += `__Practice Question__\n\n${q.text}\n\n`;
-                orderedOptions.forEach(opt => {
-                  markdown += `${opt.label}. ${opt.text}\n`;
-                });
-                markdown += '\n';
-                markdown += `__Suggested Answers__\n\n`;
-                orderedOptions.forEach(opt => {
+                markdown += `__Options__\n\n`;
+                q.options.forEach(opt => {
                   const correctMarker = opt.correct ? ' - Correct' : '';
-                  markdown += `- ${opt.label}${correctMarker}\n`;
+                  markdown += `- ${mcqOptionText(opt)}${correctMarker}\n`;
                 });
                 markdown += '\n';
                 if (q.explainAnswer) {

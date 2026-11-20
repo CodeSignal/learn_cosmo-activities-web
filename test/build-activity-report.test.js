@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { buildActivityReportMarkdown } = require('../lib/build-activity-report');
+const { renderMarkdown } = require('../lib/render-markdown');
 
 test('report includes title, summary, and MCQ sections', () => {
   const activity = {
@@ -62,6 +63,51 @@ test('report mcq lists multiple selections by option text', () => {
   assert.ok(md.includes('- Alpha\n- Beta\n- Gamma'));
   assert.ok(md.includes("- **Candidate's Answer:**\n  - Alpha\n  - Gamma"));
   assert.ok(md.includes('- **Correct answer(s):**\n  - Alpha\n  - Beta'));
+});
+
+test('report mcq decodes HTML entities in prompts and option text', () => {
+  const activity = {
+    type: 'Multiple Choice',
+    mcq: {
+      questions: [
+        {
+          id: 0,
+          text: "What's \"best\"?",
+          textHtml: renderMarkdown("What's \"best\"?"),
+          options: [
+            { label: 'A', text: "Her brand doesn't match", textHtml: renderMarkdown("Her brand doesn't match"), correct: true },
+            { label: 'B', text: 'Tom & Jerry', textHtml: renderMarkdown('Tom & Jerry'), correct: false }
+          ]
+        }
+      ]
+    }
+  };
+  const md = buildActivityReportMarkdown(activity, [{ text: 'Question 1', selected: 'B', correct: 'A' }]);
+  assert.doesNotMatch(md, /&#?\w+;/);
+  assert.ok(md.includes(`What's "best"?`));
+  assert.ok(md.includes("- **Correct answer(s):** Her brand doesn't match"));
+  assert.ok(md.includes("- **Candidate's Answer:** Tom & Jerry"));
+});
+
+test('report keeps decoded "<" escaped and leaves unknown entities alone', () => {
+  const activity = {
+    type: 'Multiple Choice',
+    mcq: {
+      questions: [
+        {
+          id: 0,
+          text: 'Pick a tag',
+          options: [
+            { label: 'A', text: '`<div>`', textHtml: renderMarkdown('`<div>`'), correct: true },
+            { label: 'B', text: '&constructor;', textHtml: '<p>&constructor; &amp;amp;</p>', correct: false }
+          ]
+        }
+      ]
+    }
+  };
+  const md = buildActivityReportMarkdown(activity, [{ text: 'Question 1', selected: 'B', correct: 'A' }]);
+  assert.ok(md.includes('- **Correct answer(s):** &lt;div>'));
+  assert.ok(md.includes("- **Candidate's Answer:** &constructor; &amp;"));
 });
 
 test('report mcq does not truncate long option text', () => {

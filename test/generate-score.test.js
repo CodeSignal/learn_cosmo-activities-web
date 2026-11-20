@@ -255,6 +255,68 @@ __Answer Key__
   });
 });
 
+test('MCQ: grades answers written as option text, one line per option', () => {
+  withTempDir(dir => {
+    const { score } = runScorer(dir,
+      `__Type__
+
+Multiple Choice
+
+__Practice Question__
+
+Pick two.
+
+A. Apples, pears
+B. Two
+C. $$x = 3$$
+
+__Suggested Answers__
+
+- A
+- B
+- C
+
+__Practice Question__
+
+Pick one.
+
+A. Red
+B. Blue
+
+__Suggested Answers__
+
+- A
+- B
+`,
+      `__Type__
+
+Multiple Choice
+
+__Responses__
+
+1. **Question 1**
+   - Selected Answer: Apples, pears
+   - Selected Answer: $$x = 3$$
+
+2. **Question 2**
+   - Selected Answer: Red
+`,
+      `__Type__
+
+Multiple Choice
+
+__Answer Key__
+
+- Question 1: A, C
+- Question 2: B
+`
+    );
+
+    assert.equal(score.totalScore, 1);
+    assert.equal(score.maxScore, 2);
+  });
+});
+
 // -----------------------------------------------------------------------
 // Fill in the Blanks
 // -----------------------------------------------------------------------

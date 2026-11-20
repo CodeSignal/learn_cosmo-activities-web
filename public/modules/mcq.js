@@ -465,8 +465,8 @@ export function initMcq({
   
   function updateResultsAndPost() {
     state.results = mcq.questions.map((q, idx) => {
-      // Persist/post answers as authored source labels so report.md, score.json,
-      // answer.md, and reload all stay in the original A/B/C/D space.
+      // Post authored source labels so grading and reload stay in A/B/C/D space.
+      // The server writes option text to answer.md.
       const selected = displayToSource(q, selectedAnswers[q.id] || []);
       const correct = activity.assessmentMode
         ? []
