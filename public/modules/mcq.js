@@ -257,6 +257,29 @@ export function initMcq({
           }
           advanceAfterRadioKey(question, qIdx, questionEl);
         });
+      } else {
+        // Checkboxes have no arrow-key group. Move focus with the arrows and
+        // toggle on Enter/Space, staying on the question so several can be picked.
+        input.addEventListener('keydown', (event) => {
+          const boxes = [...optionsEl.querySelectorAll('input[type="checkbox"]')];
+          const index = boxes.indexOf(input);
+          if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            boxes[(index + 1) % boxes.length].focus();
+            return;
+          }
+          if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+            event.preventDefault();
+            boxes[(index - 1 + boxes.length) % boxes.length].focus();
+            return;
+          }
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          if (event.repeat || radioConfirmLock) return;
+          lockRadioConfirm();
+          input.checked = !input.checked;
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
       }
 
       input.addEventListener('change', () => {
