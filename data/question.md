@@ -1,23 +1,23 @@
 __Type__
 
-Matching
+Multiple Choice
 
-__Markdown With Blanks__
+__Practice Question__
 
-> **Subtle Cue 1**: Team members are avoiding eye contact and have closed body language. [[blank:Discomfort]]
+Let's test your understanding! Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
 
-> **Subtle Cue 2**: Several people are nodding, smiling, and leaning forward during a discussion. [[blank:Engagement]]
-
-> **Subtle Cue 3**: Voices are raised and people are talking over each other. [[blank:Tension]]
-
-> **Subtle Cue 4**: Someone sighs and looks away when a topic comes up. [[blank:Frustration]]
-
-> **Subtle Cue 5**: Laughter and relaxed posture spread through the group after a team win. [[blank:Relief]]
+A. Her brand identity is wrong  
+B. Her actual brand doesn't match her identity  
+C. Her brand image is too positive  
+D. She needs a better logo
 
 __Suggested Answers__
 
-- Discomfort
-- Engagement
-- Tension
-- Frustration
-- Relief
+- A  
+- B - Correct  
+- C  
+- D
+
+__Explain Your Answer__
+
+true
