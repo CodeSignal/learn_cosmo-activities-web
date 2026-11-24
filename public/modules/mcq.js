@@ -77,6 +77,10 @@ export function initMcq({
   
   // Track validation state
   let isValidating = false;
+
+  // Enter/Space moves focus to the next question while the key is still down.
+  // Hold the lock until keyup so a repeat does not select that next option.
+  let radioConfirmLock = false;
   
   // Initialize selected answers from persisted answers if available
   mcq.questions.forEach(q => {
@@ -220,21 +224,58 @@ export function initMcq({
       optionEl.appendChild(input);
       optionEl.appendChild(optionCard);
       optionsEl.appendChild(optionEl);
-      
-      // Add change listener
+
+      // Radios select on arrow by default, which also scrolled to the next
+      // question. Arrows only move focus; Enter/Space selects and advances.
+      // A click still selects and scrolls, tracked by this flag.
+      let fromPointer = false;
+      if (!question.isMultiSelect) {
+        optionEl.addEventListener('pointerdown', () => {
+          fromPointer = true;
+        });
+        input.addEventListener('keydown', (event) => {
+          fromPointer = false;
+          const radios = [...optionsEl.querySelectorAll('input[type="radio"]')];
+          const index = radios.indexOf(input);
+          if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            radios[(index + 1) % radios.length].focus();
+            return;
+          }
+          if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+            event.preventDefault();
+            radios[(index - 1 + radios.length) % radios.length].focus();
+            return;
+          }
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          if (event.repeat || radioConfirmLock) return;
+          lockRadioConfirm();
+          if (!input.checked) {
+            input.checked = true;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          advanceAfterRadioKey(question, qIdx, questionEl);
+        });
+      }
+
       input.addEventListener('change', () => {
+        const advanceFromPointer = fromPointer;
+        fromPointer = false;
         // Clear validation when user changes any value
         clearValidation();
         updateSelection(question.id, displayLabel, input.checked);
-        
-        // For radio questions, scroll to the next question (no "focus" / de-emphasis UI)
-        // Only if there are multiple questions AND explainAnswer is not enabled
-        if (!question.isMultiSelect && input.checked && mcq.questions.length > 1 && !question.explainAnswer) {
-          const qEl = elQuestions.querySelector(`[data-question-id="${question.id}"]`);
-          const questionIndex = parseInt(qEl.getAttribute('data-question-index'), 10);
-          if (questionIndex < mcq.questions.length - 1) {
-            scrollToNextQuestion(questionIndex);
-          }
+
+        // Click on a single-select question scrolls to the next one.
+        // Keyboard confirm handles its own move in advanceAfterRadioKey.
+        if (
+          advanceFromPointer &&
+          !question.isMultiSelect &&
+          input.checked &&
+          mcq.questions.length > 1 &&
+          !question.explainAnswer
+        ) {
+          scrollToNextQuestion(qIdx);
         }
       });
     });
@@ -308,13 +349,43 @@ export function initMcq({
   // Detect and style blockquotes that start with quotes
   detectQuoteBlockquotes(elMcq);
 
+  function nextQuestionEl(currentQuestionIndex) {
+    return elQuestions.querySelector(
+      `[data-question-index="${currentQuestionIndex + 1}"]`
+    );
+  }
+
   function scrollToNextQuestion(currentQuestionIndex) {
-    const nextQuestionIndex = currentQuestionIndex + 1;
-    if (nextQuestionIndex >= mcq.questions.length) return;
-    const nextEl = elQuestions.children[nextQuestionIndex];
+    const nextEl = nextQuestionEl(currentQuestionIndex);
     if (nextEl) {
       nextEl.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
     }
+    return nextEl;
+  }
+
+  function lockRadioConfirm() {
+    radioConfirmLock = true;
+    const release = () => {
+      radioConfirmLock = false;
+      document.removeEventListener('keyup', release);
+      window.removeEventListener('blur', release);
+    };
+    document.addEventListener('keyup', release);
+    window.addEventListener('blur', release);
+  }
+
+  // Enter/Space on a radio: select stays put when an explanation follows,
+  // otherwise show the next question and focus its first option.
+  function advanceAfterRadioKey(question, currentQuestionIndex, questionEl) {
+    if (question.explainAnswer) {
+      const explain = questionEl.querySelector('.mcq-explain-textarea');
+      if (explain) explain.focus();
+      return;
+    }
+    const nextEl = scrollToNextQuestion(currentQuestionIndex);
+    if (!nextEl) return;
+    const firstOption = nextEl.querySelector('input[type="radio"], input[type="checkbox"]');
+    if (firstOption) firstOption.focus({ preventScroll: true });
   }
   
   function updateSelection(questionId, optionLabel, isSelected) {
