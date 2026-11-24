@@ -51,6 +51,10 @@ export function initMatrix({
 
   let isValidating = false;
 
+  // Enter/Space selects a cell while the key is still down. Hold the lock
+  // until keyup so a repeat does not act again.
+  let matrixConfirmLock = false;
+
   elContainer.innerHTML = `
     <div class="matrix-root" id="matrix-root">
       <div class="matrix-question body-large" id="matrix-question"></div>
@@ -150,6 +154,31 @@ export function initMatrix({
             if (r !== input) r.checked = false;
           });
           updateResultsAndPost();
+        }
+      });
+
+      // Radios select on arrow. Arrows only move within this row; Enter/Space selects.
+      input.addEventListener('keydown', (event) => {
+        const radios = [...tr.querySelectorAll('input[type="radio"]')];
+        const index = radios.indexOf(input);
+        if (
+          event.key === 'ArrowRight' ||
+          event.key === 'ArrowDown' ||
+          event.key === 'ArrowLeft' ||
+          event.key === 'ArrowUp'
+        ) {
+          event.preventDefault();
+          const delta = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
+          radios[(index + delta + radios.length) % radios.length].focus();
+          return;
+        }
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        if (event.repeat || matrixConfirmLock) return;
+        lockMatrixConfirm();
+        if (!input.checked) {
+          input.checked = true;
+          input.dispatchEvent(new Event('change', { bubbles: true }));
         }
       });
 
@@ -266,6 +295,17 @@ export function initMatrix({
 
     state.index = selectedColIndexByRow.filter(v => v !== null && v !== undefined).length;
     postResults();
+  }
+
+  function lockMatrixConfirm() {
+    matrixConfirmLock = true;
+    const release = () => {
+      matrixConfirmLock = false;
+      document.removeEventListener('keyup', release);
+      window.removeEventListener('blur', release);
+    };
+    document.addEventListener('keyup', release);
+    window.addEventListener('blur', release);
   }
 
   function clearAllAnswers() {
