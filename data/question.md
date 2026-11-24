@@ -1,39 +1,23 @@
 __Type__
 
-Multiple Choice
+Matching
 
-__Practice Question__
+__Markdown With Blanks__
 
-Maria is a freelance designer who wants to be known for "high-quality, timely work." She delivers beautiful designs but always misses deadlines. According to the brand triangle, what's her main problem?
+> **Subtle Cue 1**: Team members are avoiding eye contact and have closed body language. [[blank:Discomfort]]
 
-A. Her brand identity is wrong
-B. Her actual brand doesn't match her identity
-C. Her brand image is too positive
-D. She needs a better logo
+> **Subtle Cue 2**: Several people are nodding, smiling, and leaning forward during a discussion. [[blank:Engagement]]
 
-__Suggested Answers__
+> **Subtle Cue 3**: Voices are raised and people are talking over each other. [[blank:Tension]]
 
-- A
-- B
-- C
-- D
+> **Subtle Cue 4**: Someone sighs and looks away when a topic comes up. [[blank:Frustration]]
 
-__Practice Question__
-
-Which of the following are true about Alex, a developer whose code is buggy but clients love his speed? (Select all that apply)
-
-A. His actual brand doesn't match his intended identity
-B. He needs to improve his communication skills
-C. His brand image is inconsistent with his identity
-D. He needs a new logo
-
-__Question Options__
-
-multi-select
+> **Subtle Cue 5**: Laughter and relaxed posture spread through the group after a team win. [[blank:Relief]]
 
 __Suggested Answers__
 
-- A
-- B
-- C
-- D
+- Discomfort
+- Engagement
+- Tension
+- Frustration
+- Relief
