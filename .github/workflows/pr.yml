@@ -57,3 +57,9 @@ jobs:
         working-directory: a11y-audits/tools
         env:
           CI: '1'
+
+      - name: Keyboard behavior
+        run: npm run a11y:keyboard
+        working-directory: a11y-audits/tools
+        env:
+          CI: '1'
