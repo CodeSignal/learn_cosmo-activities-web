@@ -250,7 +250,7 @@ export function initMcq({
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
           if (event.repeat || radioConfirmLock) return;
-          lockRadioConfirm();
+          lockRadioConfirm(event.key);
           if (!input.checked) {
             input.checked = true;
             input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -276,7 +276,7 @@ export function initMcq({
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
           if (event.repeat || radioConfirmLock) return;
-          lockRadioConfirm();
+          lockRadioConfirm(event.key);
           input.checked = !input.checked;
           input.dispatchEvent(new Event('change', { bubbles: true }));
         });
@@ -386,13 +386,25 @@ export function initMcq({
     return nextEl;
   }
 
-  function lockRadioConfirm() {
+  let releaseRadioConfirm = () => {};
+
+  // Held Space/Enter keeps repeating after focus moves to the explanation.
+  // Swallow that same key until release, including on the newly focused control.
+  function lockRadioConfirm(key) {
     radioConfirmLock = true;
-    const release = () => {
+    const suppress = (event) => {
+      if (event.key === key) event.preventDefault();
+    };
+    const release = (event) => {
+      if (event && event.type === 'keyup' && event.key !== key) return;
       radioConfirmLock = false;
+      document.removeEventListener('keydown', suppress, true);
       document.removeEventListener('keyup', release);
       window.removeEventListener('blur', release);
+      releaseRadioConfirm = () => {};
     };
+    releaseRadioConfirm = release;
+    document.addEventListener('keydown', suppress, true);
     document.addEventListener('keyup', release);
     window.addEventListener('blur', release);
   }
@@ -652,6 +664,7 @@ export function initMcq({
   
   return {
     cleanup: () => {
+      releaseRadioConfirm();
       toolbar.unregisterTool('mcq-clear-all');
       elContainer.innerHTML = '';
     },
